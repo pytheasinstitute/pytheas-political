@@ -1,0 +1,23 @@
+# Node
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+
+# Local / generated
+*.log
+*.tmp
+
+# Clawdbot state/artifacts
+.clawdbot/
+/home/ubuntu/.clawdbot/
+
