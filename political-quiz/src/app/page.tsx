@@ -24,9 +24,7 @@ export default function HomePage() {
             <div className="kicker">Neutral political self‑reflection</div>
             <h1 className="h1">Find where you stand — in 3 minutes.</h1>
             <p className="p">
-              A short, neutral quiz that maps your views on two core axes: <b>Progressive ↔ Conservative</b>
-              {" "}
-              and <b>State ↔ Market</b>.
+              A short, neutral quiz that maps your views on two core axes: <b>Progressive ↔ Conservative</b> and <b>State ↔ Market</b>.
             </p>
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
@@ -39,7 +37,7 @@ export default function HomePage() {
             </div>
 
             <div style={{ marginTop: 14 }} className="small">
-              • Anonymous • No subscription • Full result unlock: <b>€1 one‑time</b>
+              • No account • No subscription • Full result unlock: <b>€1 one‑time</b>
             </div>
           </div>
 
