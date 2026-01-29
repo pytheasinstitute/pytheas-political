@@ -6,7 +6,7 @@ export default function QuizPage() {
       <header className="nav">
         <div className="brand">
           <span className="dot" />
-          <span>Political Profile</span>
+          <span>Pytheas Institute</span>
         </div>
         <nav style={{ display: "flex", gap: 14 }}>
           <Link href="/methodology" className="small">

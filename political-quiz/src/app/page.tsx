@@ -6,7 +6,7 @@ export default function HomePage() {
       <header className="nav">
         <div className="brand">
           <span className="dot" />
-          <span>Political Profile</span>
+          <span>Pytheas Institute</span>
         </div>
         <nav style={{ display: "flex", gap: 14 }}>
           <Link href="/methodology" className="small">
@@ -122,7 +122,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="small" style={{ marginTop: 8 }}>
-          © {new Date().getFullYear()} Political Profile (draft)
+          © {new Date().getFullYear()} Pytheas Institute (draft)
         </div>
       </footer>
     </div>
