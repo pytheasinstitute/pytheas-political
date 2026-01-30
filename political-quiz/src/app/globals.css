@@ -1,13 +1,14 @@
 :root {
-  --bg: #0b0f1a;
-  --panel: rgba(255, 255, 255, 0.06);
-  --panel-border: rgba(255, 255, 255, 0.10);
-  --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(255, 255, 255, 0.68);
-  --muted2: rgba(255, 255, 255, 0.56);
-  --accent: #79a6ff;
-  --accent2: #a3ffd6;
-  --shadow: rgba(0, 0, 0, 0.35);
+  /* Pytheas Institute theme: off-white paper + dark blue */
+  --bg: #f7f4ee;
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel-border: rgba(10, 27, 58, 0.10);
+  --text: rgba(10, 27, 58, 0.94);
+  --muted: rgba(10, 27, 58, 0.74);
+  --muted2: rgba(10, 27, 58, 0.62);
+  --accent: #0b2a5b; /* dark blue */
+  --accent2: #1b5ea7; /* lighter blue */
+  --shadow: rgba(10, 27, 58, 0.10);
   --radius: 14px;
 }
 
@@ -19,8 +20,9 @@ body {
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 800px at 20% 20%, rgba(121, 166, 255, 0.18), transparent 60%),
-    radial-gradient(1000px 700px at 80% 30%, rgba(163, 255, 214, 0.12), transparent 55%),
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(11, 42, 91, 0.08), transparent 60%),
+    radial-gradient(900px 700px at 85% 25%, rgba(27, 94, 167, 0.06), transparent 55%),
     var(--bg);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
@@ -57,28 +59,37 @@ a {
   gap: 10px;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(10, 27, 58, 0.16);
+  background: rgba(255, 255, 255, 0.55);
   color: var(--text);
   text-decoration: none;
   font-weight: 650;
   letter-spacing: 0.2px;
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(10, 27, 58, 0.26);
+  box-shadow: 0 10px 24px rgba(10, 27, 58, 0.10);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, rgba(121, 166, 255, 0.35), rgba(163, 255, 214, 0.22));
-  border-color: rgba(121, 166, 255, 0.45);
+  background: linear-gradient(135deg, rgba(11, 42, 91, 0.95), rgba(27, 94, 167, 0.92));
+  border-color: rgba(11, 42, 91, 0.40);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .btnPrimary:hover {
-  background: linear-gradient(135deg, rgba(121, 166, 255, 0.45), rgba(163, 255, 214, 0.28));
+  background: linear-gradient(135deg, rgba(11, 42, 91, 0.98), rgba(27, 94, 167, 0.95));
 }
 
 .kicker {
@@ -143,13 +154,13 @@ a {
   height: 10px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
-  box-shadow: 0 0 0 4px rgba(121, 166, 255, 0.14);
+  box-shadow: 0 0 0 4px rgba(11, 42, 91, 0.10);
 }
 
 .footer {
   padding: 26px 0 36px;
   margin-top: 30px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(10, 27, 58, 0.10);
 }
 
 .footer a {

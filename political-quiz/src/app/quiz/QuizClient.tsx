@@ -66,13 +66,26 @@ export default function QuizClient() {
   return (
     <main className="card" style={{ padding: 22 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="kicker">Quiz</div>
+        <div className="kicker">Pytheas Political</div>
         <div className="small">{idx + 1}/{QUESTIONS_V1.length}</div>
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
-          <div style={{ width: `${progress}%`, height: 8, background: "linear-gradient(135deg, var(--accent), var(--accent2))" }} />
+        <div
+          style={{
+            height: 8,
+            borderRadius: 999,
+            background: "rgba(10,27,58,0.10)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${progress}%`,
+              height: 8,
+              background: "linear-gradient(135deg, var(--accent), var(--accent2))",
+            }}
+          />
         </div>
       </div>
 
