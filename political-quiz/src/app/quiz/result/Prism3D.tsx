@@ -35,7 +35,7 @@ return ww.map((x) => x / s) as [number, number, number, number, number, number];
 // Octahedron vertices: top/bottom + 4 equator points.
 const verts = useMemo(() => {
 const h = 1.15;
-const r = 2.42;
+const r = 1.50;
 return [
 new THREE.Vector3(0, h, 0), // 0 top
 new THREE.Vector3(0, -h, 0), // 1 bottom
