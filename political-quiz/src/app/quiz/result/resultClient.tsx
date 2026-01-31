@@ -103,7 +103,21 @@ return (
 )}
 <div className="small" style={{ marginTop: 12 }}>One-time unlock (~€1 equivalent). No subscription.</div>
 <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-<button className="btn btnPrimary" onClick={() => setUnlocked(true)}>Dev unlock</button>
+<button
+className="btn btnPrimary"
+onClick={async () => {
+const res = await fetch("/api/create-checkout-session", {
+method: "POST",
+headers: { "content-type": "application/json" },
+body: JSON.stringify({ origin: window.location.origin }),
+});
+const json = await res.json();
+if (json?.url) window.location.href = json.url;
+}}
+>
+Unlock for €1
+</button>
+
 <Link className="btn" href="/quiz">Adjust answers</Link>
 </div>
 </div>
@@ -120,7 +134,20 @@ useEffect(() => {
 setAnswers(getStoredAnswers());
 setUnlockedState(isUnlocked());
 }, []);
+const sessionId = url.searchParams.get("session_id");
+const wantsUnlock = url.searchParams.get("unlock") === "1";
+if (!sessionId || !wantsUnlock) return;
 
+(async () => {
+const res = await fetch("/api/verify-checkout-session", {
+method: "POST",
+headers: { "content-type": "application/json" },
+body: JSON.stringify({ sessionId }),
+});
+const json = await res.json();
+if (json?.paid) {
+setUnlocked(true);
+setUnlockedState(true);
 const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
 const score = useMemo(() => scoreQuiz(answers, QUESTIONS_V1), [answers]);
 const archetypeKey = useMemo(() => computeArchetype(score), [score]);
