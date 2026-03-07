@@ -4,76 +4,156 @@ export default function MethodologyPage() {
   return (
     <div className="container">
       <header className="nav">
-        <div className="brand">
+        <Link href="/" className="brand">
           <span className="dot" />
-          <span>Pytheas Institute</span>
-        </div>
-        <nav style={{ display: "flex", gap: 14 }}>
-          <Link href="/" className="small">
-            Home
-          </Link>
-          <Link href="/privacy" className="small">
-            Privacy
-          </Link>
-          <Link href="/quiz" className="small">
-            Start quiz
-          </Link>
+          Pytheas Institute
+        </Link>
+        <nav className="navLinks">
+          <Link href="/" className="navLink">Home</Link>
+          <Link href="/privacy" className="navLink">Privacy</Link>
+          <Link href="/quiz" className="navLink navLinkPrimary">Start quiz →</Link>
         </nav>
       </header>
 
-      <main className="card" style={{ padding: 22 }}>
-        <div className="kicker">Methodology</div>
-        <h1 style={{ fontSize: 28, marginTop: 10 }}>What this quiz is (and isn’t)</h1>
-        <p className="p">
-          This is a short self‑reflection tool. It estimates your position on two broad axes based on
-          your responses. It is not a scientific diagnosis, and it does not tell you which party to vote
-          for.
-        </p>
+      <main style={{ paddingBottom: 56 }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          {/* ─── Hero ─── */}
+          <div style={{ paddingTop: 44, paddingBottom: 36 }}>
+            <div className="kicker" style={{ marginBottom: 14 }}>Transparency</div>
+            <h1 className="h1">What this quiz is<br />(and isn't)</h1>
+            <p className="p" style={{ maxWidth: 540 }}>
+              This is a short self-reflection tool. It estimates your position on two broad axes
+              based on your responses — not a scientific diagnosis.
+            </p>
+          </div>
 
-        <hr style={{ borderColor: "rgba(255,255,255,0.10)", margin: "18px 0" }} />
+          <div className="grid" style={{ gap: 16 }}>
+            {/* ─── Two axes ─── */}
+            <div className="card" style={{ padding: "28px 30px" }}>
+              <div className="kicker" style={{ marginBottom: 14 }}>Core concept</div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 16px" }}>
+                The two axes
+              </h2>
+              <p className="p" style={{ marginBottom: 16 }}>
+                We use two dimensions widely used in political science and public discourse:
+              </p>
 
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>The two axes</h2>
-        <p className="p">
-          We use two high‑level dimensions often used in political science and public discourse:
-        </p>
-        <ul className="p" style={{ paddingLeft: 18 }}>
-          <li>
-            <b>Progressive ↔ Conservative</b> (social change, tradition, cultural preferences)
-          </li>
-          <li>
-            <b>State ↔ Market</b> (role of government, regulation, redistribution, economic freedom)
-          </li>
-        </ul>
+              <div className="grid" style={{ gap: 12 }}>
+                <AxisBlock
+                  color="#1a5bb8"
+                  label="Progressive ↔ Conservative"
+                  desc="Social change, tradition, cultural diversity, individual freedoms, and generational values."
+                />
+                <AxisBlock
+                  color="#0b2a5b"
+                  label="State ↔ Market"
+                  desc="Role of government, regulation, redistribution, welfare provision, and economic freedom."
+                />
+              </div>
+            </div>
 
-        <h2 style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>How scoring works</h2>
-        <p className="p">
-          Each question contributes points to one or both axes. Responses are symmetric (no “trick”
-          questions), and the result is a simple aggregate. A different set of questions could yield a
-          slightly different position—this is normal.
-        </p>
+            {/* ─── Scoring ─── */}
+            <div className="card" style={{ padding: "28px 30px" }}>
+              <div className="kicker" style={{ marginBottom: 14 }}>How it works</div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 16px" }}>
+                Scoring
+              </h2>
+              <p className="p" style={{ marginBottom: 0 }}>
+                Each question contributes points to one or both axes. Responses are symmetric — no
+                trick questions. The result is a simple aggregate. A different set of questions
+                could yield a slightly different position — this is normal and expected.
+              </p>
+            </div>
 
-        <h2 style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>Transparency & limitations</h2>
-        <ul className="p" style={{ paddingLeft: 18 }}>
-          <li>No subscriptions. The full result is unlocked with a one‑time €1 payment.</li>
-          <li>No hidden upsells.</li>
-          <li>We don’t sell personal data.</li>
-          <li>
-            The model is a simplification. Real political views are richer than two numbers.
-          </li>
-        </ul>
+            {/* ─── Transparency ─── */}
+            <div className="card" style={{ padding: "28px 30px" }}>
+              <div className="kicker" style={{ marginBottom: 14 }}>Our commitments</div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 20px" }}>
+                Transparency & limitations
+              </h2>
+              <div className="grid" style={{ gap: 12 }}>
+                {[
+                  { icon: "💶", text: "No subscriptions. The full result is a one-time €1 payment." },
+                  { icon: "🚫", text: "No hidden upsells. No dark patterns." },
+                  { icon: "🔒", text: "We don't sell personal data. Answers stay on your device." },
+                  { icon: "📐", text: "The model is a simplification. Real political views are richer than two numbers." },
+                ].map((item) => (
+                  <div
+                    key={item.text}
+                    style={{
+                      display: "flex",
+                      gap: 14,
+                      alignItems: "flex-start",
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      background: "rgba(11, 42, 91, 0.04)",
+                      border: "1px solid rgba(11, 42, 91, 0.08)",
+                    }}
+                  >
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{item.icon}</span>
+                    <p className="small" style={{ margin: 0, lineHeight: 1.65 }}>{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── CTA ─── */}
+            <div
+              style={{
+                padding: "24px 28px",
+                borderRadius: 16,
+                background: "linear-gradient(135deg, rgba(11,42,91,0.06), rgba(26,91,184,0.04))",
+                border: "1px solid rgba(11,42,91,0.10)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 20,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 17 }}>Ready to find your position?</div>
+                <div className="small" style={{ marginTop: 4 }}>
+                  12 questions · ~3 minutes · No account required
+                </div>
+              </div>
+              <Link href="/quiz" className="btn btnPrimary btnLg">
+                Start the quiz →
+              </Link>
+            </div>
+          </div>
+        </div>
       </main>
 
       <footer className="footer">
-        <div className="small">
-          <Link href="/" className="small">
-            Home
-          </Link>
-          {" · "}
-          <Link href="/privacy" className="small">
-            Privacy
-          </Link>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div className="brand" style={{ fontSize: 13 }}>
+            <span className="dot" style={{ width: 8, height: 8 }} />
+            Pytheas Institute
+          </div>
+          <div className="small">
+            <Link href="/">Home</Link>
+            <span className="sep">·</span>
+            <Link href="/privacy">Privacy</Link>
+          </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function AxisBlock({ color, label, desc }: { color: string; label: string; desc: string }) {
+  return (
+    <div
+      style={{
+        padding: "16px 18px",
+        borderRadius: 12,
+        border: `1px solid ${color}20`,
+        background: `${color}07`,
+      }}
+    >
+      <div style={{ fontWeight: 700, fontSize: 15, color, marginBottom: 8 }}>{label}</div>
+      <p className="small" style={{ margin: 0, lineHeight: 1.65 }}>{desc}</p>
     </div>
   );
 }

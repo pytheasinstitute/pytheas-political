@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcobaleno Eisservice – Echtes Italienisches Gelato · Klagenfurt</title>
+  <meta name="description" content="Arcobaleno Eisservice – Originales italienisches Gelato im Herzen von Klagenfurt. Gegenüber den City Arkaden. Vegan-zertifizierte Sorten erhältlich." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── NAV ─── -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-arc">🌈</span>
+        <span>Arcobaleno</span>
+      </a>
+      <div class="nav-links">
+        <a href="#sorten">Sorten</a>
+        <a href="#ueber-uns">Über uns</a>
+        <a href="#vegan">Vegan</a>
+        <a href="#standort">Standort</a>
+        <a href="#kontakt" class="nav-cta">Kontakt</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Menü öffnen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="#sorten" onclick="closeMenu()">Sorten</a>
+      <a href="#ueber-uns" onclick="closeMenu()">Über uns</a>
+      <a href="#vegan" onclick="closeMenu()">Vegan</a>
+      <a href="#standort" onclick="closeMenu()">Standort</a>
+      <a href="#kontakt" onclick="closeMenu()">Kontakt</a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-blob blob1"></div>
+      <div class="hero-blob blob2"></div>
+      <div class="hero-blob blob3"></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Originales Italienisches Gelato · Klagenfurt
+      </div>
+      <h1 class="hero-title">
+        Der Geschmack<br />
+        <em>Italiens</em> in<br />
+        Klagenfurt.
+      </h1>
+      <p class="hero-sub">
+        Handgemachtes Gelato nach original italienischen Rezepten —
+        direkt gegenüber den City Arkaden. Täglich frisch zubereitet.
+      </p>
+      <div class="hero-actions">
+        <a href="#sorten" class="btn btn-primary">Unsere Sorten entdecken</a>
+        <a href="#standort" class="btn btn-ghost">Standort finden</a>
+      </div>
+      <div class="hero-tags">
+        <span class="tag">🌿 Vegan-zertifiziert</span>
+        <span class="tag">🇮🇹 Originalrezepte</span>
+        <span class="tag">☕ Bester Cappuccino</span>
+        <span class="tag">🏆 Klagenfurt's #1</span>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ─── SORTEN ─── -->
+  <section class="section" id="sorten">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Unsere Gelato-Sorten</div>
+        <h2>Für jeden Geschmack<br />die perfekte Kugel.</h2>
+        <p class="section-sub">
+          Wir bieten täglich eine große Auswahl an klassischen und saisonalen Sorten —
+          alle frisch, alle mit Liebe gemacht.
+        </p>
+      </div>
+
+      <div class="flavors-grid">
+        <div class="flavor-card" style="--clr: #e8c882">
+          <div class="flavor-icon">🍋</div>
+          <div class="flavor-name">Zitrone</div>
+          <div class="flavor-desc">Frisch & erfrischend — der Klassiker</div>
+        </div>
+        <div class="flavor-card" style="--clr: #f4a5a5">
+          <div class="flavor-icon">🍓</div>
+          <div class="flavor-name">Erdbeere</div>
+          <div class="flavor-desc">Sonnengereift, intensiv süß</div>
+        </div>
+        <div class="flavor-card" style="--clr: #c8a87a">
+          <div class="flavor-icon">🍫</div>
+          <div class="flavor-name">Cioccolato</div>
+          <div class="flavor-desc">Dunkle Schokolade, samtig & reich</div>
+        </div>
+        <div class="flavor-card" style="--clr: #f7d6a0">
+          <div class="flavor-icon">🍑</div>
+          <div class="flavor-name">Pfirsich</div>
+          <div class="flavor-desc">Sommerlich, fruchtig, leicht</div>
+        </div>
+        <div class="flavor-card" style="--clr: #b5d8c8">
+          <div class="flavor-icon">🌿</div>
+          <div class="flavor-name">Pistazie</div>
+          <div class="flavor-desc">Original sizilianisch, nussig-fein</div>
+        </div>
+        <div class="flavor-card" style="--clr: #f5cba7">
+          <div class="flavor-icon">🍦</div>
+          <div class="flavor-name">Vanille</div>
+          <div class="flavor-desc">Cremig, klassisch, zeitlos</div>
+        </div>
+        <div class="flavor-card" style="--clr: #d4b8e0">
+          <div class="flavor-icon">🫐</div>
+          <div class="flavor-name">Blaubeere</div>
+          <div class="flavor-desc">Wild & intensiv, voll von Frucht</div>
+        </div>
+        <div class="flavor-card" style="--clr: #f9c6d0">
+          <div class="flavor-icon">🌹</div>
+          <div class="flavor-name">Stracciatella</div>
+          <div class="flavor-desc">Sahne mit zarten Schokoladesplittern</div>
+        </div>
+      </div>
+
+      <div class="flavors-note">
+        <span>✨ Saisonale Sorten wechseln täglich — komm vorbei und lass dich überraschen!</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ÜBER UNS ─── -->
+  <section class="section section-alt" id="ueber-uns">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-visual">
+          <div class="about-card ac1">
+            <div class="ac-num">1992</div>
+            <div class="ac-label">Gegründet</div>
+          </div>
+          <div class="about-card ac2">
+            <div class="ac-num">100%</div>
+            <div class="ac-label">Italienisch</div>
+          </div>
+          <div class="about-card ac3">
+            <div class="ac-num">🇮🇹</div>
+            <div class="ac-label">Originalrezepte</div>
+          </div>
+          <div class="about-blob"></div>
+        </div>
+        <div class="about-text">
+          <div class="kicker">Über uns</div>
+          <h2>Echtes Gelato.<br />Echte Leidenschaft.</h2>
+          <p>
+            Arcobaleno — das bedeutet Regenbogen. Und genau das ist unser Versprechen:
+            eine bunte Vielfalt an Aromen, die den Geist Italiens nach Klagenfurt bringt.
+          </p>
+          <p>
+            Unser Team ist italienisch, unsere Rezepte sind original, und unsere Zutaten
+            werden sorgfältig ausgewählt. Jede Kugel wird täglich frisch zubereitet —
+            ohne Kompromisse.
+          </p>
+          <p>
+            Direkt gegenüber den City Arkaden im Herzen Klagenfurts sind wir seit
+            Jahren ein fester Teil des Stadtlebens.
+          </p>
+          <div class="about-quote">
+            <span class="quote-mark">"</span>
+            <span>Der beste Cappuccino, den ich je hatte — und ich bin Italiener!</span>
+          </div>
+          <div class="quote-author">— Gast-Bewertung, TripAdvisor</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VEGAN ─── -->
+  <section class="section" id="vegan">
+    <div class="container">
+      <div class="vegan-wrap">
+        <div class="vegan-text">
+          <div class="kicker">Für alle</div>
+          <h2>Vegan & V-Label<br />zertifiziert.</h2>
+          <p>
+            Wir glauben, dass gutes Gelato für alle da sein sollte.
+            Unsere veganen Sorten tragen das offizielle <strong>V-Label</strong>
+            der Veganen Gesellschaft Österreich — für maximale Transparenz
+            und Vertrauen.
+          </p>
+          <ul class="vegan-list">
+            <li>
+              <span class="vl-icon">✓</span>
+              Offiziell V-Label zertifiziert
+            </li>
+            <li>
+              <span class="vl-icon">✓</span>
+              Klar gekennzeichnet an der Theke
+            </li>
+            <li>
+              <span class="vl-icon">✓</span>
+              Gleiche Qualität wie alle anderen Sorten
+            </li>
+            <li>
+              <span class="vl-icon">✓</span>
+              Täglich frisch & saisonal wechselnd
+            </li>
+          </ul>
+        </div>
+        <div class="vegan-badge-wrap">
+          <div class="vegan-badge">
+            <div class="vb-leaf">🌿</div>
+            <div class="vb-title">V-Label</div>
+            <div class="vb-sub">Vegane Gesellschaft Österreich</div>
+            <div class="vb-certified">Zertifiziert</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STANDORT ─── -->
+  <section class="section section-alt" id="standort">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Wo wir sind</div>
+        <h2>Mitten in Klagenfurt.</h2>
+      </div>
+      <div class="location-grid">
+        <div class="location-card">
+          <div class="loc-icon">📍</div>
+          <div class="loc-title">Adresse</div>
+          <div class="loc-info">
+            Wiener Gasse<br />
+            9020 Klagenfurt am Wörthersee<br />
+            <em>(gegenüber City Arkaden)</em>
+          </div>
+        </div>
+        <div class="location-card">
+          <div class="loc-icon">🕐</div>
+          <div class="loc-title">Öffnungszeiten</div>
+          <div class="loc-info">
+            Mo – Fr: 10:00 – 20:00<br />
+            Sa: 10:00 – 20:00<br />
+            So: 11:00 – 19:00
+          </div>
+        </div>
+        <div class="location-card">
+          <div class="loc-icon">📞</div>
+          <div class="loc-title">Telefon</div>
+          <div class="loc-info">
+            +43 463 5046…<br />
+            <br />
+            <a href="tel:+43463504600" class="loc-link">Jetzt anrufen →</a>
+          </div>
+        </div>
+        <div class="location-card">
+          <div class="loc-icon">🚗</div>
+          <div class="loc-title">Anfahrt</div>
+          <div class="loc-info">
+            Perfekte Lage im Stadtzentrum.<br />
+            Öffentlich & mit dem Auto<br />
+            gut erreichbar.
+          </div>
+        </div>
+      </div>
+
+      <div class="map-placeholder">
+        <div class="map-inner">
+          <div class="map-pin">📍</div>
+          <div class="map-label">Arcobaleno Eisservice</div>
+          <div class="map-sublabel">Wiener Gasse, 9020 Klagenfurt</div>
+          <a
+            href="https://maps.google.com/?q=Arcobaleno+Eisservice+Klagenfurt"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+            style="margin-top: 18px;"
+          >
+            In Google Maps öffnen →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── KONTAKT ─── -->
+  <section class="section" id="kontakt">
+    <div class="container">
+      <div class="contact-wrap">
+        <div class="kicker">Kontakt</div>
+        <h2>Wir freuen uns<br />auf deinen Besuch!</h2>
+        <p class="section-sub" style="max-width: 500px; margin: 0 auto 36px;">
+          Fragen, Feedback oder eine Bestellung? Meld dich einfach bei uns —
+          wir antworten auf Deutsch, Italiano & English.
+        </p>
+        <div class="contact-actions">
+          <a href="tel:+43463504600" class="btn btn-primary btn-lg">📞 Jetzt anrufen</a>
+          <a href="mailto:info@arcobaleno-eis.at" class="btn btn-ghost btn-lg">✉️ E-Mail schreiben</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-arc">🌈</span>
+        <span>Arcobaleno Eisservice</span>
+      </div>
+      <div class="footer-links">
+        <a href="#sorten">Sorten</a>
+        <a href="#ueber-uns">Über uns</a>
+        <a href="#vegan">Vegan</a>
+        <a href="#standort">Standort</a>
+      </div>
+      <div class="footer-copy">
+        © 2025 Arcobaleno Eisservice · Klagenfurt, Österreich
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

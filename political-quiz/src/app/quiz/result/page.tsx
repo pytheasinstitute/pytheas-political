@@ -5,42 +5,35 @@ export default function ResultPage() {
   return (
     <div className="container">
       <header className="nav">
-        <div className="brand">
+        <Link href="/" className="brand">
           <span className="dot" />
-          <span>Pytheas Institute</span>
-        </div>
-        <nav style={{ display: "flex", gap: 14 }}>
-          <Link href="/" className="small">
-            Home
-          </Link>
-          <Link href="/methodology" className="small">
-            Methodology
-          </Link>
-          <Link href="/privacy" className="small">
-            Privacy
-          </Link>
+          Pytheas Institute
+        </Link>
+        <nav className="navLinks">
+          <Link href="/" className="navLink">Home</Link>
+          <Link href="/methodology" className="navLink">Methodology</Link>
+          <Link href="/privacy" className="navLink">Privacy</Link>
+          <Link href="/quiz" className="navLink navLinkPrimary">Retake quiz →</Link>
         </nav>
       </header>
 
       <ResultClient />
 
       <footer className="footer">
-        <div className="small">
-          <Link href="/" className="small">
-            Home
-          </Link>
-          {" · "}
-          <Link href="/quiz" className="small">
-            Retake quiz
-          </Link>
-          {" · "}
-          <Link href="/methodology" className="small">
-            Methodology
-          </Link>
-          {" · "}
-          <Link href="/privacy" className="small">
-            Privacy
-          </Link>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div className="brand" style={{ fontSize: 13 }}>
+            <span className="dot" style={{ width: 8, height: 8 }} />
+            Pytheas Institute
+          </div>
+          <div className="small">
+            <Link href="/">Home</Link>
+            <span className="sep">·</span>
+            <Link href="/quiz">Retake quiz</Link>
+            <span className="sep">·</span>
+            <Link href="/methodology">Methodology</Link>
+            <span className="sep">·</span>
+            <Link href="/privacy">Privacy</Link>
+          </div>
         </div>
       </footer>
     </div>
