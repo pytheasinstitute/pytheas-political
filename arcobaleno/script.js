@@ -12,9 +12,9 @@ burger.addEventListener('click', () => {
   mobileMenu.classList.toggle('open');
 });
 
-function closeMenu() {
-  mobileMenu.classList.remove('open');
-}
+document.querySelectorAll('.mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+});
 
 // ─── Smooth scroll offset for fixed nav ───
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -24,31 +24,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     const target = document.querySelector(href);
     if (!target) return;
     e.preventDefault();
-    const offset = 80;
-    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    const top = target.getBoundingClientRect().top + window.scrollY - 80;
     window.scrollTo({ top, behavior: 'smooth' });
   });
 });
 
-// ─── Fade-in on scroll ───
-const observer = new IntersectionObserver(
+// ─── Scroll reveal (.reveal elements) ───
+const revealObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-        observer.unobserve(entry.target);
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
       }
     });
   },
-  { threshold: 0.12 }
+  { threshold: 0.10 }
 );
 
-document.querySelectorAll(
-  '.flavor-card, .location-card, .about-card, .vegan-badge'
-).forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(22px)';
-  el.style.transition = 'opacity 500ms ease, transform 500ms ease';
-  observer.observe(el);
-});
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
