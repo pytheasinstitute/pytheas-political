@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcobaleno Eisservice — Echtes Italienisches Gelato · Klagenfurt</title>
+  <meta name="description" content="Arcobaleno Eisservice – handgemachtes Gelato nach originalen italienischen Rezepten. Direkt gegenüber City Arkaden, Klagenfurt.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700;1,9..144,900&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,600;1,9..144,700;1,9..144,900&family=Syne:wght@400;500;600;700;800&display=swap');
+
+/* ─── Reset ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+a { color: inherit; text-decoration: none; }
+
+/* ─── Tokens ─── */
+:root {
+  --cream:   #FFF8EF;
+  --coral:   #FF4D4D;
+  --navy:    #0f0f23;
+  --lime:    #AAED63;
+  --yellow:  #FFE566;
+  --pink:    #FF3D9A;
+  --ink:     #0a0a0a;
+  --white:   #ffffff;
+
+  --g1: #FF4D4D;
+  --g2: #FF8C42;
+  --g3: #FFD700;
+  --g4: #7BC67E;
+  --g5: #4FC3F7;
+  --g6: #9B5DE5;
+  --g7: #FF6B9D;
+  --g8: #FF4D4D;
+  --g9: #FF8C42;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui:      'Syne', system-ui, sans-serif;
+}
+
+/* ─── Base ─── */
+body {
+  font-family: var(--font-display);
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── Container ─── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: transparent;
+  transition: background 300ms, box-shadow 300ms;
+}
+
+.nav.scrolled {
+  background: var(--ink);
+  box-shadow: 0 2px 0 rgba(255,255,255,0.06);
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transition: color 300ms;
+}
+
+.nav.scrolled .logo { color: #fff; }
+
+.logo-r { color: var(--coral); }
+.logo-a { color: var(--coral); }
+.logo-i { color: #FF8C42; }
+.logo-n { color: #d4a800; }
+.logo-b { color: #3a9e3d; }
+.logo-o { color: #1a9fd4; }
+.logo-w2 { color: #9B5DE5; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nav-links a {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(10,10,10,0.55);
+  padding: 7px 14px;
+  border-radius: 3px;
+  transition: color 150ms, background 150ms;
+}
+
+.nav.scrolled .nav-links a { color: rgba(255,255,255,0.55); }
+
+.nav-links a:hover { color: var(--ink); background: rgba(10,10,10,0.06); }
+.nav.scrolled .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+
+.nav-links .nav-cta {
+  background: var(--ink);
+  color: var(--white);
+  margin-left: 6px;
+  border-radius: 3px;
+}
+
+.nav.scrolled .nav-links .nav-cta { background: var(--coral); color: #fff; }
+.nav-links .nav-cta:hover { background: var(--coral); color: var(--white); }
+
+/* ─── Burger ─── */
+.burger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.burger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: all 250ms, background 300ms;
+}
+
+.nav.scrolled .burger span { background: #fff; }
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: 12px 40px 20px;
+  gap: 2px;
+  border-top: 2px solid var(--ink);
+  background: var(--cream);
+}
+
+.mobile-menu a {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(10,10,10,0.55);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(10,10,10,0.08);
+  transition: color 150ms;
+}
+
+.mobile-menu a:hover { color: var(--ink); }
+.mobile-menu.open { display: flex; }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .burger { display: flex; }
+}
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  padding: 100px 0 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  border: 2px solid rgba(10,10,10,0.07);
+  top: 50%;
+  right: -180px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  border: 1px solid rgba(10,10,10,0.05);
+  top: 50%;
+  right: 60px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-photo {
+  position: relative;
+  height: 68vh;
+  min-height: 480px;
+  max-height: 680px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+}
+
+.hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 600ms ease;
+}
+
+.hero-photo:hover img { transform: scale(1.04); }
+
+.hero-photo-caption {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.80);
+  background: rgba(10,10,10,0.45);
+  padding: 4px 10px;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(4px);
+}
+
+.hero-eyebrow {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+  color: rgba(10,10,10,0.40);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: rgba(10,10,10,0.25);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 12vw, 180px);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  margin-bottom: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0;
+}
+
+.hero-title .hl { display: inline-block; animation: letterIn 0.6s both; }
+.hl-1  { color: var(--g1); animation-delay: 0.05s; }
+.hl-2  { color: var(--g2); animation-delay: 0.10s; }
+.hl-3  { color: #d4a800;  animation-delay: 0.15s; }
+.hl-4  { color: #3a9e3d; animation-delay: 0.20s; }
+.hl-5  { color: #1a9fd4; animation-delay: 0.25s; }
+.hl-6  { color: #1a9fd4; animation-delay: 0.25s; }
+.hl-7  { color: var(--g6); animation-delay: 0.30s; }
+.hl-8  { color: var(--g7); animation-delay: 0.35s; }
+.hl-9  { color: var(--g2); animation-delay: 0.40s; }
+
+@keyframes letterIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.hero-sub {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(10,10,10,0.60);
+  max-width: 420px;
+}
+
+.hero-sub em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  transition: transform 150ms, box-shadow 150ms, background 150ms, color 150ms;
+  white-space: nowrap;
+}
+
+.btn-dark { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.btn-dark:hover { background: var(--coral); border-color: var(--coral); transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+
+.btn-outline { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn-outline:hover { background: var(--ink); color: var(--white); transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(10,10,10,0.20); }
+
+.btn-white { background: var(--white); color: var(--ink); border-color: var(--white); }
+.btn-white:hover { background: transparent; color: var(--white); transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(255,255,255,0.25); }
+
+.btn-white-outline { background: transparent; color: var(--white); border-color: var(--white); }
+.btn-white-outline:hover { background: var(--white); color: var(--ink); transform: translateY(-2px); }
+
+/* ═══════════════════════════════════════
+   MARQUEE BAND
+═══════════════════════════════════════ */
+.marquee-band {
+  padding: 14px 0;
+  overflow: hidden;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  background: linear-gradient(90deg, #F5D000 0%, #FF4D4D 25%, #3ECFB2 50%, #FF7B35 75%, #F5D000 100%);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+.marquee-track span {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0 24px;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.marquee-track .sep { opacity: 0.40; padding: 0 4px; }
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ═══════════════════════════════════════
+   SECTION BASE
+═══════════════════════════════════════ */
+.section-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.45;
+}
+
+.section-label::before {
+  content: '';
+  width: 24px;
+  height: 1.5px;
+  background: currentColor;
+}
+
+/* ═══════════════════════════════════════
+   SORTEN
+═══════════════════════════════════════ */
+.flavors-section {
+  background: var(--coral);
+  padding: 100px 0 120px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.flavors-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 56px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.flavors-title {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 130px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--white);
+}
+
+.flavors-title em { font-style: italic; display: block; color: var(--yellow); }
+
+.flavors-note-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(255,255,255,0.65);
+  max-width: 200px;
+  text-align: right;
+  line-height: 1.55;
+}
+
+.flavors-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.flavor-card {
+  padding: 36px 28px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  background: var(--bg-card, #cc3d3d);
+  transition: transform 200ms ease;
+  border: 2px solid transparent;
+}
+
+.flavor-card:hover {
+  transform: scale(1.02) translateY(-4px);
+  z-index: 2;
+  border-color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.fc-lemon      { --bg-card: #F5C842; color: var(--ink); }
+.fc-strawberry { --bg-card: #E8365D; color: var(--white); }
+.fc-chocolate  { --bg-card: #4A2312; color: var(--white); }
+.fc-peach      { --bg-card: #F4845F; color: var(--ink); }
+.fc-pistachio  { --bg-card: #5B8C5A; color: var(--white); }
+.fc-vanilla    { --bg-card: #F9E4B7; color: var(--ink); }
+.fc-blueberry  { --bg-card: #3D3580; color: var(--white); }
+.fc-stracciat  { --bg-card: #F5F0E8; color: var(--ink); }
+
+.flavor-num {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.20em;
+  opacity: 0.30;
+  margin-bottom: 20px;
+}
+
+.flavor-icon { font-size: 40px; display: block; margin-bottom: 14px; }
+
+.flavor-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.flavor-name-it {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  opacity: 0.55;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.flavor-desc { font-size: 13px; line-height: 1.55; opacity: 0.70; }
+
+/* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+.about-section {
+  background: var(--navy);
+  color: var(--white);
+  padding: 120px 0;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 2px solid var(--ink);
+}
+
+.about-section::before {
+  content: '';
+  position: absolute;
+  width: 900px;
+  height: 900px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.04);
+  top: 50%;
+  left: -300px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.about-year-bg {
+  position: absolute;
+  right: -30px;
+  bottom: -60px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(160px, 22vw, 380px);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.05);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.04em;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px 1fr;
+  gap: 56px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.about-photo {
+  height: 520px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.12);
+  position: relative;
+}
+
+.about-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: sepia(15%) contrast(1.05);
+  transition: transform 700ms ease, filter 700ms ease;
+}
+
+.about-photo:hover img { transform: scale(1.05); filter: sepia(0%) contrast(1.0); }
+
+.about-year-display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(90px, 14vw, 200px);
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255,255,255,0.20);
+  letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+
+.about-year-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.about-year-label::before { content: ''; width: 24px; height: 1.5px; background: var(--yellow); }
+
+.about-pull-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 600;
+  line-height: 1.40;
+  color: var(--white);
+  border-left: 3px solid var(--coral);
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.about-quote-credit {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  color: rgba(255,255,255,0.35);
+  padding-left: 24px;
+  text-transform: uppercase;
+}
+
+.about-section-label { color: rgba(255,255,255,0.35); }
+
+.about-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  margin-bottom: 28px;
+}
+
+.about-title span { color: var(--coral); font-style: italic; }
+
+.about-body { font-size: 16px; line-height: 1.75; color: rgba(255,255,255,0.60); }
+.about-body p + p { margin-top: 16px; }
+
+.about-stats {
+  display: flex;
+  gap: 36px;
+  margin-top: 44px;
+  padding-top: 36px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+
+.stat-num {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 52px;
+  color: var(--yellow);
+  line-height: 1;
+  margin-bottom: 4px;
+  letter-spacing: -0.03em;
+}
+
+.stat-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ═══════════════════════════════════════
+   VEGAN
+═══════════════════════════════════════ */
+.vegan-section {
+  background: var(--lime);
+  color: var(--ink);
+  padding: 80px 0 120px;
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.vegan-statement {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(80px, 16vw, 220px);
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  white-space: nowrap;
+  margin: 0 -4vw 48px;
+  overflow: hidden;
+}
+
+.vegan-section::after {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  bottom: -200px;
+  right: -100px;
+  pointer-events: none;
+}
+
+.vegan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.vegan-section-label { color: rgba(10,10,10,0.40); }
+
+.vegan-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(64px, 10vw, 148px);
+  line-height: 0.84;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+
+.vegan-title span {
+  display: block;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+.vegan-body { font-size: 16px; line-height: 1.72; color: rgba(10,10,10,0.65); margin-bottom: 32px; }
+
+.vegan-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+.vegan-list li {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vl-check {
+  width: 24px;
+  height: 24px;
+  background: var(--ink);
+  color: var(--lime);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.vegan-badge-block { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+
+.vegan-photo { height: 240px; overflow: hidden; border: 2px solid var(--ink); }
+
+.vegan-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 600ms ease;
+}
+
+.vegan-photo:hover img { transform: scale(1.06); }
+
+.vegan-badge-main {
+  background: var(--ink);
+  color: var(--lime);
+  padding: 52px 60px;
+  text-align: center;
+  border-radius: 4px;
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.20);
+}
+
+.vb-leaf { font-size: 52px; margin-bottom: 16px; }
+
+.vb-heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 60px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.vb-sub {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 24px;
+}
+
+.vb-seal {
+  display: inline-block;
+  border: 1.5px solid rgba(170,237,99,0.40);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 7px 20px;
+}
+
+/* ═══════════════════════════════════════
+   STANDORT
+═══════════════════════════════════════ */
+.standort-section {
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 120px 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+.standort-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(56px, 8vw, 120px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 60px;
+}
+
+.standort-title span { font-style: italic; display: block; }
+
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.location-card {
+  background: var(--white);
+  border: 2px solid var(--ink);
+  padding: 32px 28px;
+  border-radius: 3px;
+  transition: transform 200ms, box-shadow 200ms;
+}
+
+.location-card:hover { transform: translateY(-4px); box-shadow: 6px 6px 0 var(--ink); }
+
+.loc-icon { font-size: 28px; margin-bottom: 14px; }
+
+.loc-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 12px;
+}
+
+.loc-info { font-family: var(--font-display); font-size: 15px; line-height: 1.70; color: rgba(10,10,10,0.70); }
+.loc-info a { color: var(--ink); font-weight: 600; transition: color 150ms; }
+.loc-info a:hover { color: var(--coral); }
+
+.map-placeholder {
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-inner { text-align: center; }
+.map-pin { font-size: 32px; margin-bottom: 8px; }
+
+.map-label { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--ink); margin-bottom: 4px; }
+.map-sublabel { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.08em; color: rgba(10,10,10,0.50); }
+
+/* ═══════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════ */
+.contact-section {
+  background: var(--pink);
+  color: var(--white);
+  padding: 140px 0;
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-section::before {
+  content: '';
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  top: 50%;
+  left: -300px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.contact-wrap {
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.contact-eyebrow {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.contact-eyebrow::before, .contact-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1.5px;
+  background: rgba(255,255,255,0.40);
+}
+
+.contact-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(64px, 10vw, 150px);
+  line-height: 0.84;
+  letter-spacing: -0.04em;
+  color: var(--white);
+  margin-bottom: 28px;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contact-section:hover .contact-title { transform: rotate(-1.5deg); }
+.contact-title span { font-style: italic; }
+
+.contact-sub {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: rgba(255,255,255,0.70);
+  line-height: 1.60;
+  margin-bottom: 44px;
+}
+
+.contact-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.footer { background: var(--ink); overflow: hidden; }
+
+.footer-marquee {
+  padding: 16px 0;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.footer-marquee .marquee-track span { color: rgba(255,255,255,0.18); font-size: 11px; letter-spacing: 0.24em; }
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-brand { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.02em; color: var(--white); }
+.footer-brand span { color: var(--coral); }
+
+.footer-links { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.footer-links a {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.30);
+  padding: 6px 12px;
+  border-radius: 3px;
+  transition: color 150ms, background 150ms;
+}
+
+.footer-links a:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+.footer-copy { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em; color: rgba(255,255,255,0.18); }
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity 600ms ease, transform 600ms ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 80ms; }
+.reveal-delay-2 { transition-delay: 160ms; }
+.reveal-delay-3 { transition-delay: 240ms; }
+.reveal-delay-4 { transition-delay: 320ms; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .flavors-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-content { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .about-grid { grid-template-columns: 1fr 280px 1fr; gap: 40px; }
+}
+
+@media (max-width: 900px) {
+  .hero-content { grid-template-columns: 1fr; gap: 40px; }
+  .hero-photo { height: 50vw; min-height: 300px; max-height: 460px; }
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .about-photo { height: 300px; order: -1; }
+  .vegan-grid { grid-template-columns: 1fr; gap: 56px; }
+  .location-grid { grid-template-columns: 1fr 1fr; }
+  .vegan-badge-block { flex-direction: row; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; }
+  .vegan-photo { width: 220px; flex-shrink: 0; }
+}
+
+@media (max-width: 640px) {
+  .container { padding: 0 24px; }
+  .nav-inner { padding: 0 24px; }
+  .hero-content { padding: 0 24px; }
+  .mobile-menu { padding: 12px 24px 20px; }
+  .footer-inner { padding: 32px 24px 28px; }
+  .flavors-grid { grid-template-columns: 1fr 1fr; }
+  .location-grid { grid-template-columns: 1fr; }
+  .about-stats { gap: 20px; flex-wrap: wrap; }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .hero::before, .hero::after { display: none; }
+  .hero-title { font-size: clamp(60px, 18vw, 90px); }
+  .flavors-grid { gap: 2px; }
+}
+
+@media (max-width: 400px) {
+  .flavors-grid { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- ─── NAV ─── -->
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-r">A</span><span class="logo-a">R</span><span class="logo-i">C</span><span class="logo-n">O</span><span class="logo-b">B</span><span class="logo-o">A</span><span class="logo-w2">L</span>ENO
+      </a>
+      <nav class="nav-links">
+        <a href="#sorten">Sorten</a>
+        <a href="#about">Über uns</a>
+        <a href="#vegan">Vegan</a>
+        <a href="#standort">Standort</a>
+        <a href="#kontakt" class="nav-cta">Kontakt</a>
+      </nav>
+      <button class="burger" id="burger" aria-label="Menü öffnen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="#sorten">Sorten</a>
+      <a href="#about">Über uns</a>
+      <a href="#vegan">Vegan</a>
+      <a href="#standort">Standort</a>
+      <a href="#kontakt">Kontakt</a>
+    </nav>
+  </header>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <p class="hero-eyebrow">Klagenfurt · Seit 1992 · Handgemacht</p>
+        <h1 class="hero-title" id="hero-title">
+          <span class="hl hl-1">A</span><span class="hl hl-2">R</span><span class="hl hl-3">C</span><span class="hl hl-4">O</span><span class="hl hl-5">B</span><span class="hl hl-6">A</span><span class="hl hl-7">L</span><span class="hl hl-8">E</span><span class="hl hl-9">N</span><span class="hl hl-1">O</span>
+        </h1>
+        <div class="hero-bottom">
+          <p class="hero-sub">
+            Echtes Gelato nach <em>originalen italienischen Rezepten</em> —
+            jeden Tag frisch gemacht. Klagenfurt seit 1992.
+          </p>
+          <div class="hero-actions">
+            <a href="#sorten" class="btn btn-dark">Unsere Sorten</a>
+            <a href="#standort" class="btn btn-outline">Standort</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-photo">
+        <img
+          src="https://images.unsplash.com/photo-1567206563114-c6a15eef5e35?auto=format&fit=crop&w=900&q=85"
+          alt="Farbenfrohes handgemachtes Gelato in der Vitrine"
+          loading="eager"
+          decoding="async"
+        >
+        <div class="hero-photo-caption">Ogni giorno fresco</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MARQUEE ─── -->
+  <div class="marquee-band">
+    <div class="marquee-track">
+      <span>Zitrone</span><span class="sep">✦</span>
+      <span>Erdbeere</span><span class="sep">✦</span>
+      <span>Cioccolato</span><span class="sep">✦</span>
+      <span>Pfirsich</span><span class="sep">✦</span>
+      <span>Pistazie</span><span class="sep">✦</span>
+      <span>Vanille</span><span class="sep">✦</span>
+      <span>Blaubeere</span><span class="sep">✦</span>
+      <span>Stracciatella</span><span class="sep">✦</span>
+      <span>Zitrone</span><span class="sep">✦</span>
+      <span>Erdbeere</span><span class="sep">✦</span>
+      <span>Cioccolato</span><span class="sep">✦</span>
+      <span>Pfirsich</span><span class="sep">✦</span>
+      <span>Pistazie</span><span class="sep">✦</span>
+      <span>Vanille</span><span class="sep">✦</span>
+      <span>Blaubeere</span><span class="sep">✦</span>
+      <span>Stracciatella</span><span class="sep">✦</span>
+    </div>
+  </div>
+
+  <!-- ─── SORTEN ─── -->
+  <section class="flavors-section" id="sorten">
+    <div class="container">
+      <div class="flavors-header">
+        <div>
+          <p class="section-label" style="color:rgba(255,255,255,0.50);">Unsere Kreationen</p>
+          <h2 class="flavors-title">DIE<br><em>SORTEN</em></h2>
+        </div>
+        <p class="flavors-note-text">Täglich frisch — nach Originalrezepten aus Italien</p>
+      </div>
+      <div class="flavors-grid">
+        <div class="flavor-card fc-lemon reveal">
+          <div class="flavor-num">01</div>
+          <span class="flavor-icon">🍋</span>
+          <div class="flavor-name">Zitrone</div>
+          <span class="flavor-name-it">Limone</span>
+          <p class="flavor-desc">Frisch gepresste Zitronen, erfrischend und intensiv.</p>
+        </div>
+        <div class="flavor-card fc-strawberry reveal reveal-delay-1">
+          <div class="flavor-num">02</div>
+          <span class="flavor-icon">🍓</span>
+          <div class="flavor-name">Erdbeere</div>
+          <span class="flavor-name-it">Fragola</span>
+          <p class="flavor-desc">Reife Erdbeeren, fruchtig-süß und leuchtend rot.</p>
+        </div>
+        <div class="flavor-card fc-chocolate reveal reveal-delay-2">
+          <div class="flavor-num">03</div>
+          <span class="flavor-icon">🍫</span>
+          <div class="flavor-name">Cioccolato</div>
+          <span class="flavor-name-it">Cioccolato</span>
+          <p class="flavor-desc">Dunkle Schokolade, intensiv und cremig.</p>
+        </div>
+        <div class="flavor-card fc-peach reveal reveal-delay-3">
+          <div class="flavor-num">04</div>
+          <span class="flavor-icon">🍑</span>
+          <div class="flavor-name">Pfirsich</div>
+          <span class="flavor-name-it">Pesca</span>
+          <p class="flavor-desc">Saftige Pfirsiche, zart und aromatisch.</p>
+        </div>
+        <div class="flavor-card fc-pistachio reveal">
+          <div class="flavor-num">05</div>
+          <span class="flavor-icon">🌿</span>
+          <div class="flavor-name">Pistazie</div>
+          <span class="flavor-name-it">Pistacchio</span>
+          <p class="flavor-desc">Sizilianische Pistazien — unser Signature-Gelato.</p>
+        </div>
+        <div class="flavor-card fc-vanilla reveal reveal-delay-1">
+          <div class="flavor-num">06</div>
+          <span class="flavor-icon">🤍</span>
+          <div class="flavor-name">Vanille</div>
+          <span class="flavor-name-it">Vaniglia</span>
+          <p class="flavor-desc">Echte Bourbon-Vanille, cremig und elegant.</p>
+        </div>
+        <div class="flavor-card fc-blueberry reveal reveal-delay-2">
+          <div class="flavor-num">07</div>
+          <span class="flavor-icon">🫐</span>
+          <div class="flavor-name">Blaubeere</div>
+          <span class="flavor-name-it">Mirtillo</span>
+          <p class="flavor-desc">Frische Blaubeeren, fruchtig und leicht säuerlich.</p>
+        </div>
+        <div class="flavor-card fc-stracciat reveal reveal-delay-3">
+          <div class="flavor-num">08</div>
+          <span class="flavor-icon">🍦</span>
+          <div class="flavor-name">Stracciatella</div>
+          <span class="flavor-name-it">Stracciatella</span>
+          <p class="flavor-desc">Cremige Milch mit zarten Schokoladensplittern.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ÜBER UNS ─── -->
+  <section class="about-section" id="about">
+    <div class="about-year-bg">1992</div>
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-left reveal">
+          <div class="about-year-display">1992</div>
+          <p class="about-year-label">Gegründet in Klagenfurt</p>
+          <blockquote class="about-pull-quote">
+            „Echtes Gelato schmeckt man — in jedem Löffel steckt ein Stück Italien."
+          </blockquote>
+          <p class="about-quote-credit">— Arcobaleno Familie, Klagenfurt</p>
+        </div>
+        <div class="about-photo reveal reveal-delay-1">
+          <img
+            src="https://images.unsplash.com/photo-1576506295286-5cda18df43e7?auto=format&fit=crop&w=700&q=85"
+            alt="Handgemachtes Gelato nach originalen Rezepten"
+            loading="lazy"
+            decoding="async"
+          >
+        </div>
+        <div class="about-right reveal reveal-delay-2">
+          <p class="section-label about-section-label">Unsere Geschichte</p>
+          <h2 class="about-title">Fatto con<br><span>Amore</span></h2>
+          <div class="about-body">
+            <p>Arcobaleno bedeutet Regenbogen — und genau das spiegelt sich in unseren Farben und Geschmäcken wider. Seit 1992 bereiten wir in Klagenfurt Gelato nach originalen Familienrezepten aus Italien zu.</p>
+            <p>Kein Pulver, keine Fertigmischungen. Nur frische Zutaten, handverlesene Früchte und die Leidenschaft für echte Handwerkskunst.</p>
+          </div>
+          <div class="about-stats">
+            <div><div class="stat-num">30+</div><div class="stat-label">Jahre</div></div>
+            <div><div class="stat-num">8+</div><div class="stat-label">Sorten</div></div>
+            <div><div class="stat-num">100%</div><div class="stat-label">Handgemacht</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VEGAN ─── -->
+  <section class="vegan-section" id="vegan">
+    <div class="vegan-statement" aria-hidden="true">100% VEGAN</div>
+    <div class="container">
+      <div class="vegan-grid">
+        <div class="reveal">
+          <p class="section-label vegan-section-label">Zertifiziert &amp; Rein</p>
+          <h2 class="vegan-title">100%<br><span>Vegan</span></h2>
+          <p class="vegan-body">Mehrere unserer Gelato-Sorten tragen das offizielle V-Label der European Vegetarian Union. Keine tierischen Produkte — keine Kompromisse beim Geschmack.</p>
+          <ul class="vegan-list">
+            <li><span class="vl-check">✓</span> V-Label EU zertifiziert</li>
+            <li><span class="vl-check">✓</span> Pflanzliche Zutaten</li>
+            <li><span class="vl-check">✓</span> Laktosefrei verfügbar</li>
+            <li><span class="vl-check">✓</span> Keine Farbstoffe oder Konservierungsstoffe</li>
+          </ul>
+        </div>
+        <div class="vegan-badge-block reveal reveal-delay-1">
+          <div class="vegan-photo">
+            <img
+              src="https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=600&q=85"
+              alt="Frische pflanzliche Zutaten für veganes Gelato"
+              loading="lazy"
+              decoding="async"
+            >
+          </div>
+          <div class="vegan-badge-main">
+            <div class="vb-leaf">🌿</div>
+            <div class="vb-heading">VEGAN</div>
+            <div class="vb-sub">European Vegetarian Union</div>
+            <div class="vb-seal">V-Label Certified</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STANDORT ─── -->
+  <section class="standort-section" id="standort">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label" style="color:rgba(10,10,10,0.40);">Besucht uns</p>
+        <h2 class="standort-title">Wo ihr<br><span>uns findet</span></h2>
+      </div>
+      <div class="location-grid">
+        <div class="location-card reveal">
+          <div class="loc-icon">📍</div>
+          <div class="loc-title">Adresse</div>
+          <p class="loc-info">Wiener Gasse<br>9020 Klagenfurt am Wörthersee<br>Direkt gegenüber City Arkaden</p>
+        </div>
+        <div class="location-card reveal reveal-delay-1">
+          <div class="loc-icon">🕐</div>
+          <div class="loc-title">Öffnungszeiten</div>
+          <p class="loc-info">Mo – Fr: 10:00 – 19:00<br>Sa: 10:00 – 18:00<br>So: Nach Wetterlage</p>
+        </div>
+        <div class="location-card reveal reveal-delay-2">
+          <div class="loc-icon">📞</div>
+          <div class="loc-title">Kontakt</div>
+          <p class="loc-info">
+            <a href="tel:+43463000000">+43 463 000 000</a><br>
+            <a href="mailto:info@arcobaleno-eis.at">info@arcobaleno-eis.at</a>
+          </p>
+        </div>
+      </div>
+      <div class="map-placeholder reveal">
+        <div class="map-inner">
+          <div class="map-pin">📍</div>
+          <div class="map-label">Arcobaleno Eisservice</div>
+          <div class="map-sublabel">Wiener Gasse · 9020 Klagenfurt · gegenüber City Arkaden</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── KONTAKT ─── -->
+  <section class="contact-section" id="kontakt">
+    <div class="container">
+      <div class="contact-wrap">
+        <p class="contact-eyebrow">Meldet euch</p>
+        <h2 class="contact-title">Kommt<br><span>vorbei!</span></h2>
+        <p class="contact-sub">Ob Bestellung, Event oder einfach weil ihr Gelato braucht — wir freuen uns auf euch.</p>
+        <div class="contact-actions">
+          <a href="tel:+43463000000" class="btn btn-white">📞 Anrufen</a>
+          <a href="mailto:info@arcobaleno-eis.at" class="btn btn-white-outline">✉ E-Mail</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="footer-marquee">
+      <div class="marquee-track">
+        <span>ARCOBALENO</span><span class="sep"> · </span>
+        <span>KLAGENFURT</span><span class="sep"> · </span>
+        <span>SEIT 1992</span><span class="sep"> · </span>
+        <span>ECHTES GELATO</span><span class="sep"> · </span>
+        <span>FATTO IN ITALIA</span><span class="sep"> · </span>
+        <span>ARCOBALENO</span><span class="sep"> · </span>
+        <span>KLAGENFURT</span><span class="sep"> · </span>
+        <span>SEIT 1992</span><span class="sep"> · </span>
+        <span>ECHTES GELATO</span><span class="sep"> · </span>
+        <span>FATTO IN ITALIA</span><span class="sep"> · </span>
+      </div>
+    </div>
+    <div class="footer-inner">
+      <div class="footer-brand">ARCO<span>●</span>BALENO</div>
+      <nav class="footer-links">
+        <a href="#sorten">Sorten</a>
+        <a href="#about">Über uns</a>
+        <a href="#vegan">Vegan</a>
+        <a href="#standort">Standort</a>
+        <a href="#kontakt">Kontakt</a>
+      </nav>
+      <p class="footer-copy">© 2024 Arcobaleno Eisservice, Klagenfurt</p>
+    </div>
+  </footer>
+
+  <script>
+// ─── Sticky nav on scroll ───
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ─── Mobile burger menu ───
+const burger = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobile-menu');
+
+burger.addEventListener('click', () => {
+  mobileMenu.classList.toggle('open');
+});
+
+document.querySelectorAll('.mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+});
+
+// ─── Smooth scroll offset for fixed nav ───
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (href === '#') return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    const top = target.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
+
+// ─── Flavor card stagger reveal ───
+const flavorCards = Array.from(document.querySelectorAll('.flavor-card'));
+
+const flavorObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = flavorCards.indexOf(entry.target);
+        entry.target.style.transitionDelay = `${idx * 55}ms`;
+        entry.target.classList.add('visible');
+        flavorObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.06, rootMargin: '0px 0px -40px 0px' }
+);
+
+flavorCards.forEach(card => flavorObserver.observe(card));
+
+// ─── Scroll reveal ───
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.08 }
+);
+
+document.querySelectorAll('.reveal:not(.flavor-card)').forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>
