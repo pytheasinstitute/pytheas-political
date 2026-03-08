@@ -1,4 +1,4 @@
-// ─── Sticky nav shadow on scroll ───
+// ─── Sticky nav border on scroll ───
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 20);
@@ -29,7 +29,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ─── Scroll reveal (.reveal elements) ───
+// ─── Scroll reveal ───
 const revealObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach(entry => {
@@ -39,7 +39,7 @@ const revealObserver = new IntersectionObserver(
       }
     });
   },
-  { threshold: 0.10 }
+  { threshold: 0.08 }
 );
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
