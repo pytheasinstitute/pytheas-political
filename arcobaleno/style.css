@@ -496,12 +496,12 @@ body {
 
 .flavors-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 3px;
 }
 
 .flavor-card {
-  padding: 36px 28px;
+  padding: 20px 16px;
   position: relative;
   overflow: hidden;
   cursor: default;
@@ -511,58 +511,62 @@ body {
 }
 
 .flavor-card:hover {
-  transform: scale(1.02) translateY(-4px);
+  transform: scale(1.03) translateY(-3px);
   z-index: 2;
   border-color: var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
 /* Each card its own gelato color */
-.fc-lemon      { --bg-card: #F5C842; color: var(--ink); }
-.fc-strawberry { --bg-card: #E8365D; color: var(--white); }
-.fc-chocolate  { --bg-card: #4A2312; color: var(--white); }
-.fc-peach      { --bg-card: #F4845F; color: var(--ink); }
-.fc-pistachio  { --bg-card: #5B8C5A; color: var(--white); }
-.fc-vanilla    { --bg-card: #F9E4B7; color: var(--ink); }
-.fc-blueberry  { --bg-card: #3D3580; color: var(--white); }
-.fc-stracciat  { --bg-card: #F5F0E8; color: var(--ink); }
+.fc-lemon       { --bg-card: #F5C842; color: var(--ink); }
+.fc-strawberry  { --bg-card: #E8365D; color: var(--white); }
+.fc-chocolate   { --bg-card: #4A2312; color: var(--white); }
+.fc-peach       { --bg-card: #F4845F; color: var(--ink); }
+.fc-pistachio   { --bg-card: #5B8C5A; color: var(--white); }
+.fc-vanilla     { --bg-card: #F9E4B7; color: var(--ink); }
+.fc-blueberry   { --bg-card: #3D3580; color: var(--white); }
+.fc-stracciat   { --bg-card: #F5F0E8; color: var(--ink); }
+.fc-mango       { --bg-card: #FF9900; color: var(--ink); }
+.fc-raspberry   { --bg-card: #C0184E; color: var(--white); }
+.fc-tiramisu    { --bg-card: #C4A882; color: var(--ink); }
+.fc-bacio       { --bg-card: #2C1A0E; color: var(--white); }
+.fc-hazelnut    { --bg-card: #8B6832; color: var(--white); }
+.fc-caramel     { --bg-card: #C68B2A; color: var(--ink); }
+.fc-banana      { --bg-card: #FFE066; color: var(--ink); }
+.fc-yogurt      { --bg-card: #F0EAE0; color: var(--ink); }
+.fc-pomegranate { --bg-card: #9A1525; color: var(--white); }
+.fc-espresso    { --bg-card: #1C0F08; color: var(--white); }
 
 .flavor-num {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.20em;
   opacity: 0.30;
-  margin-bottom: 20px;
-}
-
-.flavor-icon {
-  font-size: 40px;
-  display: block;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .flavor-name {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 26px;
+  font-size: 18px;
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   line-height: 1;
 }
 
 .flavor-name-it {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 13px;
+  font-size: 11px;
   opacity: 0.55;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   display: block;
 }
 
 .flavor-desc {
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 11px;
+  line-height: 1.50;
   opacity: 0.70;
 }
 
@@ -1179,10 +1183,10 @@ body {
 ═══════════════════════════════════════ */
 .flavor-img {
   display: block;
-  width: calc(100% + 56px);
-  height: 150px;
+  width: calc(100% + 32px);
+  height: 110px;
   object-fit: cover;
-  margin: -36px -28px 24px;
+  margin: -20px -16px 14px;
   transition: transform 500ms ease;
 }
 
@@ -1369,8 +1373,12 @@ body {
 /* ═══════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .flavors-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
 @media (max-width: 1024px) {
-  .flavors-grid { grid-template-columns: repeat(2, 1fr); }
+  .flavors-grid { grid-template-columns: repeat(3, 1fr); }
   .locations-grid { grid-template-columns: 1fr 1fr; }
   .galerie-grid { grid-template-rows: 220px 220px; }
 }
@@ -1403,7 +1411,7 @@ body {
   .hero-content { padding: 0 24px; }
   .mobile-menu { padding: 12px 24px 20px; }
   .footer-inner { padding: 32px 24px 28px; }
-  .flavors-grid { grid-template-columns: 1fr 1fr; }
+  .flavors-grid { grid-template-columns: repeat(2, 1fr); }
   .location-grid { grid-template-columns: 1fr; }
   .about-stats { gap: 20px; flex-wrap: wrap; }
   .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
@@ -1414,4 +1422,5 @@ body {
 
 @media (max-width: 400px) {
   .flavors-grid { grid-template-columns: 1fr; }
+  .flavor-img { height: 90px; }
 }
