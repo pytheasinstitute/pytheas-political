@@ -1175,6 +1175,179 @@ body {
 }
 
 /* ═══════════════════════════════════════
+   FLAVOR CARD PHOTO
+═══════════════════════════════════════ */
+.flavor-img {
+  display: block;
+  width: calc(100% + 56px);
+  height: 150px;
+  object-fit: cover;
+  margin: -36px -28px 24px;
+  transition: transform 500ms ease;
+}
+
+.flavor-card:hover .flavor-img {
+  transform: scale(1.05);
+}
+
+/* ═══════════════════════════════════════
+   GALERIE
+═══════════════════════════════════════ */
+.galerie-section {
+  background: var(--navy);
+  color: var(--white);
+  padding: 100px 0 120px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.galerie-header {
+  margin-bottom: 52px;
+}
+
+.galerie-title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 8vw, 110px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--white);
+}
+
+.galerie-title em {
+  font-style: italic;
+  color: var(--coral);
+  display: block;
+}
+
+.galerie-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 280px 280px;
+  gap: 6px;
+}
+
+.galerie-item {
+  overflow: hidden;
+  position: relative;
+}
+
+.galerie-item.gi-large {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.galerie-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 600ms ease, filter 600ms ease;
+  filter: brightness(0.88) saturate(1.1);
+}
+
+.galerie-item:hover img {
+  transform: scale(1.06);
+  filter: brightness(1.0) saturate(1.2);
+}
+
+/* ═══════════════════════════════════════
+   STANDORT — 3 Locations
+═══════════════════════════════════════ */
+.locations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.location-big-card {
+  background: var(--white);
+  border: 2px solid var(--ink);
+  padding: 36px 28px;
+  border-radius: 3px;
+  transition: transform 200ms, box-shadow 200ms;
+}
+
+.location-big-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.lbc-num {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: rgba(10,10,10,0.30);
+  margin-bottom: 10px;
+}
+
+.lbc-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.lbc-badge {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-bottom: 24px;
+}
+
+.lbc-badge.lbc-seasonal {
+  background: var(--coral);
+}
+
+.lbc-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lbc-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(10,10,10,0.65);
+}
+
+.lbc-row small { font-size: 12px; opacity: 0.70; }
+
+.lbc-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.lbc-row a {
+  color: var(--ink);
+  font-weight: 600;
+  transition: color 150ms;
+}
+
+.lbc-row a:hover { color: var(--coral); }
+
+.contact-strip {
+  text-align: center;
+  padding-top: 12px;
+}
+
+/* ═══════════════════════════════════════
    SCROLL REVEAL
 ═══════════════════════════════════════ */
 .reveal {
@@ -1198,6 +1371,8 @@ body {
 ═══════════════════════════════════════ */
 @media (max-width: 1024px) {
   .flavors-grid { grid-template-columns: repeat(2, 1fr); }
+  .locations-grid { grid-template-columns: 1fr 1fr; }
+  .galerie-grid { grid-template-rows: 220px 220px; }
 }
 
 @media (max-width: 1024px) {
@@ -1211,6 +1386,15 @@ body {
   .location-grid { grid-template-columns: 1fr 1fr; }
   .vegan-badge-block { flex-direction: row; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; }
   .vegan-photo { width: 220px; flex-shrink: 0; }
+}
+
+@media (max-width: 768px) {
+  .locations-grid { grid-template-columns: 1fr; }
+  .galerie-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 180px 180px 180px;
+  }
+  .galerie-item.gi-large { grid-column: span 2; }
 }
 
 @media (max-width: 640px) {
