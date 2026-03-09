@@ -255,7 +255,7 @@ body {
   letter-spacing: -0.03em;
   margin-bottom: 32px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   column-gap: 0;
 }
