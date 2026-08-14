@@ -20,7 +20,7 @@ export default function MethodologyPage() {
           {/* ─── Hero ─── */}
           <div style={{ paddingTop: 44, paddingBottom: 36 }}>
             <div className="kicker" style={{ marginBottom: 14 }}>Transparency</div>
-            <h1 className="h1">What this quiz is<br />(and isn't)</h1>
+            <h1 className="h1">What this quiz is<br />(and isn&rsquo;t)</h1>
             <p className="p" style={{ maxWidth: 540 }}>
               This is a short self-reflection tool. It estimates your position on two broad axes
               based on your responses — not a scientific diagnosis.

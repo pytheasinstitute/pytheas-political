@@ -320,9 +320,9 @@ export default function ResultClient() {
       <main style={{ paddingBottom: 48 }}>
         <div className="card" style={{ padding: "32px 36px", maxWidth: 560 }}>
           <div className="kicker" style={{ marginBottom: 12 }}>Pytheas Political</div>
-          <h1 className="h1" style={{ marginTop: 0, fontSize: 32 }}>Your result isn't ready yet</h1>
+          <h1 className="h1" style={{ marginTop: 0, fontSize: 32 }}>Your result isn&rsquo;t ready yet</h1>
           <p className="p">
-            You've answered <strong>{answeredCount}</strong> of{" "}
+            You&rsquo;ve answered <strong>{answeredCount}</strong> of{" "}
             <strong>{QUESTIONS_V1.length}</strong> questions.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
