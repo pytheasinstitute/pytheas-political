@@ -1,4 +1,4 @@
-// ─── Sticky nav shadow on scroll ───
+// ─── Sticky nav on scroll ───
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 20);
@@ -12,9 +12,9 @@ burger.addEventListener('click', () => {
   mobileMenu.classList.toggle('open');
 });
 
-function closeMenu() {
-  mobileMenu.classList.remove('open');
-}
+document.querySelectorAll('.mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+});
 
 // ─── Smooth scroll offset for fixed nav ───
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -24,31 +24,45 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     const target = document.querySelector(href);
     if (!target) return;
     e.preventDefault();
-    const offset = 80;
-    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    const top = target.getBoundingClientRect().top + window.scrollY - 80;
     window.scrollTo({ top, behavior: 'smooth' });
   });
 });
 
-// ─── Fade-in on scroll ───
-const observer = new IntersectionObserver(
+// ─── Flavor card stagger reveal (indexed delay) ───
+const flavorCards = Array.from(document.querySelectorAll('.flavor-card'));
+
+const flavorObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-        observer.unobserve(entry.target);
+        const idx = flavorCards.indexOf(entry.target);
+        entry.target.style.transitionDelay = `${idx * 55}ms`;
+        entry.target.classList.add('visible');
+        flavorObserver.unobserve(entry.target);
       }
     });
   },
-  { threshold: 0.12 }
+  { threshold: 0.06, rootMargin: '0px 0px -40px 0px' }
 );
 
-document.querySelectorAll(
-  '.flavor-card, .location-card, .about-card, .vegan-badge'
-).forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(22px)';
-  el.style.transition = 'opacity 500ms ease, transform 500ms ease';
-  observer.observe(el);
-});
+flavorCards.forEach(card => flavorObserver.observe(card));
+
+// ─── Scroll reveal for all other .reveal elements ───
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.08 }
+);
+
+document.querySelectorAll('.reveal:not(.flavor-card)').forEach(el => revealObserver.observe(el));
+
+// ─── Current year in footer ───
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
