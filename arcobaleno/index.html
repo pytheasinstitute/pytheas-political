@@ -8,6 +8,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700;1,9..144,900&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:title" content="Arcobaleno Eisservice — Italienisches Gelato in Klagenfurt">
+  <meta property="og:description" content="Handgemachtes Gelato, über 30 Sorten, direkt gegenüber den City Arkaden.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_AT">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍦</text></svg>">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "IceCreamShop",
+    "name": "Arcobaleno Eisservice",
+    "telephone": "+43 463 504680",
+    "email": "arcobaleno-eis@hostprofis.at",
+    "servesCuisine": "Italienisches Gelato",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Wiener Gasse 11",
+      "postalCode": "9020",
+      "addressLocality": "Klagenfurt am Wörthersee",
+      "addressCountry": "AT"
+    },
+    "openingHoursSpecification": [
+      {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], "opens": "09:00", "closes": "23:00"},
+      {"@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "10:00", "closes": "22:00"}
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -44,6 +71,7 @@
   <section class="hero" id="hero">
     <img
       class="hero-bg"
+      onerror="this.classList.add('is-broken')"
       src="https://images.unsplash.com/photo-1567206563114-c6a15eef5e35?auto=format&fit=crop&w=1800&q=85"
       alt="Farbenfrohes handgemachtes Gelato in der Vitrine"
       loading="eager"
@@ -52,7 +80,7 @@
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <p class="hero-eyebrow">Klagenfurt · Seit 1992 · Handgemacht</p>
-      <h1 class="hero-title" id="hero-title">
+      <h1 class="hero-title" id="hero-title" aria-label="Arcobaleno">
         <span class="hl hl-1">A</span><span class="hl hl-2">R</span><span class="hl hl-3">C</span><span class="hl hl-4">O</span><span class="hl hl-5">B</span><span class="hl hl-6">A</span><span class="hl hl-7">L</span><span class="hl hl-8">E</span><span class="hl hl-9">N</span><span class="hl hl-1">O</span>
       </h1>
       <p class="hero-sub">
@@ -108,13 +136,13 @@
             <em>SORTEN</em>
           </h2>
         </div>
-        <p class="flavors-note-text">18 Sorten — täglich frisch nach Originalrezepten aus Italien</p>
+        <p class="flavors-note-text">Eine Auswahl aus über 30 Sorten — täglich frisch gemacht</p>
       </div>
 
       <div class="flavors-grid">
 
         <div class="flavor-card fc-lemon reveal">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1587393855524-087f83d95bc9?auto=format&fit=crop&w=400&q=80" alt="Zitrone" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1587393855524-087f83d95bc9?auto=format&fit=crop&w=400&q=80" alt="Zitrone" loading="lazy">
           <div class="flavor-num">01</div>
           <div class="flavor-name">Zitrone</div>
           <span class="flavor-name-it">Limone</span>
@@ -122,7 +150,7 @@
         </div>
 
         <div class="flavor-card fc-strawberry reveal reveal-delay-1">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80" alt="Erdbeere" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80" alt="Erdbeere" loading="lazy">
           <div class="flavor-num">02</div>
           <div class="flavor-name">Erdbeere</div>
           <span class="flavor-name-it">Fragola</span>
@@ -130,7 +158,7 @@
         </div>
 
         <div class="flavor-card fc-chocolate reveal reveal-delay-2">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1606313564200-e75d5e30ef07?auto=format&fit=crop&w=400&q=80" alt="Schokolade" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1606313564200-e75d5e30ef07?auto=format&fit=crop&w=400&q=80" alt="Schokolade" loading="lazy">
           <div class="flavor-num">03</div>
           <div class="flavor-name">Cioccolato</div>
           <span class="flavor-name-it">Cioccolato</span>
@@ -138,7 +166,7 @@
         </div>
 
         <div class="flavor-card fc-pistachio reveal reveal-delay-3">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&w=400&q=80" alt="Pistazie" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&w=400&q=80" alt="Pistazie" loading="lazy">
           <div class="flavor-num">04</div>
           <div class="flavor-name">Pistazie</div>
           <span class="flavor-name-it">Pistacchio</span>
@@ -146,7 +174,7 @@
         </div>
 
         <div class="flavor-card fc-vanilla reveal reveal-delay-4">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80" alt="Vanille" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80" alt="Vanille" loading="lazy">
           <div class="flavor-num">05</div>
           <div class="flavor-name">Vanille</div>
           <span class="flavor-name-it">Vaniglia</span>
@@ -154,7 +182,7 @@
         </div>
 
         <div class="flavor-card fc-stracciat reveal">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1516559828984-fb3b99548b21?auto=format&fit=crop&w=400&q=80" alt="Stracciatella" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1516559828984-fb3b99548b21?auto=format&fit=crop&w=400&q=80" alt="Stracciatella" loading="lazy">
           <div class="flavor-num">06</div>
           <div class="flavor-name">Stracciatella</div>
           <span class="flavor-name-it">Stracciatella</span>
@@ -162,7 +190,7 @@
         </div>
 
         <div class="flavor-card fc-peach reveal reveal-delay-1">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=400&q=80" alt="Pfirsich" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=400&q=80" alt="Pfirsich" loading="lazy">
           <div class="flavor-num">07</div>
           <div class="flavor-name">Pfirsich</div>
           <span class="flavor-name-it">Pesca</span>
@@ -170,7 +198,7 @@
         </div>
 
         <div class="flavor-card fc-blueberry reveal reveal-delay-2">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=400&q=80" alt="Blaubeere" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=400&q=80" alt="Blaubeere" loading="lazy">
           <div class="flavor-num">08</div>
           <div class="flavor-name">Blaubeere</div>
           <span class="flavor-name-it">Mirtillo</span>
@@ -178,7 +206,7 @@
         </div>
 
         <div class="flavor-card fc-mango reveal reveal-delay-3">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=400&q=80" alt="Mango" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=400&q=80" alt="Mango" loading="lazy">
           <div class="flavor-num">09</div>
           <div class="flavor-name">Mango</div>
           <span class="flavor-name-it">Mango</span>
@@ -186,7 +214,7 @@
         </div>
 
         <div class="flavor-card fc-raspberry reveal reveal-delay-4">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=400&q=80" alt="Himbeere" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=400&q=80" alt="Himbeere" loading="lazy">
           <div class="flavor-num">10</div>
           <div class="flavor-name">Himbeere</div>
           <span class="flavor-name-it">Lampone</span>
@@ -194,7 +222,7 @@
         </div>
 
         <div class="flavor-card fc-tiramisu reveal">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=400&q=80" alt="Tiramisu" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=400&q=80" alt="Tiramisu" loading="lazy">
           <div class="flavor-num">11</div>
           <div class="flavor-name">Tiramisù</div>
           <span class="flavor-name-it">Tiramisù</span>
@@ -202,7 +230,7 @@
         </div>
 
         <div class="flavor-card fc-bacio reveal reveal-delay-1">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=400&q=80" alt="Bacio" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=400&q=80" alt="Bacio" loading="lazy">
           <div class="flavor-num">12</div>
           <div class="flavor-name">Bacio</div>
           <span class="flavor-name-it">Bacio</span>
@@ -210,7 +238,7 @@
         </div>
 
         <div class="flavor-card fc-hazelnut reveal reveal-delay-2">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1608797178974-15b35a64ede9?auto=format&fit=crop&w=400&q=80" alt="Haselnuss" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1608797178974-15b35a64ede9?auto=format&fit=crop&w=400&q=80" alt="Haselnuss" loading="lazy">
           <div class="flavor-num">13</div>
           <div class="flavor-name">Haselnuss</div>
           <span class="flavor-name-it">Nocciola</span>
@@ -218,7 +246,7 @@
         </div>
 
         <div class="flavor-card fc-caramel reveal reveal-delay-3">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1551024709-8f23befc548e?auto=format&fit=crop&w=400&q=80" alt="Karamell" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1551024709-8f23befc548e?auto=format&fit=crop&w=400&q=80" alt="Karamell" loading="lazy">
           <div class="flavor-num">14</div>
           <div class="flavor-name">Karamell</div>
           <span class="flavor-name-it">Caramello</span>
@@ -226,7 +254,7 @@
         </div>
 
         <div class="flavor-card fc-banana reveal reveal-delay-4">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=400&q=80" alt="Banane" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=400&q=80" alt="Banane" loading="lazy">
           <div class="flavor-num">15</div>
           <div class="flavor-name">Banane</div>
           <span class="flavor-name-it">Banana</span>
@@ -234,7 +262,7 @@
         </div>
 
         <div class="flavor-card fc-yogurt reveal">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=400&q=80" alt="Joghurt" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=400&q=80" alt="Joghurt" loading="lazy">
           <div class="flavor-num">16</div>
           <div class="flavor-name">Joghurt</div>
           <span class="flavor-name-it">Yogurt</span>
@@ -242,7 +270,7 @@
         </div>
 
         <div class="flavor-card fc-pomegranate reveal reveal-delay-1">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1592921870789-04563d55041c?auto=format&fit=crop&w=400&q=80" alt="Granatapfel" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1592921870789-04563d55041c?auto=format&fit=crop&w=400&q=80" alt="Granatapfel" loading="lazy">
           <div class="flavor-num">17</div>
           <div class="flavor-name">Granatapfel</div>
           <span class="flavor-name-it">Melograno</span>
@@ -250,7 +278,7 @@
         </div>
 
         <div class="flavor-card fc-espresso reveal reveal-delay-2">
-          <img class="flavor-img" src="https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?auto=format&fit=crop&w=400&q=80" alt="Espresso" loading="lazy">
+          <img class="flavor-img" onerror="this.classList.add('is-broken')" src="https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?auto=format&fit=crop&w=400&q=80" alt="Espresso" loading="lazy">
           <div class="flavor-num">18</div>
           <div class="flavor-name">Espresso</div>
           <span class="flavor-name-it">Caffè</span>
@@ -308,7 +336,7 @@
               <div class="stat-label">Jahre</div>
             </div>
             <div>
-              <div class="stat-num">18+</div>
+              <div class="stat-num">30+</div>
               <div class="stat-label">Sorten</div>
             </div>
             <div>
@@ -361,18 +389,17 @@
         <div class="reveal">
           <p class="section-label vegan-section-label">Zertifiziert &amp; Rein</p>
           <h2 class="vegan-title">
-            100%<br>
-            <span>Vegan</span>
+            Gelato<br>
+            <span>für alle.</span>
           </h2>
           <p class="vegan-body">
-            Mehrere unserer Gelato-Sorten tragen das offizielle V-Label der European Vegetarian Union.
-            Keine tierischen Produkte — keine Kompromisse beim Geschmack.
+            Viele unserer Sorten sind rein pflanzlich und mit dem V-Label gekennzeichnet — derselbe volle Geschmack, ganz ohne tierische Zutaten.
           </p>
           <ul class="vegan-list">
-            <li><span class="vl-check">✓</span> V-Label EU zertifiziert</li>
-            <li><span class="vl-check">✓</span> Pflanzliche Zutaten</li>
-            <li><span class="vl-check">✓</span> Laktosefrei verfügbar</li>
-            <li><span class="vl-check">✓</span> Keine Farbstoffe oder Konservierungsstoffe</li>
+            <li><span class="vl-check">✓</span> Vegane Sorten mit V-Label gekennzeichnet</li>
+            <li><span class="vl-check">✓</span> Mehr als zwölf vegane Sorten</li>
+            <li><span class="vl-check">✓</span> Fruchtsorbets wie Himbeere, Erdbeere &amp; Mango</li>
+            <li><span class="vl-check">✓</span> Fragt uns an der Theke — wir beraten gern</li>
           </ul>
         </div>
 
@@ -427,13 +454,14 @@
               <span class="lbc-icon">📞</span>
               <span><a href="tel:+43463504680">+43 463 504 680</a></span>
             </div>
+            <a class="lbc-route" href="https://www.google.com/maps/dir/?api=1&amp;destination=Wiener+Gasse+11,+9020+Klagenfurt" target="_blank" rel="noopener">Route planen →</a>
           </div>
         </div>
 
         <div class="location-big-card reveal-delay-1">
           <div class="lbc-num">02</div>
           <div class="lbc-name">Viktring</div>
-          <div class="lbc-badge lbc-seasonal">Saisonal · Mai – Sep</div>
+          <div class="lbc-badge lbc-seasonal">Saisonal geöffnet</div>
           <div class="lbc-details">
             <div class="lbc-row">
               <span class="lbc-icon">📍</span>
@@ -447,13 +475,14 @@
               <span class="lbc-icon">📞</span>
               <span><a href="tel:+43463504680">+43 463 504 680</a></span>
             </div>
+            <a class="lbc-route" href="https://www.google.com/maps/dir/?api=1&amp;destination=Viktringer+Platz+11,+9020+Klagenfurt" target="_blank" rel="noopener">Route planen →</a>
           </div>
         </div>
 
         <div class="location-big-card reveal-delay-2">
           <div class="lbc-num">03</div>
           <div class="lbc-name">St. Veiter Straße</div>
-          <div class="lbc-badge">Zentrale &amp; Produktion</div>
+          <div class="lbc-badge">Standort</div>
           <div class="lbc-details">
             <div class="lbc-row">
               <span class="lbc-icon">📍</span>
@@ -461,15 +490,24 @@
             </div>
             <div class="lbc-row">
               <span class="lbc-icon">🕐</span>
-              <span>Mo–Fr 08:00–18:00</span>
+              <span>Öffnungszeiten bitte telefonisch erfragen</span>
             </div>
             <div class="lbc-row">
               <span class="lbc-icon">📞</span>
               <span><a href="tel:+43463504680">+43 463 504 680</a></span>
             </div>
+            <a class="lbc-route" href="https://www.google.com/maps/dir/?api=1&amp;destination=St.+Veiter+Stra%C3%9Fe+122,+9020+Klagenfurt" target="_blank" rel="noopener">Route planen →</a>
           </div>
         </div>
 
+      </div>
+
+      <div class="map-embed reveal">
+        <iframe
+          title="Karte: Arcobaleno Eisservice, Wiener Gasse 11, Klagenfurt"
+          src="https://www.google.com/maps?q=Wiener+Gasse+11,+9020+Klagenfurt&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
 
       <div class="contact-strip reveal">
@@ -492,8 +530,8 @@
           wir freuen uns auf euch.
         </p>
         <div class="contact-actions">
-          <a href="tel:+43463000000" class="btn btn-white">📞 Anrufen</a>
-          <a href="mailto:info@arcobaleno-eis.at" class="btn btn-white-outline">✉ E-Mail</a>
+          <a href="tel:+43463504680" class="btn btn-white">📞 +43 463 504 680</a>
+          <a href="mailto:arcobaleno-eis@hostprofis.at" class="btn btn-white-outline">✉ E-Mail schreiben</a>
         </div>
       </div>
     </div>
@@ -524,7 +562,7 @@
         <a href="#standort">Standort</a>
         <a href="#kontakt">Kontakt</a>
       </nav>
-      <p class="footer-copy">© 2024 Arcobaleno Eisservice, Klagenfurt</p>
+      <p class="footer-copy">© <span id="year">2026</span> Arcobaleno Eisservice GmbH · Klagenfurt am Wörthersee</p>
     </div>
   </footer>
 

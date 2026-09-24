@@ -62,3 +62,7 @@ const revealObserver = new IntersectionObserver(
 );
 
 document.querySelectorAll('.reveal:not(.flavor-card)').forEach(el => revealObserver.observe(el));
+
+// ─── Current year in footer ───
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
