@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Pixelwerk</title>
+  <meta name="description" content="Pixelwerk – Bildbearbeitung im Browser: Ebenen, Masken, Auswahlen, Pinsel, Verläufe, Text, Korrekturen und Filter." />
+  <meta name="theme-color" content="#232327" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ─── MENU BAR ─── -->
+    <header id="menubar">
+      <div class="brand" title="Pixelwerk" aria-hidden="true">
+        <svg viewBox="0 0 20 20" width="20" height="20"><rect x="1" y="1" width="8.5" height="8.5" rx="1.5" fill="#3b8cf0"/><rect x="10.5" y="1" width="8.5" height="8.5" rx="1.5" fill="#f0a23b"/><rect x="1" y="10.5" width="8.5" height="8.5" rx="1.5" fill="#e24b6b"/><rect x="10.5" y="10.5" width="8.5" height="8.5" rx="1.5" fill="#43c08a"/></svg>
+      </div>
+      <nav id="menus" aria-label="Menü"></nav>
+      <div class="menubar-right">
+        <button id="dock-toggle" type="button" class="tbtn" title="Bedienfelder ein-/ausblenden (Tab)" aria-label="Bedienfelder ein-/ausblenden">
+          <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ─── OPTIONS BAR ─── -->
+    <div id="optionsbar" role="toolbar" aria-label="Werkzeugoptionen"></div>
+
+    <main id="main">
+      <!-- ─── TOOLBOX ─── -->
+      <aside id="toolbar" role="toolbar" aria-label="Werkzeuge" aria-orientation="vertical"></aside>
+
+      <!-- ─── DOCUMENT AREA ─── -->
+      <section id="center">
+        <div id="tabs" role="tablist" aria-label="Geöffnete Dokumente"></div>
+        <div id="workspace">
+          <div id="start-screen" hidden>
+            <div class="start-card">
+              <h1>Pixelwerk</h1>
+              <p>Bildbearbeitung mit Ebenen, Masken, Auswahlen und Filtern – direkt im Browser.</p>
+              <div class="start-actions">
+                <button id="start-new" type="button" class="btn primary">Neu …</button>
+                <button id="start-open" type="button" class="btn">Öffnen …</button>
+                <button id="start-sample" type="button" class="btn">Beispiel öffnen</button>
+              </div>
+              <p class="start-hint">Oder Bilder hierher ziehen bzw. mit Strg+V einfügen.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── PANEL DOCK ─── -->
+      <aside id="dock" aria-label="Bedienfelder"></aside>
+    </main>
+
+    <!-- ─── STATUS BAR ─── -->
+    <footer id="statusbar">
+      <input id="status-zoom" type="text" aria-label="Zoomstufe" />
+      <span id="status-doc"></span>
+      <span id="status-pos"></span>
+      <span id="status-color" hidden><i></i><span></span></span>
+      <span id="status-hint"></span>
+    </footer>
+  </div>
+
+  <div id="menu-layer"></div>
+  <div id="dialogs"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="busy" hidden><div class="spinner"></div><span>Wird berechnet …</span></div>
+
+  <script src="js/core.js"></script>
+  <script src="js/layer.js"></script>
+  <script src="js/selection.js"></script>
+  <script src="js/document.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/view.js"></script>
+  <script src="js/tools/paint.js"></script>
+  <script src="js/tools/select.js"></script>
+  <script src="js/tools/basic.js"></script>
+  <script src="js/tools/fill.js"></script>
+  <script src="js/tools/text.js"></script>
+  <script src="js/tools/shape.js"></script>
+  <script src="js/tools/crop.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/ui/icons.js"></script>
+  <script src="js/ui/controls.js"></script>
+  <script src="js/ui/dialogs.js"></script>
+  <script src="js/commands.js"></script>
+  <script src="js/actions.js"></script>
+  <script src="js/ui/shell.js"></script>
+  <script src="js/ui/panels.js"></script>
+  <script src="js/io.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
