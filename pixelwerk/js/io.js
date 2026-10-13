@@ -113,10 +113,10 @@
     app().finishToolWork();
     const data = await PW.ui.busy(() => doc.serialize());
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    download(blob, `${baseName(doc.name)}.pxw`);
+    if (!(await download(blob, `${baseName(doc.name)}.pxw`))) return;
     doc.dirty = false;
     PW.bus.emit('docs:changed');
-    app().toast(`„${baseName(doc.name)}.pxw“ wird heruntergeladen`);
+    app().toast(`„${baseName(doc.name)}.pxw“ wird gespeichert`);
   }
 
   function exportImage(doc, { format = 'png', quality = 90, scale = 100, name }) {
@@ -133,9 +133,8 @@
     }
     c.toBlob(blob => {
       if (!blob) return PW.dialogs.alert('Das Bild konnte nicht exportiert werden.');
-      const ext = format === 'jpeg' ? 'jpg' : format;
-      download(blob, `${name || baseName(doc.name)}.${ext}`);
-      app().toast(`Exportiert: ${name || baseName(doc.name)}.${ext}`);
+      const ext = format === 'jpeg' ? 'jpg' : format, file = `${name || baseName(doc.name)}.${ext}`;
+      download(blob, file).then(ok => ok && app().toast(`Exportiert: ${file}`));
     }, mime, quality / 100);
   }
 

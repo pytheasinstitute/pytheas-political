@@ -203,13 +203,28 @@ window.PW = {};
     return node;
   }
 
-  function download(blob, filename) {
+  // Resolves true when the file was handed over. Inside a claude.ai artifact the frame
+  // cannot download by itself, so the viewer's own save prompt is used there.
+  async function download(blob, filename) {
+    if (window.claude && typeof window.claude.use === 'function') {
+      try {
+        const dl = await window.claude.use('downloads');
+        if (dl) {
+          // Project files travel as JSON there; Öffnen accepts both extensions.
+          await dl.save({ filename: /\.pxw$/i.test(filename) ? `${filename}.json` : filename, data: blob });
+          return true;
+        }
+      } catch (e) {
+        if (e && (e.code === 'declined' || e.code === 'rate_limited')) return false;
+      }
+    }
     const url = URL.createObjectURL(blob);
     const a = el('a', { href: url, download: filename });
     document.body.append(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return true;
   }
 
   function loadImage(src) {
