@@ -119,6 +119,12 @@ Alle Korrekturen und Filter zeigen eine Live-Vorschau und wirken nur innerhalb d
 - Export als PNG, JPEG oder WebP (mit Qualität und Skalierung)
 - Projekte mit allen Ebenen als `.pxw` speichern und wieder öffnen
 
+**Automatische Sicherung**:
+- Offene Bilder mit allen Ebenen und der Claude-Chat werden laufend im Browser gespeichert (IndexedDB, nur auf diesem Gerät).
+- Nach dem Neuladen, etwa wenn eine neue Version von Pixelwerk erscheint, sind sie von selbst wieder da.
+- Schließt man ein Bild, verschwindet es auch aus der Sicherung.
+- Ohne Browser-Speicher (privates Fenster, gesperrte Website-Daten) läuft alles wie gehabt, nur ohne Sicherung.
+
 **Oberfläche**:
 - Protokoll mit bis zu 50 Schritten; Ebenen, die sich nicht geändert haben, teilen ihren Speicher
 - Navigator, Histogramm, Farbfelder, Farbwähler
@@ -150,5 +156,6 @@ pixelwerk/
   js/fabric.js        „Stoff blickdichter machen“: Frequenztrennung, Zonen, Kleidungsauswahl, eigene Ebene
   js/ui/guide.js      Einsteigerhilfe: Rundgang, Tipp-Leiste, Schnellstart, Erste Schritte
   js/ui/assistant.js  Claude-Assistent: Chat, Bildanhang, Werkzeuge für Claude
+  js/autosave.js      Automatische Sicherung offener Bilder und des Chats im Browser
   js/main.js          Start und Beispieldokument
 ```

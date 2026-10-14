@@ -597,6 +597,7 @@
       state.ctl = null;
       a.render();
       render();
+      PW.bus.emit('assistant:changed');
     }
     // Claude cannot see its own result within one answer, so it gets one look at it.
     const changed = a.doc === doc && doc.history.current !== startStep;
@@ -616,6 +617,23 @@
     if (state.busy) return;
     state.chat = [];
     state.log = [];
+    render();
+    PW.bus.emit('assistant:changed');
+  }
+
+  // For the autosave: the conversation as plain data, and back.
+  function exportChat() {
+    return {
+      chat: state.chat.slice(-MAX_TURNS * 2),
+      log: state.log.filter(m => m.text).slice(-100).map(m => ({ kind: m.kind, text: m.text })),
+    };
+  }
+
+  function importChat(data) {
+    if (!data || state.busy || state.log.length) return;
+    const ok = m => m && typeof m.text === 'string' && ['user', 'claude', 'step', 'error', 'info'].includes(m.kind);
+    state.chat = (Array.isArray(data.chat) ? data.chat : []).filter(t => t && (t.role === 'user' || t.role === 'assistant') && typeof t.content === 'string' && t.content);
+    state.log = (Array.isArray(data.log) ? data.log : []).filter(ok).map(m => ({ kind: m.kind, text: m.text }));
     render();
   }
 
@@ -792,5 +810,5 @@
     }
   }
 
-  PW.assistant = { init, build, open, send, stop, status: () => state.status, models: MODELS.map(m => m.id), _state: state };
+  PW.assistant = { init, build, open, send, stop, exportChat, importChat, status: () => state.status, models: MODELS.map(m => m.id), _state: state };
 })(window.PW);

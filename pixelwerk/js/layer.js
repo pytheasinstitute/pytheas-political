@@ -186,8 +186,8 @@
       this.touch();
     }
 
-    // ─── Serialisation (project files) ───
-    async serialize() {
+    // ─── Serialisation (project files; autosave stores the pixels itself) ───
+    async serialize(withPixels = true) {
       return {
         name: this.name,
         visible: this.visible,
@@ -199,8 +199,8 @@
         text: this.text ? { ...this.text } : null,
         fx: this.fx ? JSON.parse(JSON.stringify(this.fx)) : null,
         maskEnabled: this.maskEnabled,
-        pixels: this.canvas.toDataURL('image/png'),
-        mask: this.mask ? this.mask.toDataURL('image/png') : null,
+        pixels: withPixels ? this.canvas.toDataURL('image/png') : null,
+        mask: withPixels && this.mask ? this.mask.toDataURL('image/png') : null,
       };
     }
 
