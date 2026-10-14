@@ -165,7 +165,7 @@
   ];
 
   function buildQuick(body) {
-    const fabric = el('button', { type: 'button', class: 'quick-feature' }, [
+    const fabric = el('button', { type: 'button', class: 'quick-feature quick-fabric' }, [
       el('span', { class: 'quick-ic', html: PW.icon('shirt', 20) }),
       el('span', { class: 'qf-text' }, [
         el('strong', { text: 'Stoff blickdichter machen' }),
@@ -173,7 +173,15 @@
       ]),
     ]);
     fabric.addEventListener('click', () => PW.fabric.start());
-    body.append(fabric, el('p', { class: 'quick-lead', text: 'Was möchtest du tun?' }));
+    const claude = el('button', { type: 'button', class: 'quick-feature quick-claude' }, [
+      el('span', { class: 'quick-ic', html: PW.icon('chat', 20) }),
+      el('span', { class: 'qf-text' }, [
+        el('strong', { text: 'Claude fragen' }),
+        el('span', { text: 'Schreib, was du willst, z. B. „Mach das Top blickdicht“. Claude bearbeitet das Bild für dich.' }),
+      ]),
+    ]);
+    claude.addEventListener('click', () => PW.assistant.open());
+    body.append(claude, fabric, el('p', { class: 'quick-lead', text: 'Was möchtest du tun?' }));
     for (const g of QUICK) {
       const grid = el('div', { class: 'quick-grid' });
       for (const it of g.items) {
@@ -236,11 +244,12 @@
 
   // ─── Guided tour with a spotlight on each area ───
   const STEPS = [
-    { title: 'Willkommen bei Pixelwerk', text: 'Hier bearbeitest du Fotos und Grafiken direkt im Browser. Der kurze Rundgang zeigt dir in sieben Schritten, wo du was findest. Du kannst ihn jederzeit über „Hilfe“ wieder starten.' },
+    { title: 'Willkommen bei Pixelwerk', text: 'Hier bearbeitest du Fotos und Grafiken direkt im Browser. Der kurze Rundgang zeigt dir in acht Schritten, wo du was findest. Du kannst ihn jederzeit über „Hilfe“ wieder starten.' },
     { target: '#toolbar', place: 'right', title: 'Werkzeuge', text: 'Links stehen die Werkzeuge: Pinsel, Text, Zuschneiden und mehr. Klicke eins an und dann ins Bild. Fährst du mit der Maus darüber, steht da, was es macht.' },
     { target: '#optionsbar', place: 'bottom', title: 'Einstellungen', text: 'Hier oben stellst du das gewählte Werkzeug ein, zum Beispiel die Pinselgröße oder die Schriftart.' },
     { target: '#workspace', place: 'center', title: 'Dein Bild', text: 'In der Mitte liegt dein Bild. Mit dem Mausrad verschiebst du die Ansicht, mit Strg + Mausrad zoomst du. Unten steht immer ein Tipp zum gewählten Werkzeug.' },
     { target: '[data-panel="quick"]', place: 'left', title: 'Schnellstart', text: 'Die häufigsten Aufgaben mit einem Klick: Foto öffnen, automatisch verbessern, Stoff blickdichter machen, zuschneiden, Text schreiben und speichern. Am besten fängst du hier an.', before: () => PW.panels.showTab('quick') },
+    { target: '#claude-btn', place: 'bottom', title: 'Claude fragen', text: 'Schreib einfach, was du am Bild ändern willst, zum Beispiel „Mach das Top blickdicht“. Claude schaut sich das Foto an und bearbeitet es für dich. Das klappt, wenn du Pixelwerk über deinen claude.ai-Link öffnest.' },
     { target: '[data-panel="layers"]', place: 'left', title: 'Ebenen', text: 'Ebenen sind wie durchsichtige Folien übereinander: Foto, Text und Formen liegen jeweils auf einer eigenen. Mit dem Auge blendest du eine aus, die oberste liegt vorn.', before: () => PW.panels.showTab('layers') },
     { target: '#menus', place: 'bottom', title: 'Rückgängig und Speichern', text: 'Ein Fehler? Strg+Z macht ihn rückgängig, so oft du willst. Zum Speichern: „Datei › Exportieren als …“. Viel Spaß!' },
   ];

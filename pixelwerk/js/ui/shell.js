@@ -396,6 +396,7 @@
     PW.bus.on('options:refresh', refreshOptions);
     PW.bus.on('doc:switched', renderTabs);
     $('dock-toggle').addEventListener('click', toggleDock);
+    $('claude-btn').addEventListener('click', () => PW.assistant.open());
     $('quick-btn').addEventListener('click', () => {
       PW.panels.showTab('quick');
       if (matchMedia('(max-width: 900px)').matches) document.body.classList.add('dock-open');

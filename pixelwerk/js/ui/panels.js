@@ -6,11 +6,11 @@
   const app = () => PW.app;
 
   const GROUPS = [
-    { id: 'g1', panels: ['quick', 'color', 'swatches'] },
+    { id: 'g1', panels: ['quick', 'assistant', 'color', 'swatches'] },
     { id: 'g2', panels: ['navigator', 'histogram', 'adjustments'] },
     { id: 'g3', panels: ['layers', 'history'], grow: true },
   ];
-  const TITLES = { quick: 'Schnellstart', color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', history: 'Protokoll' };
+  const TITLES = { quick: 'Schnellstart', assistant: 'Claude', color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', history: 'Protokoll' };
   const state = { active: { g1: 'quick', g2: 'navigator', g3: 'layers' }, hidden: {}, collapsed: { g2: true } };
   const bodies = {};
   const renderers = {};
@@ -119,6 +119,12 @@
   // ─── Quick tasks for beginners (built by guide.js) ───
   renderers.quick = {
     build(body) { PW.guide.buildQuick(body); },
+    update() {},
+  };
+
+  // ─── Claude assistant (assistant.js) ───
+  renderers.assistant = {
+    build(body) { PW.assistant.build(body); },
     update() {},
   };
 

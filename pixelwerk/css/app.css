@@ -726,6 +726,36 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
 .chip-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .chips .ctl-color .lbl { margin-left: 4px; }
 
+/* ─── Claude assistant ─── */
+#claude-btn { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+#claude-btn:hover { filter: brightness(1.1); }
+.quick-claude .quick-ic { background: linear-gradient(135deg, #3b8cf0, #43c08a); }
+.panel-group[data-panel="assistant"]:not(.collapsed) { flex: 2 1 0; }
+.panel-group[data-panel="assistant"] > .panel-body { max-height: none; }
+.panel-body.panel-assistant { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 240px; overflow: hidden; }
+.asst-log { flex: 1; min-height: 110px; overflow: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+.asst-msg { padding: 7px 10px; border-radius: 10px; max-width: 92%; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.4; }
+.asst-claude { align-self: flex-start; background: var(--ui-2); border-top-left-radius: 3px; }
+.asst-user { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-top-right-radius: 3px; }
+.asst-step { display: flex; align-items: center; gap: 6px; padding: 0 4px; color: var(--text-2); font-size: 11.5px; }
+.asst-step .ic { flex: none; color: #43c08a; }
+.asst-error { align-self: stretch; max-width: none; border: 1px solid var(--danger); background: rgba(255, 97, 89, 0.12); }
+.asst-info { align-self: center; padding: 2px 6px; color: var(--text-3); font-size: 11.5px; }
+.asst-thinking { color: var(--text-2); animation: asst-pulse 1.4s ease-in-out infinite; }
+@keyframes asst-pulse { 50% { opacity: 0.45; } }
+.asst-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.asst-chips .chip-btn { height: auto; min-height: 26px; padding: 4px 10px; text-align: left; white-space: normal; }
+.asst-chips .chip-btn:hover { background: var(--ui-3); }
+.asst-form { display: grid; gap: 6px; }
+.asst-form[hidden] { display: none; }
+.asst-text { width: 100%; min-height: 44px; max-height: 160px; padding: 7px 9px; resize: vertical; border: 1px solid var(--line-2); border-radius: 8px; background: var(--ui-0); color: var(--text); font: inherit; }
+.asst-text:focus { border-color: var(--accent); outline: none; }
+.asst-actions { display: flex; align-items: center; gap: 6px; }
+.asst-actions .spacer { flex: 1; }
+.asst-actions .btn[hidden] { display: none; }
+.asst-note { margin: 0; color: var(--text-3); font-size: 11px; line-height: 1.35; }
+.asst-note:empty { display: none; }
+
 /* ─── Narrow screens: dock slides over the canvas ─── */
 @media (max-width: 900px) {
   #main, body.dock-hidden #main { grid-template-columns: 44px minmax(0, 1fr); }

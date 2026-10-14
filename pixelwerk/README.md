@@ -12,6 +12,24 @@ npx http-server pixelwerk
 
 Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert deshalb auch über `file://`.
 
+## Claude-Assistent
+
+Über „Claude fragen“ (oben rechts) schreibst du in Alltagssprache, was du am Bild ändern willst, etwa „Mach das Top blickdicht“ oder „Schneide es quadratisch zu“. Claude bekommt das aktuelle Bild zu sehen und bedient Pixelwerk über Werkzeuge:
+
+| Werkzeug | Wirkung |
+| --- | --- |
+| `select_garment` | Kleidungsstück ab einem Punkt auf dem Stoff auswählen; Haut und Haare bleiben draußen |
+| `select_area` | Auswahl per Polygon, Rechteck oder Ellipse ändern oder aufheben |
+| `make_fabric_opaque` | Durchscheinenden Stoff abdecken, optional mit markierten Kanten, Flächen und geschützten Haaren |
+| `adjust` | Korrekturen und Filter, z. B. Helligkeit, Auto-Verbessern, Weichzeichnen |
+| `transform_image` | Zuschneiden (auch nach Seitenverhältnis), drehen, spiegeln |
+| `add_text` | Text als editierbare Textebene |
+| `undo`, `get_state` | Schritte zurücknehmen, Stand abfragen |
+
+Jeder Schritt landet im Protokoll und lässt sich mit Strg+Z zurücknehmen.
+
+Der Assistent nutzt die Fähigkeit `sample` der claude.ai-Artifacts und das Claude-Konto der Person, die die Seite ansieht. Beim ersten Mal fragt claude.ai, ob die Seite Claude benutzen und Bilder senden darf. Außerhalb von claude.ai (lokal, über `file://` oder einen eigenen Webserver) ist der Assistent nicht verfügbar, und das Bedienfeld weist darauf hin.
+
 ## Für Einsteiger
 
 Ohne Photoshop-Kenntnisse:
@@ -20,8 +38,10 @@ Ohne Photoshop-Kenntnisse:
 - **Schnellstart-Bedienfeld** (rechts oder oben über „Schnellstart“): häufige Aufgaben mit einem Klick, z. B. Foto öffnen, Auto-Verbessern, Heller/dunkler, Zuschneiden, Text schreiben, Bild speichern.
 - **Stoff blickdichter machen**:
   1. Den durchsichtigen Teil eines Kleidungsstücks mit dem Lasso umfahren.
-  2. Die Regler öffnen sich von selbst; Stärke, Farbe des Stoffs, Glätten und Stoffstruktur mit Live-Vorschau einstellen.
+  2. Die Regler öffnen sich von selbst; Stärke, Farbe des Stoffs und Stoffstruktur mit Live-Vorschau einstellen. „Linien und Muster darunter ausblenden“ entfernt schwache Kanten, etwa vom BH.
   3. Das Ergebnis liegt auf einer eigenen Ebene „Blickdicht“, das Original bleibt erhalten.
+
+  Das Verfahren trennt Licht, Körperform, durchscheinende Details und Gewebe. Durchscheinendes wird geglättet, Falten und Gewebe bleiben, damit das Ergebnis nicht bearbeitet aussieht. Über den Claude-Assistenten geht es auch ohne Lasso.
 - **Tipp-Leiste**: Unten im Bild erklärt sie das gewählte Werkzeug in Alltagssprache; abschaltbar unter Hilfe › Einsteiger-Tipps.
 - **Erste Schritte (F1)**: kurze Anleitungen mit „Zeig’s mir“-Knöpfen.
 
@@ -115,7 +135,8 @@ pixelwerk/
   js/actions.js       Aktionsregister → Menüs, Tastaturkürzel, Hilfe
   js/ui/*.js          Bedienelemente, Dialoge, Menüs/Leisten, Bedienfelder, Icons
   js/io.js            Öffnen, Platzieren, Einfügen, Drag & Drop, Projekt speichern, Export
-  js/fabric.js        „Stoff blickdichter machen“ (maskiertes Glätten, Stofffarbe, eigene Ebene)
+  js/fabric.js        „Stoff blickdichter machen“: Frequenztrennung, Zonen, Kleidungsauswahl, eigene Ebene
   js/ui/guide.js      Einsteigerhilfe: Rundgang, Tipp-Leiste, Schnellstart, Erste Schritte
+  js/ui/assistant.js  Claude-Assistent: Chat, Bildanhang, Werkzeuge für Claude
   js/main.js          Start und Beispieldokument
 ```

@@ -126,13 +126,14 @@
   def('view.themeLight', 'Oberfläche: Hell', () => PW.ui.setTheme('light'), { enabled: () => true, checked: () => PW.ui.theme() === 'light' });
 
   // ─── Window ───
-  for (const [id, label] of [['quick', 'Schnellstart'], ['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['history', 'Protokoll']]) {
+  for (const [id, label] of [['quick', 'Schnellstart'], ['assistant', 'Claude-Assistent'], ['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['history', 'Protokoll']]) {
     def(`window.${id}`, label, () => PW.panels.show(id), { enabled: () => true, checked: () => PW.panels && PW.panels.isVisible(id) });
   }
   def('window.toggleDock', 'Bedienfelder ein-/ausblenden', () => PW.ui.toggleDock(), { key: 'Tab', enabled: () => true });
   def('window.reset', 'Arbeitsbereich zurücksetzen', () => PW.panels.reset(), { enabled: () => true });
 
   // ─── Help ───
+  def('help.assistant', 'Claude fragen …', () => PW.assistant.open(), { enabled: () => true });
   def('help.basics', 'Erste Schritte …', () => PW.guide.basics(), { key: 'F1', enabled: () => true });
   def('help.tour', 'Rundgang starten', () => PW.guide.tour(), { enabled: () => true });
   def('help.tips', 'Einsteiger-Tipps anzeigen', () => PW.guide.setTips(!PW.guide.tipsOn()), { enabled: () => true, checked: () => PW.guide && PW.guide.tipsOn() });
@@ -178,8 +179,8 @@
     ] },
     { label: 'Filter', items: ['filter.last', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
-    { label: 'Fenster', items: ['window.quick', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
-    { label: 'Hilfe', items: ['help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },
+    { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
+    { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },
   ];
 
   // ─── Keyboard ───

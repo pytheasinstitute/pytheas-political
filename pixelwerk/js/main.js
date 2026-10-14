@@ -104,6 +104,7 @@
     PW.io.init();
     PW.initKeys();
     PW.guide.init();
+    PW.assistant.init();
     PW.app.setTool('brush');
     PW.sample.create().then(() => PW.guide.maybeStartTour());
     window.addEventListener('resize', () => PW.ui.closeMenus());
