@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pytheas Studio – Bildbearbeitung im Browser</title>
+  <meta name="description" content="Pytheas Studio: Bildbearbeitung direkt im Browser – Ebenen, Füllmethoden, Pinsel, Auswahl, Text, Formen, Filter und Frei transformieren. Ohne Installation, ohne Upload." />
+  <meta name="theme-color" content="#1f2227" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234c8dff'/%3E%3Cstop offset='1' stop-color='%239b5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M10 23V9h7a4.5 4.5 0 0 1 0 9h-7' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/studio.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="menubar">
+      <div class="brand"><span class="logo" aria-hidden="true"></span><span class="brand-text">Pytheas <b>Studio</b></span></div>
+      <nav id="menus" aria-label="Hauptmenü"></nav>
+      <div class="spacer"></div>
+      <button id="btn-panels" class="icon-btn" title="Bedienfelder ein/aus (Tab)" aria-label="Bedienfelder ein/aus"></button>
+    </header>
+
+    <div id="optionsbar" aria-label="Werkzeugoptionen"></div>
+
+    <div id="workspace">
+      <aside id="toolbar" aria-label="Werkzeuge">
+        <div id="tools"></div>
+        <div class="color-mini">
+          <label class="sw sw-bg" title="Hintergrundfarbe"><input type="color" class="in-bg" aria-label="Hintergrundfarbe" /></label>
+          <label class="sw sw-fg" title="Vordergrundfarbe"><input type="color" class="in-fg" aria-label="Vordergrundfarbe" /></label>
+          <button class="btn-swap mini" title="Farben tauschen (X)" aria-label="Farben tauschen"></button>
+          <button class="btn-reset mini" title="Standardfarben Schwarz/Weiß (D)" aria-label="Standardfarben"></button>
+        </div>
+      </aside>
+
+      <main id="viewport">
+        <canvas id="view-canvas"></canvas>
+        <canvas id="overlay"></canvas>
+        <textarea id="text-editor" spellcheck="false" wrap="off" autocomplete="off" hidden aria-label="Text eingeben"></textarea>
+        <div id="hint">Bild hierher ziehen, mit <kbd>Strg</kbd>+<kbd>V</kbd> einfügen oder über <b>Datei › Öffnen</b> laden</div>
+        <div id="drop-zone"><div>Bild loslassen zum Öffnen</div></div>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </main>
+
+      <aside id="panels" aria-label="Bedienfelder">
+        <section class="panel" id="panel-color">
+          <h2>Farbe</h2>
+          <div class="color-main">
+            <div class="color-pair">
+              <label class="sw sw-bg big" title="Hintergrundfarbe"><input type="color" class="in-bg" aria-label="Hintergrundfarbe" /></label>
+              <label class="sw sw-fg big" title="Vordergrundfarbe"><input type="color" class="in-fg" aria-label="Vordergrundfarbe" /></label>
+            </div>
+            <div class="color-controls">
+              <label class="hex"><span>#</span><input id="hex-fg" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Vordergrundfarbe als Hex-Wert" /></label>
+              <div class="color-btns">
+                <button class="btn btn-small btn-swap" title="Farben tauschen (X)">Tauschen</button>
+                <button class="btn btn-small btn-reset" title="Standardfarben (D)">Standard</button>
+              </div>
+            </div>
+          </div>
+          <div id="swatch-grid"></div>
+        </section>
+
+        <section class="panel grow" id="panel-layers">
+          <h2>Ebenen</h2>
+          <div class="layer-props">
+            <select id="blend-mode" aria-label="Füllmethode" title="Füllmethode"></select>
+            <label class="opacity" title="Deckkraft der Ebene">
+              <input type="range" id="layer-opacity" min="0" max="100" value="100" aria-label="Deckkraft" />
+              <span id="layer-opacity-val">100 %</span>
+            </label>
+          </div>
+          <ul id="layer-list" aria-label="Ebenenliste"></ul>
+          <div class="panel-footer">
+            <button id="btn-fx"></button>
+            <button id="btn-up"></button>
+            <button id="btn-down"></button>
+            <button id="btn-merge"></button>
+            <button id="btn-dup"></button>
+            <button id="btn-new"></button>
+            <button id="btn-delete"></button>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-history">
+          <h2>Protokoll</h2>
+          <ol id="history-list" aria-label="Protokoll"></ol>
+        </section>
+      </aside>
+    </div>
+
+    <footer id="statusbar">
+      <span id="st-zoom"></span>
+      <span id="st-size"></span>
+      <span id="st-pos"></span>
+      <span id="st-sel"></span>
+      <span class="spacer"></span>
+      <span class="st-note">Alles bleibt lokal in deinem Browser</span>
+    </footer>
+  </div>
+
+  <div id="modal-root"></div>
+  <input type="file" id="file-open" accept="image/*,.pstudio,application/json" hidden />
+  <input type="file" id="file-place" accept="image/*" multiple hidden />
+
+  <script src="js/util.js"></script>
+  <script src="js/doc.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/tools.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/actions.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
