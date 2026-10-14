@@ -199,7 +199,7 @@
         const g = b.dataset.group;
         const t = PW.tools.byId[app().groupChoice[g]] || PW.tools.inGroup(g)[0];
         b.innerHTML = PW.icon(t.icon, 20);
-        b.title = `${t.name} (${t.key})`;
+        b.title = `${t.name} (${t.key})${PW.guide && PW.guide.TOOL_HELP[t.id] ? `\n${PW.guide.TOOL_HELP[t.id]}` : ''}`;
         b.setAttribute('aria-label', t.name);
         b.setAttribute('aria-pressed', String(!!cur && cur.group === g));
       });
@@ -339,7 +339,7 @@
         }
       });
     });
-    PW.bus.on('tool:changed', t => ($('status-hint').textContent = t.hint || t.name));
+    PW.bus.on('tool:changed', t => ($('status-hint').textContent = t.name));
     upd();
   }
 
@@ -396,6 +396,10 @@
     PW.bus.on('options:refresh', refreshOptions);
     PW.bus.on('doc:switched', renderTabs);
     $('dock-toggle').addEventListener('click', toggleDock);
+    $('quick-btn').addEventListener('click', () => {
+      PW.panels.showTab('quick');
+      if (matchMedia('(max-width: 900px)').matches) document.body.classList.add('dock-open');
+    });
     $('start-new').addEventListener('click', () => PW.runAction('file.new'));
     $('start-open').addEventListener('click', () => PW.runAction('file.open'));
     $('start-sample').addEventListener('click', () => PW.sample.create());

@@ -526,6 +526,12 @@
       applyLUT(img, stretch(lo, hi));
     },
 
+    // One-click improvement for beginners: stretch tones, then a little more colour.
+    autoEnhance(img) {
+      ops.autoTone(img);
+      ops.vibrance(img, { vibrance: 25, saturation: 0 });
+    },
+
     autoColor(img) {
       ops.autoTone(img);
       const d = img.data;
@@ -841,6 +847,7 @@
     { id: 'equalize', menu: 'adjust', name: 'Tonwertangleichung' },
 
     // Image (auto)
+    { id: 'autoEnhance', menu: 'auto', name: 'Automatisch verbessern' },
     { id: 'autoTone', menu: 'auto', name: 'Auto-Farbton', shortcut: 'Mod+Shift+L' },
     { id: 'autoContrast', menu: 'auto', name: 'Auto-Kontrast', shortcut: 'Mod+Alt+Shift+L' },
     { id: 'autoColor', menu: 'auto', name: 'Auto-Farbe', shortcut: 'Mod+Shift+B' },

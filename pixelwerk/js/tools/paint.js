@@ -319,7 +319,7 @@
         return;
       }
       if (!this.source) {
-        a.toast('Halten Sie Alt gedrückt und klicken Sie, um einen Aufnahmebereich festzulegen.');
+        a.toast('Halte Alt gedrückt und klicke auf eine saubere Stelle, um die Quelle festzulegen.');
         return;
       }
       const layer = a.paintLayer();

@@ -58,6 +58,7 @@
   def('image.flipV', 'Arbeitsfläche vertikal spiegeln', () => C().flipImage(false));
   def('image.crop', 'Freistellen', () => C().cropToSelection(), { enabled: hasSel });
   def('image.trim', 'Zuschneiden (transparente Pixel)', () => C().trim());
+  def('image.fabric', 'Stoff blickdichter machen …', () => PW.fabric.start(), { enabled: () => true });
 
   // ─── Layer ───
   def('layer.new', 'Neue Ebene', () => C().newLayer(), { key: 'Mod+Shift+N' });
@@ -125,13 +126,16 @@
   def('view.themeLight', 'Oberfläche: Hell', () => PW.ui.setTheme('light'), { enabled: () => true, checked: () => PW.ui.theme() === 'light' });
 
   // ─── Window ───
-  for (const [id, label] of [['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['history', 'Protokoll']]) {
+  for (const [id, label] of [['quick', 'Schnellstart'], ['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['history', 'Protokoll']]) {
     def(`window.${id}`, label, () => PW.panels.show(id), { enabled: () => true, checked: () => PW.panels && PW.panels.isVisible(id) });
   }
   def('window.toggleDock', 'Bedienfelder ein-/ausblenden', () => PW.ui.toggleDock(), { key: 'Tab', enabled: () => true });
   def('window.reset', 'Arbeitsbereich zurücksetzen', () => PW.panels.reset(), { enabled: () => true });
 
   // ─── Help ───
+  def('help.basics', 'Erste Schritte …', () => PW.guide.basics(), { key: 'F1', enabled: () => true });
+  def('help.tour', 'Rundgang starten', () => PW.guide.tour(), { enabled: () => true });
+  def('help.tips', 'Einsteiger-Tipps anzeigen', () => PW.guide.setTips(!PW.guide.tipsOn()), { enabled: () => true, checked: () => PW.guide && PW.guide.tipsOn() });
   def('help.shortcuts', 'Tastaturbefehle …', () => D().shortcuts(), { key: 'Mod+Alt+Shift+K', enabled: () => true });
   def('help.about', 'Über Pixelwerk', () => D().about(), { enabled: () => true });
 
@@ -158,7 +162,7 @@
     ] },
     { label: 'Bild', items: [
       { label: 'Korrekturen', items: adjustItems },
-      '-', 'adjust.autoTone', 'adjust.autoContrast', 'adjust.autoColor', '-', 'image.size', 'image.canvas',
+      '-', 'adjust.autoEnhance', 'adjust.autoTone', 'adjust.autoContrast', 'adjust.autoColor', '-', 'image.fabric', '-', 'image.size', 'image.canvas',
       { label: 'Bilddrehung', items: ['image.rot180', 'image.rot90cw', 'image.rot90ccw', '-', 'image.flipH', 'image.flipV'] },
       'image.crop', 'image.trim',
     ] },
@@ -174,8 +178,8 @@
     ] },
     { label: 'Filter', items: ['filter.last', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
-    { label: 'Fenster', items: ['window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
-    { label: 'Hilfe', items: ['help.shortcuts', 'help.about'] },
+    { label: 'Fenster', items: ['window.quick', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
+    { label: 'Hilfe', items: ['help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },
   ];
 
   // ─── Keyboard ───

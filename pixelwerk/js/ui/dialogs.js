@@ -894,7 +894,7 @@
       content: el('div', { class: 'about' }, [
         el('div', { class: 'about-logo', text: 'Pw' }),
         el('p', {}, [el('strong', { text: 'Pixelwerk' }), ' – Bildbearbeitung im Browser.']),
-        el('p', { class: 'dlg-text', text: 'Ebenen mit Masken, Füllmethoden und Stilen, Auswahlwerkzeuge, Pinsel, Kopierstempel, Verläufe, Text, Frei transformieren, Korrekturen, Filter und ein vollständiges Protokoll. Alles läuft lokal in Ihrem Browser – Ihre Bilder verlassen das Gerät nicht.' }),
+        el('p', { class: 'dlg-text', text: 'Ebenen mit Masken, Füllmethoden und Stilen, Auswahlwerkzeuge, Pinsel, Kopierstempel, Verläufe, Text, Frei transformieren, Korrekturen, Filter und ein vollständiges Protokoll. Alles läuft lokal in deinem Browser – deine Bilder verlassen das Gerät nicht.' }),
       ]),
       buttons: [['ok', 'OK', true]],
       width: 460,

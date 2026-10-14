@@ -12,6 +12,19 @@ npx http-server pixelwerk
 
 Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert deshalb auch über `file://`.
 
+## Für Einsteiger
+
+Ohne Photoshop-Kenntnisse:
+
+- **Rundgang**: startet beim ersten Besuch, später über Hilfe › Rundgang starten.
+- **Schnellstart-Bedienfeld** (rechts oder oben über „Schnellstart“): häufige Aufgaben mit einem Klick, z. B. Foto öffnen, Auto-Verbessern, Heller/dunkler, Zuschneiden, Text schreiben, Bild speichern.
+- **Stoff blickdichter machen**:
+  1. Den durchsichtigen Teil eines Kleidungsstücks mit dem Lasso umfahren.
+  2. Die Regler öffnen sich von selbst; Stärke, Farbe des Stoffs, Glätten und Stoffstruktur mit Live-Vorschau einstellen.
+  3. Das Ergebnis liegt auf einer eigenen Ebene „Blickdicht“, das Original bleibt erhalten.
+- **Tipp-Leiste**: Unten im Bild erklärt sie das gewählte Werkzeug in Alltagssprache; abschaltbar unter Hilfe › Einsteiger-Tipps.
+- **Erste Schritte (F1)**: kurze Anleitungen mit „Zeig’s mir“-Knöpfen.
+
 ## Funktionen
 
 **Ebenen**
@@ -102,5 +115,7 @@ pixelwerk/
   js/actions.js       Aktionsregister → Menüs, Tastaturkürzel, Hilfe
   js/ui/*.js          Bedienelemente, Dialoge, Menüs/Leisten, Bedienfelder, Icons
   js/io.js            Öffnen, Platzieren, Einfügen, Drag & Drop, Projekt speichern, Export
+  js/fabric.js        „Stoff blickdichter machen“ (maskiertes Glätten, Stofffarbe, eigene Ebene)
+  js/ui/guide.js      Einsteigerhilfe: Rundgang, Tipp-Leiste, Schnellstart, Erste Schritte
   js/main.js          Start und Beispieldokument
 ```

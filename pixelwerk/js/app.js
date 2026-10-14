@@ -211,13 +211,24 @@
       }
       if (L.isText && !L.targetIsMask) {
         // Like Photoshop: ask first, because the text stops being editable.
+        // When painting, offer a fresh layer instead – the friendlier choice.
+        const painting = this.dragging;
         if (this.dragging) this.pointer('cancel');
-        PW.dialogs.confirm('Diese Textebene muss gerastert werden, bevor Sie fortfahren können. Der Text lässt sich danach nicht mehr bearbeiten. Textebene rastern?', {
-          title: 'Textebene rastern', ok: 'Rastern',
+        PW.dialogs.confirm(painting
+          ? 'Diese Ebene enthält Text. Male am besten auf einer neuen, leeren Ebene. Alternativ kann der Text in Pixel umgewandelt werden, dann lassen sich die Buchstaben aber nicht mehr ändern.'
+          : 'Diese Ebene enthält Text. Dafür muss der Text in Pixel umgewandelt werden, danach lassen sich die Buchstaben nicht mehr ändern.', {
+          title: 'Textebene', ok: painting ? 'Neue Ebene anlegen' : 'In Pixel umwandeln', alt: painting ? 'In Pixel umwandeln' : undefined,
         }).then(r => {
-          if (r !== 'ok' || !L.isText) return;
-          L.rasterize();
-          this.commit('Ebene rastern', 'layers');
+          if (r === 'ok' && painting) {
+            this.doc.addLayer(this.doc.createLayer());
+            this.commit('Neue Ebene', 'new-layer');
+            this.toast('Neue Ebene angelegt – jetzt kannst du malen.');
+            return;
+          }
+          if ((r === 'ok' || r === 'alt') && L.isText) {
+            L.rasterize();
+            this.commit('Ebene rastern', 'layers');
+          }
         });
         return null;
       }

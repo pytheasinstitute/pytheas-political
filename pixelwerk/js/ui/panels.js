@@ -6,12 +6,12 @@
   const app = () => PW.app;
 
   const GROUPS = [
-    { id: 'g1', panels: ['color', 'swatches'] },
+    { id: 'g1', panels: ['quick', 'color', 'swatches'] },
     { id: 'g2', panels: ['navigator', 'histogram', 'adjustments'] },
     { id: 'g3', panels: ['layers', 'history'], grow: true },
   ];
-  const TITLES = { color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', history: 'Protokoll' };
-  const state = { active: { g1: 'color', g2: 'navigator', g3: 'layers' }, hidden: {}, collapsed: {} };
+  const TITLES = { quick: 'Schnellstart', color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', history: 'Protokoll' };
+  const state = { active: { g1: 'quick', g2: 'navigator', g3: 'layers' }, hidden: {}, collapsed: { g2: true } };
   const bodies = {};
   const renderers = {};
 
@@ -56,7 +56,7 @@
       });
       tabs.append(el('span', { class: 'spacer' }), collapse);
       const body = el('div', { class: `panel-body panel-${state.active[g.id]}`, role: 'tabpanel' });
-      const group = el('section', { class: `panel-group ${g.grow ? 'grow' : ''} ${state.collapsed[g.id] ? 'collapsed' : ''}` }, [tabs, body]);
+      const group = el('section', { class: `panel-group ${g.grow ? 'grow' : ''} ${state.collapsed[g.id] ? 'collapsed' : ''}`, 'data-panel': state.active[g.id] }, [tabs, body]);
       dock.append(group);
       bodies[g.id] = body;
       if (!state.collapsed[g.id]) renderers[state.active[g.id]].build(body);
@@ -93,10 +93,20 @@
     buildDock();
   }
 
+  // Shows a panel without toggling it off when it is already visible.
+  function showTab(id) {
+    const g = GROUPS.find(x => x.panels.includes(id));
+    state.hidden[id] = false;
+    state.active[g.id] = id;
+    state.collapsed[g.id] = false;
+    document.body.classList.remove('dock-hidden');
+    buildDock();
+  }
+
   function reset() {
-    state.active = { g1: 'color', g2: 'navigator', g3: 'layers' };
+    state.active = { g1: 'quick', g2: 'navigator', g3: 'layers' };
     state.hidden = {};
-    state.collapsed = {};
+    state.collapsed = { g2: true };
     document.body.classList.remove('dock-hidden');
     buildDock();
   }
@@ -104,6 +114,12 @@
   const mounted = id => {
     const g = GROUPS.find(x => x.panels.includes(id));
     return state.active[g.id] === id && !state.collapsed[g.id] && !state.hidden[id] ? bodies[g.id] : null;
+  };
+
+  // ─── Quick tasks for beginners (built by guide.js) ───
+  renderers.quick = {
+    build(body) { PW.guide.buildQuick(body); },
+    update() {},
   };
 
   // ─── Colour panel: saturation/brightness field, hue strip, hex ───
@@ -705,5 +721,5 @@
     })).observe(document.getElementById('dock'));
   }
 
-  PW.panels = { init, show, isVisible, reset, addSwatch, renderers };
+  PW.panels = { init, show, showTab, isVisible, reset, addSwatch, renderers };
 })(window.PW);

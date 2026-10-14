@@ -6,6 +6,7 @@
   async function createSample() {
     const W = 1600, H = 1000;
     const doc = new PW.Doc(W, H, 'Beispiel');
+    doc.isSample = true;
     const layer = name => {
       const L = new PW.Layer(W, H, name);
       doc.layers.push(L);
@@ -102,8 +103,9 @@
     PW.panels.init();
     PW.io.init();
     PW.initKeys();
+    PW.guide.init();
     PW.app.setTool('brush');
-    PW.sample.create();
+    PW.sample.create().then(() => PW.guide.maybeStartTour());
     window.addEventListener('resize', () => PW.ui.closeMenus());
     document.documentElement.classList.add('ready');
   }

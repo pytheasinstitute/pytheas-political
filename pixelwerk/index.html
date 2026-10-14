@@ -17,6 +17,14 @@
       </div>
       <nav id="menus" aria-label="Menü"></nav>
       <div class="menubar-right">
+        <button id="quick-btn" type="button" class="pill" title="Schnellstart: häufige Aufgaben mit einem Klick">
+          <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>
+          <span>Schnellstart</span>
+        </button>
+        <button id="help-btn" type="button" class="pill" title="Erste Schritte (F1)">
+          <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>
+          <span>Hilfe</span>
+        </button>
         <button id="dock-toggle" type="button" class="tbtn" title="Bedienfelder ein-/ausblenden (Tab)" aria-label="Bedienfelder ein-/ausblenden">
           <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg>
         </button>
@@ -43,6 +51,7 @@
                 <button id="start-open" type="button" class="btn">Öffnen …</button>
                 <button id="start-sample" type="button" class="btn">Beispiel öffnen</button>
               </div>
+              <p class="start-hint"><button id="start-tour" type="button" class="linkish">Neu hier? Rundgang starten</button></p>
               <p class="start-hint">Oder Bilder hierher ziehen bzw. mit Strg+V einfügen.</p>
             </div>
           </div>
@@ -90,6 +99,8 @@
   <script src="js/ui/shell.js"></script>
   <script src="js/ui/panels.js"></script>
   <script src="js/io.js"></script>
+  <script src="js/ui/guide.js"></script>
+  <script src="js/fabric.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
