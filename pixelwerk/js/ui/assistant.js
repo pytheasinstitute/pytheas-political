@@ -16,6 +16,33 @@
   const MAX_TURNS = 16;
   const IMG_PIXELS = 1.15e6, IMG_SIDE = 1568;
   const FILTERS = ['gaussianBlur', 'unsharpMask', 'sharpen', 'addNoise', 'median', 'vignette'];
+  // Who answers: an automatic tier of the `sample` capability, or a model the viewer picks.
+  // A picked model the account cannot use falls back to its tier; the chat then says so.
+  const MODELS = [
+    { id: 'tier:quick', auto: true, name: 'Automatisch: Schnell', tier: 'quick', hint: 'Antwortet sofort. Gut für Einfaches wie heller machen oder drehen; bei Kleidung ungenauer.' },
+    { id: 'tier:default', auto: true, name: 'Automatisch: Standard', tier: 'default', hint: 'Gute Genauigkeit, braucht meist eine halbe bis eine Minute.' },
+    { id: 'tier:complex', auto: true, name: 'Automatisch: Gründlich', tier: 'complex', hint: 'Das stärkste Modell, das dein Konto hier nutzen darf. Denkt länger und verbraucht mehr Kontingent.' },
+    { id: 'claude-opus-5-5', name: 'Opus 5.5', tier: 'complex' },
+    { id: 'claude-fable-5-1', name: 'Fable 5.1', tier: 'complex' },
+    { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', tier: 'default' },
+    { id: 'claude-haiku-5-5', name: 'Haiku 5.5', tier: 'quick' },
+  ];
+  const EFFORTS = [['', 'Standard'], ['low', 'Wenig'], ['medium', 'Mittel'], ['high', 'Extra']];
+  const TIER_NAMES = { quick: 'Schnell', default: 'Standard', complex: 'Gründlich' };
+  const modelOf = id => MODELS.find(m => m.id === id) || MODELS[1];
+  const effortName = id => (EFFORTS.find(e => e[0] === id) || EFFORTS[0])[1];
+
+  function pref(key, allowed, fallback) {
+    try {
+      const v = localStorage.getItem(key);
+      return allowed.includes(v) ? v : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  function savePref(key, value) {
+    try { localStorage.setItem(key, value); } catch { /* optional */ }
+  }
 
   const state = {
     status: 'checking', // checking | ready | unavailable | denied | notools
@@ -27,6 +54,11 @@
     log: [], // {kind: 'user'|'claude'|'step'|'error'|'info', text}
     edited: false,
     reply: null, // the bubble of the answer in progress
+    model: pref('pw-assistant-model', MODELS.map(m => m.id), 'tier:default'),
+    effort: pref('pw-assistant-effort', EFFORTS.map(e => e[0]), ''),
+    autoCheck: pref('pw-assistant-check', ['1', '0'], '1') === '1',
+    maxImages: 0,
+    before: null, // image of the state before the last request, for the automatic check
   };
   let ui = null;
   let samplePromise = null;
@@ -48,6 +80,7 @@
     if (!limits || !limits.tools) return setStatus('notools');
     state.sample = sample;
     state.images = !!limits.images;
+    state.maxImages = limits.images ? Math.max(1, Number(limits.images.maxCount) || 1) : 0;
     setStatus('ready');
   }
 
@@ -62,7 +95,7 @@
   // ─── Coordinates: Claude works in the attached image's pixel grid ───
   const map = { sx: 1, sy: 1, iw: 0, ih: 0, changed: false };
 
-  function snapshot() {
+  function capture() {
     const doc = app().doc, W = doc.width, H = doc.height;
     const s = Math.min(1, Math.sqrt(IMG_PIXELS / (W * H)), IMG_SIDE / Math.max(W, H));
     const iw = Math.max(1, Math.round(W * s)), ih = Math.max(1, Math.round(H * s));
@@ -73,8 +106,49 @@
     const g = c.getContext('2d');
     g.imageSmoothingQuality = 'high';
     g.drawImage(doc.flattened('#ffffff'), 0, 0, iw, ih);
-    return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.9));
+    return c;
   }
+
+  // Same picture with a labelled 100 px grid, so Claude can read coordinates off it.
+  function withGrid(src) {
+    const c = document.createElement('canvas'), w = (c.width = src.width), h = (c.height = src.height);
+    const g = c.getContext('2d'), step = 100;
+    g.drawImage(src, 0, 0);
+    const line = (x0, y0, x1, y1) => {
+      for (const [style, off] of [['rgba(0,0,0,0.45)', 1], ['rgba(255,255,255,0.7)', 0]]) {
+        g.strokeStyle = style;
+        g.beginPath();
+        g.moveTo(x0 + off, y0 + off);
+        g.lineTo(x1 + off, y1 + off);
+        g.stroke();
+      }
+    };
+    g.lineWidth = 1;
+    for (let x = step; x < w; x += step) line(x + 0.5, 0, x + 0.5, h);
+    for (let y = step; y < h; y += step) line(0, y + 0.5, w, y + 0.5);
+    g.font = 'bold 12px sans-serif';
+    g.lineJoin = 'round';
+    const label = (t, x, y, align, base) => {
+      g.textAlign = align;
+      g.textBaseline = base;
+      g.lineWidth = 3;
+      g.strokeStyle = 'rgba(0,0,0,0.85)';
+      g.strokeText(t, x, y);
+      g.fillStyle = '#fff';
+      g.fillText(t, x, y);
+    };
+    for (let x = step; x < w; x += step) {
+      label(String(x), x + 3, 3, 'left', 'top');
+      label(String(x), x + 3, h - 3, 'left', 'bottom');
+    }
+    for (let y = step; y < h; y += step) {
+      label(String(y), 3, y + 2, 'left', 'top');
+      label(String(y), w - 3, y + 2, 'right', 'top');
+    }
+    return c;
+  }
+
+  const jpeg = c => new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.9));
 
   function needGeometry() {
     if (map.changed) throw new Error('Das Bild wurde gerade zugeschnitten oder gedreht, die Koordinaten passen nicht mehr. Beende diese Antwort; mit der nächsten Nachricht siehst du das neue Bild.');
@@ -119,14 +193,18 @@
     }).join('\n');
   }
 
-  function rules() {
+  function rules(images = 1) {
     const doc = app().doc;
     return [
       'Du bist Claude, der eingebaute Assistent von „Pixelwerk“, einer Bildbearbeitung im Stil von Photoshop im Browser. Die Person kennt sich mit Bildbearbeitung nicht aus und sagt dir in Alltagssprache, was sie möchte.',
       'Antworte auf Deutsch, per du, kurz und freundlich. Nach getaner Arbeit höchstens drei Sätze: was du gemacht hast und ein konkretes Angebot für eine Anpassung. Keine Fachbegriffe, keine Koordinaten im Text.',
       '',
-      state.images
-        ? `Im Anhang ist das aktuelle Bild: ${map.iw} × ${map.ih} Pixel (Original ${doc.width} × ${doc.height}). Alle Koordinaten in den Werkzeugen beziehen sich auf das Pixelraster des Anhangs (x nach rechts, y nach unten, 0,0 oben links); die App rechnet sie um.`
+      images
+        ? [
+          `Bild 1 im Anhang ist das aktuelle Bild: ${map.iw} × ${map.ih} Pixel (Original ${doc.width} × ${doc.height}). Alle Koordinaten in den Werkzeugen beziehen sich auf dieses Pixelraster (x nach rechts, y nach unten, 0,0 oben links); die App rechnet sie um.`,
+          images >= 2 ? 'Bild 2 ist dasselbe Bild mit einem Gitter alle 100 Pixel, die Zahlen am Rand sind die Koordinaten. Lies Punkte daran ab, schätze zwischen den Linien genau. Das Gitter ist nur eine Hilfe und nicht im Bild.' : '',
+          images >= 3 ? 'Bild 3 ist der Stand vor deinen letzten Änderungen, zum Vergleich.' : '',
+        ].filter(Boolean).join('\n')
         : `Das Bild (${doc.width} × ${doc.height} Pixel) kannst du in dieser Ansicht nicht sehen. Mach nur Bearbeitungen ohne Ortsangaben (adjust, Drehen, Zuschneiden per aspect) und sag das der Person, wenn sie mehr möchte.`,
       '',
       'So arbeitest du:',
@@ -441,7 +519,10 @@
     images_unavailable: 'In dieser Ansicht kann Claude das Bild nicht sehen.',
   };
 
-  async function send(text) {
+  const CHECK = 'Automatische Prüfung: Bild 1 zeigt jetzt das Ergebnis deiner Änderungen. Schau genau hin, ob die Bitte erfüllt ist. Scheint noch etwas durch (Kanten, Flecken, Formen), passt die Auswahl nicht oder wirkt etwas künstlich, dann korrigiere es jetzt mit den Werkzeugen, zum Beispiel mit undo und make_fabric_opaque mit genaueren lines und areas. Passt alles, schreib nur einen kurzen Satz.';
+
+  // opts.auto: the automatic check after an edit (one per request, shown as a note).
+  async function send(text, opts = {}) {
     text = String(text || '').trim();
     if (!text || state.busy) return;
     const a = app();
@@ -451,31 +532,53 @@
       return;
     }
     a.finishToolWork();
+    const auto = !!opts.auto;
     state.busy = true;
-    state.edited = false;
-    addLog('user', text);
+    if (!auto) state.edited = false;
+    if (auto) addLog('info', 'Claude prüft das Ergebnis …');
+    else addLog('user', text);
     state.chat.push({ role: 'user', content: text });
     const reply = (state.reply = addLog('claude', ''));
     const ctl = (state.ctl = new AbortController());
     render();
     const steps = [];
     const stepWatch = PW.bus.on('assistant:step', t => steps.push(t));
+    const doc = a.doc, startStep = doc.history.current;
+    const model = modelOf(state.model), effort = state.effort;
+    let ok = false;
     try {
-      const image = state.images ? await snapshot() : null;
-      if (!state.images) snapshotMapOnly();
-      const input = [{ role: 'user', content: rules() }, ...state.chat.slice(-MAX_TURNS)];
-      const opts = {
+      const images = [];
+      if (state.images) {
+        const shot = capture();
+        images.push(await jpeg(shot));
+        if (state.maxImages >= 2) images.push(await jpeg(withGrid(shot)));
+        if (auto && state.before && state.maxImages >= 3) images.push(state.before);
+        if (!auto) state.before = images[0];
+      } else {
+        snapshotMapOnly();
+      }
+      const input = [{ role: 'user', content: rules(images.length) }, ...state.chat.slice(-MAX_TURNS)];
+      const call = {
         signal: ctl.signal,
+        modelTier: model.tier,
         tools: tools(),
         onText: ({ text: t }) => {
           reply.text = t;
           paintEntry(reply);
         },
       };
-      if (image) opts.images = [image];
-      const res = await state.sample(input, opts);
+      if (!model.auto) call.model = model.id;
+      if (effort) call.effort = effort;
+      if (images.length) call.images = images;
+      const res = await state.sample(input, call);
       reply.text = res.text;
+      ok = true;
       if (res.truncated) addLog('info', 'Die Antwort wurde abgeschnitten.');
+      if (!model.auto && res.modelApplied !== model.id) {
+        addLog('info', `„${model.name}“ ließ sich hier nicht direkt wählen; geantwortet hat automatisch die Stufe „${TIER_NAMES[res.modelTierApplied] || TIER_NAMES[model.tier]}“.`);
+      } else if (model.auto && res.modelTierApplied && res.modelTierApplied !== model.tier) {
+        addLog('info', `Dein Claude-Plan hat diesmal die Stufe „${TIER_NAMES[res.modelTierApplied]}“ statt „${TIER_NAMES[model.tier]}“ verwendet.`);
+      }
       state.chat.push({ role: 'assistant', content: res.text + (steps.length ? `\n\n(Ausgeführt: ${steps.join('; ')})` : '') });
     } catch (e) {
       const code = e && e.code;
@@ -495,6 +598,9 @@
       a.render();
       render();
     }
+    // Claude cannot see its own result within one answer, so it gets one look at it.
+    const changed = a.doc === doc && doc.history.current !== startStep;
+    if (ok && changed && !auto && state.autoCheck && state.images) send(CHECK, { auto: true });
   }
 
   function snapshotMapOnly() {
@@ -568,7 +674,41 @@
     const sendBtn = el('button', { type: 'submit', class: 'btn primary asst-send', text: 'Senden' });
     const stopBtn = el('button', { type: 'button', class: 'btn asst-stop', text: 'Stopp', onclick: stop });
     const newBtn = el('button', { type: 'button', class: 'linkish asst-new', text: 'Neuer Chat', onclick: reset });
-    const form = el('form', { class: 'asst-form' }, [box, el('div', { class: 'asst-actions' }, [newBtn, el('span', { class: 'spacer' }), stopBtn, sendBtn])]);
+    const keepKeys = e => e.stopPropagation();
+    const modelSel = el('select', { class: 'asst-model-select', 'aria-label': 'Modell' }, [
+      el('optgroup', { label: 'Automatisch' }, MODELS.filter(m => m.auto).map(m => el('option', { value: m.id, text: m.name.replace('Automatisch: ', '') }))),
+      el('optgroup', { label: 'Bestimmtes Modell' }, MODELS.filter(m => !m.auto).map(m => el('option', { value: m.id, text: m.name }))),
+    ]);
+    const effortSel = el('select', { class: 'asst-effort-select', 'aria-label': 'Nachdenken' }, EFFORTS.map(([id, name]) => el('option', { value: id, text: name })));
+    const check = el('input', { type: 'checkbox', class: 'asst-check' });
+    for (const c of [modelSel, effortSel, check]) c.addEventListener('keydown', keepKeys);
+    modelSel.addEventListener('change', () => {
+      state.model = modelSel.value;
+      savePref('pw-assistant-model', state.model);
+      render();
+    });
+    effortSel.addEventListener('change', () => {
+      state.effort = effortSel.value;
+      savePref('pw-assistant-effort', state.effort);
+      render();
+    });
+    check.addEventListener('change', () => {
+      state.autoCheck = check.checked;
+      savePref('pw-assistant-check', state.autoCheck ? '1' : '0');
+      render();
+    });
+    const summary = el('summary', { class: 'asst-sum' });
+    const hint = el('p', { class: 'asst-note asst-model-hint' });
+    const settings = el('details', { class: 'asst-settings' }, [
+      summary,
+      el('div', { class: 'asst-set-grid' }, [
+        el('label', { class: 'asst-set' }, [el('span', { text: 'Modell' }), modelSel]),
+        el('label', { class: 'asst-set' }, [el('span', { text: 'Nachdenken' }), effortSel]),
+        el('label', { class: 'asst-set-check' }, [check, el('span', { text: 'Ergebnis danach selbst prüfen und nachbessern' })]),
+        hint,
+      ]),
+    ]);
+    const form = el('form', { class: 'asst-form' }, [box, settings, el('div', { class: 'asst-actions' }, [el('span', { class: 'spacer' }), stopBtn, sendBtn])]);
     form.addEventListener('submit', e => {
       e.preventDefault();
       const t = box.value;
@@ -583,8 +723,8 @@
       }
     });
     const note = el('p', { class: 'asst-note' });
-    body.append(log, form, note);
-    ui = { body, log, box, sendBtn, stopBtn, newBtn, form, note };
+    body.append(log, form, el('div', { class: 'asst-foot' }, [note, newBtn]));
+    ui = { body, log, box, sendBtn, stopBtn, newBtn, form, note, modelSel, effortSel, check, summary, hint };
     render();
   }
 
@@ -593,7 +733,7 @@
       ui = null;
       return;
     }
-    const { log, box, sendBtn, stopBtn, newBtn, form, note } = ui;
+    const { log, box, sendBtn, stopBtn, newBtn, form, note, modelSel, effortSel, check, summary, hint } = ui;
     log.replaceChildren();
     const intro = el('div', { class: 'asst-msg asst-claude' });
     if (state.status === 'checking') intro.textContent = 'Verbinde mit Claude …';
@@ -624,6 +764,18 @@
     sendBtn.hidden = state.busy;
     stopBtn.hidden = !state.busy;
     newBtn.disabled = state.busy || !state.log.length;
+    newBtn.hidden = off;
+    const model = modelOf(state.model);
+    for (const c of [modelSel, effortSel, check]) c.disabled = state.busy;
+    modelSel.value = model.id;
+    effortSel.value = state.effort;
+    check.checked = state.autoCheck;
+    summary.textContent = `${model.auto ? model.name.replace('Automatisch: ', 'Automatisch, ') : model.name} · Nachdenken: ${effortName(state.effort)}${state.autoCheck ? ' · prüft selbst' : ''}`;
+    hint.textContent = [
+      model.auto ? model.hint : `Genau dieses Modell. Ist es für dein Konto nicht freigeschaltet, antwortet die Stufe „${TIER_NAMES[model.tier]}“ (steht dann im Chat).`,
+      state.effort === 'high' ? 'Extra denkt am längsten nach.' : state.effort === 'low' ? 'Wenig ist schneller, aber ungenauer.' : '',
+      state.autoCheck ? 'Danach prüft Claude das Ergebnis einmal selbst (zweite Anfrage).' : '',
+    ].filter(Boolean).join(' ');
     note.textContent = off ? '' : state.images
       ? 'Claude sieht dazu das aktuelle Bild und nutzt dein Claude-Konto. Jeder Schritt lässt sich mit Strg+Z zurücknehmen.'
       : 'Hinweis: In dieser Ansicht kann Claude das Bild nicht sehen. Jeder Schritt lässt sich mit Strg+Z zurücknehmen.';
@@ -640,5 +792,5 @@
     }
   }
 
-  PW.assistant = { init, build, open, send, stop, status: () => state.status, _state: state };
+  PW.assistant = { init, build, open, send, stop, status: () => state.status, models: MODELS.map(m => m.id), _state: state };
 })(window.PW);

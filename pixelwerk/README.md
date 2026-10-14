@@ -28,6 +28,18 @@ Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert de
 
 Jeder Schritt landet im Protokoll und lässt sich mit Strg+Z zurücknehmen.
 
+Unter dem Eingabefeld lässt sich einstellen, wer antwortet:
+
+| Einstellung | Auswahl |
+| --- | --- |
+| Modell | Automatisch: Schnell, Standard (empfohlen) oder Gründlich; oder ein bestimmtes Modell: Opus 5.5, Fable 5.1, Sonnet 5.5, Haiku 5.5 |
+| Nachdenken | Standard, Wenig, Mittel, Extra |
+| Ergebnis selbst prüfen | Nach einer Bearbeitung bekommt Claude das neue Bild, vergleicht es mit dem vorherigen und bessert nach (eine zweite Anfrage) |
+
+Die Wahl merkt sich der Browser. Ist ein Modell für das Konto nicht freigeschaltet, antwortet claude.ai mit der passenden Stufe, und der Chat sagt das dazu.
+
+Zum Bild bekommt Claude eine zweite Fassung mit einem beschrifteten Gitter alle 100 Pixel. Daran liest es Koordinaten für Auswahl und Markierungen ab.
+
 Der Assistent nutzt die Fähigkeit `sample` der claude.ai-Artifacts und das Claude-Konto der Person, die die Seite ansieht. Beim ersten Mal fragt claude.ai, ob die Seite Claude benutzen und Bilder senden darf. Außerhalb von claude.ai (lokal, über `file://` oder einen eigenen Webserver) ist der Assistent nicht verfügbar, und das Bedienfeld weist darauf hin.
 
 ## Für Einsteiger
