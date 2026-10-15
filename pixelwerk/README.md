@@ -160,4 +160,5 @@ pixelwerk/
   js/ui/assistant.js  Claude-Assistent: Chat, Bildanhang, Werkzeuge für Claude
   js/library.js       „Meine Bilder“: alle Bilder im Browser speichern, offene nach dem Neuladen zurückholen
   js/main.js          Start und Beispieldokument
+  desktop/            Pixelwerk als Mac-Programm (Electron-Fenster für die claude.ai-Seite), siehe desktop/README.md
 ```
