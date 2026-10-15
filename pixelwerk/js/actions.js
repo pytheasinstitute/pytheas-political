@@ -17,6 +17,7 @@
   def('file.new', 'Neu …', () => D().newDocument(), { key: 'Mod+N', alt: ['Mod+Alt+N'], enabled: () => true });
   def('file.open', 'Öffnen …', () => PW.io.open(), { key: 'Mod+O', enabled: () => true });
   def('file.place', 'Eingebettet platzieren …', () => PW.io.place());
+  def('file.library', 'Meine Bilder …', () => PW.library.openDialog(), { key: 'Mod+Alt+O', enabled: () => true });
   def('file.close', 'Schließen', () => app().closeDoc(), { key: 'Mod+W', alt: ['Mod+Alt+W'] });
   def('file.closeAll', 'Alle schließen', async () => {
     for (const d of [...app().docs]) await app().closeDoc(d);
@@ -155,7 +156,7 @@
   }
 
   const MENUS = [
-    { label: 'Datei', items: ['file.new', 'file.open', 'file.place', '-', 'file.close', 'file.closeAll', '-', 'file.save', 'file.export', 'file.quickPng'] },
+    { label: 'Datei', items: ['file.new', 'file.open', 'file.library', 'file.place', '-', 'file.close', 'file.closeAll', '-', 'file.save', 'file.export', 'file.quickPng'] },
     { label: 'Bearbeiten', items: [
       'edit.undo', 'edit.redo', '-', 'edit.cut', 'edit.copy', 'edit.copyMerged', 'edit.paste', 'edit.clear', '-',
       'edit.fill', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',

@@ -621,7 +621,7 @@
     PW.bus.emit('assistant:changed');
   }
 
-  // For the autosave: the conversation as plain data, and back.
+  // For "Meine Bilder": the conversation as plain data, and back.
   function exportChat() {
     return {
       chat: state.chat.slice(-MAX_TURNS * 2),

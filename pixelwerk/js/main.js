@@ -106,9 +106,9 @@
     PW.guide.init();
     PW.assistant.init();
     PW.app.setTool('brush');
-    PW.autosave.init();
+    PW.library.init();
     PW.sample.create()
-      .then(() => PW.autosave.restore())
+      .then(() => PW.library.restore())
       .then(restored => { if (!restored) PW.guide.maybeStartTour(); });
     window.addEventListener('resize', () => PW.ui.closeMenus());
     document.documentElement.classList.add('ready');

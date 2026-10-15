@@ -56,6 +56,7 @@ Ohne Photoshop-Kenntnisse:
   Das Verfahren trennt Licht, Körperform, durchscheinende Details und Gewebe. Durchscheinendes wird geglättet, Falten und Gewebe bleiben, damit das Ergebnis nicht bearbeitet aussieht. Über den Claude-Assistenten geht es auch ohne Lasso.
 - **Tipp-Leiste**: Unten im Bild erklärt sie das gewählte Werkzeug in Alltagssprache; abschaltbar unter Hilfe › Einsteiger-Tipps.
 - **Erste Schritte (F1)**: kurze Anleitungen mit „Zeig’s mir“-Knöpfen.
+- **Meine Bilder**: Alles, was du bearbeitest, bleibt gespeichert und lässt sich jederzeit wieder öffnen.
 
 ## Funktionen
 
@@ -119,11 +120,12 @@ Alle Korrekturen und Filter zeigen eine Live-Vorschau und wirken nur innerhalb d
 - Export als PNG, JPEG oder WebP (mit Qualität und Skalierung)
 - Projekte mit allen Ebenen als `.pxw` speichern und wieder öffnen
 
-**Automatische Sicherung**:
-- Offene Bilder mit allen Ebenen und der Claude-Chat werden laufend im Browser gespeichert (IndexedDB, nur auf diesem Gerät).
-- Nach dem Neuladen, etwa wenn eine neue Version von Pixelwerk erscheint, sind sie von selbst wieder da.
-- Schließt man ein Bild, verschwindet es auch aus der Sicherung.
-- Ohne Browser-Speicher (privates Fenster, gesperrte Website-Daten) läuft alles wie gehabt, nur ohne Sicherung.
+**Meine Bilder** (Datei › Meine Bilder, Schnellstart oder Startbildschirm):
+- Jedes geöffnete oder bearbeitete Bild bleibt mit allen Ebenen im Browser gespeichert (IndexedDB, nur auf diesem Gerät), auch nach dem Schließen. Jede Änderung wird nach einer halben Sekunde gesichert.
+- Die Übersicht zeigt Vorschaubilder, das letzte Bearbeitungsdatum und die Größe; ein Klick öffnet den letzten Stand, der Papierkorb löscht ein Bild endgültig.
+- Bilder, die beim Neuladen offen waren, sind danach samt Claude-Chat wieder da, etwa wenn eine neue Version von Pixelwerk erscheint.
+- Schließen fragt nicht mehr nach dem Speichern, solange das Bild in „Meine Bilder“ liegt. Ohne Browser-Speicher (privates Fenster, gesperrte Website-Daten) erscheint die Frage wie gewohnt.
+- Pixelwerk bittet den Browser, die Daten dauerhaft aufzubewahren (`navigator.storage.persist`).
 
 **Oberfläche**:
 - Protokoll mit bis zu 50 Schritten; Ebenen, die sich nicht geändert haben, teilen ihren Speicher
@@ -156,6 +158,6 @@ pixelwerk/
   js/fabric.js        „Stoff blickdichter machen“: Frequenztrennung, Zonen, Kleidungsauswahl, eigene Ebene
   js/ui/guide.js      Einsteigerhilfe: Rundgang, Tipp-Leiste, Schnellstart, Erste Schritte
   js/ui/assistant.js  Claude-Assistent: Chat, Bildanhang, Werkzeuge für Claude
-  js/autosave.js      Automatische Sicherung offener Bilder und des Chats im Browser
+  js/library.js       „Meine Bilder“: alle Bilder im Browser speichern, offene nach dem Neuladen zurückholen
   js/main.js          Start und Beispieldokument
 ```

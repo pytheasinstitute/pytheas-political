@@ -186,7 +186,7 @@
       this.touch();
     }
 
-    // ─── Serialisation (project files; autosave stores the pixels itself) ───
+    // ─── Serialisation (project files; "Meine Bilder" stores the pixels itself) ───
     async serialize(withPixels = true) {
       return {
         name: this.name,

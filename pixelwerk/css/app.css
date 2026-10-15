@@ -770,6 +770,20 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
 .asst-foot .asst-new { flex: none; font-size: 11px; }
 .asst-foot .asst-new[hidden] { display: none; }
 
+/* ─── Meine Bilder ─── */
+.lib { display: grid; gap: 12px; min-width: 0; }
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; max-height: 60vh; overflow: auto; padding: 2px; }
+.lib-item { position: relative; min-width: 0; }
+.lib-open { display: grid; gap: 4px; width: 100%; padding: 6px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--ui-1); color: var(--text); text-align: left; }
+.lib-open:hover { border-color: var(--accent); }
+.lib-thumb { display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border-radius: 5px; background: var(--ui-0); }
+.lib-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.lib-name { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.lib-meta { color: var(--text-3); font-size: 11px; }
+.lib-del { position: absolute; top: 10px; right: 10px; background: var(--ui-2); box-shadow: var(--shadow); }
+.lib-empty { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.5; }
+.lib-note { margin: 0; color: var(--text-3); font-size: 11.5px; line-height: 1.4; }
+
 /* ─── Narrow screens: dock slides over the canvas ─── */
 @media (max-width: 900px) {
   #main, body.dock-hidden #main { grid-template-columns: 44px minmax(0, 1fr); }

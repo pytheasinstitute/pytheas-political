@@ -404,6 +404,7 @@
     $('start-new').addEventListener('click', () => PW.runAction('file.new'));
     $('start-open').addEventListener('click', () => PW.runAction('file.open'));
     $('start-sample').addEventListener('click', () => PW.sample.create());
+    $('start-library').addEventListener('click', () => PW.library.openDialog());
     renderOptions();
     renderTabs();
   }

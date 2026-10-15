@@ -132,6 +132,7 @@
   const QUICK = [
     { title: 'Bild', items: [
       { icon: 'open', label: 'Foto öffnen', hint: 'Ein Bild von deinem Gerät laden', run: () => PW.runAction('file.open'), always: true },
+      { icon: 'image', label: 'Meine Bilder', hint: 'Alle Bilder, die du schon bearbeitet hast', run: () => PW.library.openDialog(), always: true },
       { icon: 'file', label: 'Leeres Bild', hint: 'Mit einer leeren Fläche beginnen', run: () => PW.runAction('file.new'), always: true },
     ] },
     { title: 'Verbessern', items: [

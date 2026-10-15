@@ -58,7 +58,8 @@
 
     async closeDoc(doc = this.doc, force = false) {
       if (!doc) return;
-      if (doc.dirty && !force) {
+      // A picture kept in "Meine Bilder" loses nothing by closing; only ask when storage is unavailable.
+      if (doc.dirty && !force && !(PW.library && (await PW.library.keep(doc)))) {
         const choice = await PW.dialogs.confirm(`Änderungen an „${doc.name}“ vor dem Schließen speichern?`, {
           title: 'Pixelwerk', ok: 'Speichern', alt: 'Nicht speichern', cancel: 'Abbrechen',
         });
