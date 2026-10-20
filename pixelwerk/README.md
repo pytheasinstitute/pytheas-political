@@ -21,6 +21,8 @@ Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert de
 | `select_garment` | Kleidungsstück ab einem Punkt auf dem Stoff auswählen; Haut und Haare bleiben draußen |
 | `select_area` | Auswahl per Polygon, Rechteck oder Ellipse ändern oder aufheben |
 | `make_fabric_opaque` | Durchscheinenden Stoff abdecken; findet Durchscheinendes selbst, Kanten und Flecken lassen sich zum Nachbessern markieren |
+| `select_subject` | Motiv oder Objekt im Rechteck auswählen, mit Strichen Teile hinzufügen oder abziehen |
+| `remove_background` | Motiv freistellen, Hintergrund per Ebenenmaske ausblenden |
 | `remove_area` | Gegenstände, Kabel, Flecken entfernen wie mit „Inhaltsbasiert füllen“, auf eigener Ebene |
 | `adjust` | Korrekturen und Filter, z. B. Helligkeit, Auto-Verbessern, Weichzeichnen |
 | `transform_image` | Zuschneiden (auch nach Seitenverhältnis), drehen, spiegeln |
@@ -77,7 +79,7 @@ Ohne Photoshop-Kenntnisse:
 | V | Verschieben (Auswahlinhalt schwebend, Alt dupliziert, Pfeiltasten) |
 | M | Auswahlrechteck, Auswahlellipse (Umschalt/Alt/beides = hinzufügen/subtrahieren/Schnittmenge, weiche Kante, feste Größe/Verhältnis) |
 | L | Lasso, Polygon-Lasso |
-| W | Zauberstab (Toleranz, benachbart, alle Ebenen) |
+| W | Zauberstab (Toleranz, benachbart, alle Ebenen), Schnellauswahl (Pinsel, wächst bis zu Kanten, Alt nimmt weg), Objektauswahl (Rechteck um ein Objekt) |
 | C | Freistellen (Seitenverhältnisse, Drittel-Raster) |
 | I | Pipette (1 bis 11 × 11 px, Aufnahmering) |
 | J | Bereichsreparatur-Pinsel, Entfernen-Werkzeug (beide inhaltsbasiert), Reparatur-Pinsel (Alt-Klick für die Quelle), Ausbessern-Werkzeug |
@@ -91,6 +93,8 @@ Ohne Photoshop-Kenntnisse:
 | U | Rechteck (mit Radius), Ellipse, Polygon/Stern, Linie/Pfeil |
 | H, Z | Hand, Zoom |
 | Strg+T | Frei transformieren (skalieren, drehen; Umschalt: frei bzw. 15°-Schritte; Alt: von der Mitte) |
+
+**Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Grenze: Photoshop nutzt für „Motiv“ ein neuronales Netz; Pixelwerk rechnet mit Farben und Kanten. Bei Haaren vor ähnlich farbigem Hintergrund braucht es ein paar Striche mit der Schnellauswahl.
 
 **Retusche** wie in Photoshop: Bereichsreparatur-Pinsel und Entfernen-Werkzeug bauen übermalte Stellen beim Loslassen aus der Umgebung neu auf. Bearbeiten › Inhaltsbasiert füllen (Strg+Umschalt+Rücktaste, auch unter Fläche füllen › Inhalt) macht das für eine Auswahl. Reparatur-Pinsel und Ausbessern-Werkzeug übernehmen die Struktur einer gewählten Stelle und passen Licht und Farbe an den Rand des Ziels an. Das Auffüllen sucht für jedes 7 × 7-Stück das ähnlichste Stück außerhalb (PatchMatch), grob nach fein, mit Farbanpassung, und gleicht die Naht zum Schluss an.
 
@@ -154,6 +158,7 @@ pixelwerk/
   js/filters.js       Korrekturen und Filter auf ImageData, Live-Vorschau-Sitzung
   js/view.js          Zoom, Verschieben, Darstellung, Eingaben (Maus, Stift, Touch)
   js/tools/*.js       Werkzeuge (Malen, Retusche, Auswahl, Verschieben, Füllen, Text, Formen, Freistellen, Transformieren)
+  js/segment.js       Segmentierung: Graph-Cut (Boykov–Kolmogorov), GrabCut, geführter Filter
   js/inpaint.js       Inhaltsbasiert füllen (PatchMatch über mehrere Auflösungen, Farbanpassung) und Membran-Angleichung
   js/app.js           App-Zustand: Dokumente, aktives Werkzeug, Farben, Protokoll-Einträge
   js/commands.js      Befehle hinter Menüs und Kürzeln

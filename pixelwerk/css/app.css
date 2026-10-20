@@ -784,6 +784,13 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
 .lib-empty { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.5; }
 .lib-note { margin: 0; color: var(--text-3); font-size: 11.5px; line-height: 1.4; }
 
+/* ─── Auswählen und maskieren, Farbbereich ─── */
+.modal-overlay:has(.dlg-refine) { place-items: center end; background: transparent; }
+.modal-overlay:has(.dlg-refine) .dialog { margin-right: 8px; box-shadow: var(--shadow); }
+.dlg-sub { grid-column: 1 / -1; margin-top: 6px; color: var(--text-3); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+.cr-views { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.cr-views canvas { max-width: 100%; height: auto; border: 1px solid var(--line); cursor: crosshair; }
+
 /* ─── Narrow screens: dock slides over the canvas ─── */
 @media (max-width: 900px) {
   #main, body.dock-hidden #main { grid-template-columns: 44px minmax(0, 1fr); }

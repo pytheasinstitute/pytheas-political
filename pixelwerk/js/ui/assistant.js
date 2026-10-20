@@ -221,6 +221,7 @@
       '3. Sag kurz, dass das Ergebnis auf der Ebene „Blickdicht“ liegt und das Original erhalten bleibt.',
       'Nachbessern nur, wenn danach eine Kante oder ein Fleck eindeutig noch zu sehen ist: undo, dann make_fabric_opaque erneut mit lines genau entlang dieser einen Kante (width etwa 3 % der Bildbreite) bzw. areas um diesen einen Fleck. Wirkt es zu glatt oder künstlich: undo und strength 85.',
       '',
+      'Rezept „Person/Objekt auswählen oder freistellen“: select_subject (ohne Angaben fürs Hauptmotiv, sonst box). Prüfe den Anteil; fehlen Teile (oft Haare vor dunklem Hintergrund) oder ist Hintergrund dabei, select_subject mit keep_selection und add/remove-Strichen. Freistellen: danach remove_background mit use_selection.',
       'Rezept „etwas entfernen“ (Gegenstand, Person im Hintergrund, Kabel, Schrift, Pickel, Fleck): remove_area mit einem Polygon ganz um das Objekt samt Schatten und etwas Rand, oder lines für Dünnes. Mehrere Dinge in einem Aufruf. Teile der Person oder Wichtiges nicht mit einschließen.',
       '',
       'Korrekturen und Filter für adjust (id — Parameter; fehlende Parameter bleiben neutral). Wirkt auf das ganze Bild bzw. nur auf eine vorhandene Auswahl:',
@@ -360,6 +361,50 @@
           state.edited = true;
           progress('Stoff blickdicht gemacht (Ebene „Blickdicht“)');
           return res;
+        },
+      },
+      {
+        name: 'select_subject',
+        description: 'Wählt eine Person, ein Tier oder ein Objekt genau aus (wie Photoshops „Motiv auswählen“ und Schnellauswahl). Ohne Angaben wird das Hauptmotiv gesucht; box = Rechteck um das gewünschte Objekt. Danach lässt sich mit add (Striche über Teile, die fehlen, z. B. Haare) und remove (Striche über Hintergrund, der fälschlich dabei ist) nachbessern; Striche wirken bis zu den nächsten Kanten. Auch allein zum Nachbessern einer vorhandenen Auswahl (keep_selection).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            box: { type: 'object', description: 'Rechteck ganz um das Objekt, mit etwas Rand', properties: { x: { type: 'number' }, y: { type: 'number' }, w: { type: 'number' }, h: { type: 'number' } }, required: ['x', 'y', 'w', 'h'] },
+            add: { type: 'array', description: 'Striche (Punktfolgen) über fehlende Teile des Objekts, width = Pinselbreite', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, width: { type: 'number' } }, required: ['points'] } },
+            remove: { type: 'array', description: 'Striche über Hintergrund, der nicht dazugehört', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, width: { type: 'number' } }, required: ['points'] } },
+            keep_selection: { type: 'boolean', description: 'Vorhandene Auswahl nur mit add/remove nachbessern' },
+          },
+        },
+        execute: async input => {
+          needGeometry();
+          const doc = a.doc;
+          a.finishToolWork();
+          if (!input.keep_selection || doc.selection.empty) {
+            await PW.smartSelect.selectSubject({ box: input.box ? rectToDoc(input.box) : null });
+          }
+          const strokes = list => shapes(list, true).map(s => ({ points: s.points, size: s.width }));
+          const add = strokes(input.add), rem = strokes(input.remove);
+          if (add.length || rem.length) {
+            await PW.ui.busy(async () => {
+              if (add.length) PW.smartSelect.quickSelect(add, 'add');
+              if (rem.length) PW.smartSelect.quickSelect(rem, 'subtract');
+            }, 'Auswahl wird angepasst …');
+            a.commit('Schnellauswahl', 'selection');
+          }
+          progress('Motiv ausgewählt');
+          return selectionResult();
+        },
+      },
+      {
+        name: 'remove_background',
+        description: 'Stellt das Motiv frei wie Photoshops „Hintergrund entfernen“: Der Hintergrund wird über eine Ebenenmaske ausgeblendet (nicht gelöscht), feine Kanten wie Haare werden weich angepasst. Mit use_selection die vorhandene Auswahl als Motiv nehmen (z. B. nach select_subject mit Nachbesserung).',
+        inputSchema: { type: 'object', properties: { use_selection: { type: 'boolean' } } },
+        execute: async input => {
+          a.finishToolWork();
+          await PW.smartSelect.removeBackground({ useSelection: !!input.use_selection });
+          state.edited = true;
+          progress('Hintergrund ausgeblendet (Ebenenmaske)');
+          return { layers: a.doc.layers.map(l => ({ name: l.name, mask: !!l.mask })) };
         },
       },
       {
@@ -870,6 +915,7 @@
     state.showingBefore = on;
     if (view) {
       view.preview = on ? state.beforeImage.canvas : null;
+      view.previewLabel = on ? 'Vorher' : '';
       view.requestRender();
     }
     render();

@@ -98,6 +98,10 @@
   def('select.contract', 'Verkleinern …', () => C().modifySelection('contract'), { enabled: hasSel });
   def('select.feather', 'Weiche Kante …', () => C().modifySelection('feather'), { key: 'Shift+F6', enabled: hasSel });
   def('select.border', 'Umrandung …', () => C().modifySelection('border'), { enabled: hasSel });
+  def('select.subject', 'Motiv', () => PW.smartSelect.selectSubject(), { enabled: hasDoc });
+  def('select.colorRange', 'Farbbereich …', () => PW.smartSelect.colorRangeDialog(), { enabled: hasDoc });
+  def('select.refine', 'Auswählen und maskieren …', () => PW.refineEdge.open(), { key: 'Mod+Alt+R', enabled: hasSel });
+  def('layer.removeBg', 'Hintergrund entfernen', () => PW.smartSelect.removeBackground(), { enabled: hasDoc });
 
   // ─── Filter ───
   def('filter.last', 'Letzter Filter', () => {
@@ -173,10 +177,10 @@
       'layer.new', 'layer.viaCopy', 'layer.viaCut', 'layer.duplicate', 'layer.delete', '-', 'layer.rename', 'layer.style', '-',
       { label: 'Ebenenmaske', items: ['layer.maskReveal', 'layer.maskHide', 'layer.maskRevealSel', 'layer.maskHideSel', '-', 'layer.maskToggle', 'layer.maskApply', 'layer.maskDelete'] },
       { label: 'Anordnen', items: ['layer.front', 'layer.forward', 'layer.backward', 'layer.back'] },
-      'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',
+      'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.removeBg', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',
     ] },
     { label: 'Auswahl', items: [
-      'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.layer', '-',
+      'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
     { label: 'Filter', items: ['filter.last', '-', ...filterGroups] },

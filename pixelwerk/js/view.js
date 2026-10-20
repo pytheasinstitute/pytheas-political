@@ -27,8 +27,9 @@
       this._pointers = new Map();
       this._pinch = null;
       this._pan = null;
-      // A canvas the size of the document shown instead of it (before/after comparison), or null.
+      // A canvas shown instead of the document, stretched to its size (before/after, previews), or null.
       this.preview = null;
+      this.previewLabel = '';
       this.readTheme();
 
       new ResizeObserver(() => this.resize()).observe(container);
@@ -189,13 +190,14 @@
       g.setTransform(dpr * z, 0, 0, dpr * z, dpr * this.x, dpr * this.y);
       g.imageSmoothingEnabled = z < 1;
       g.imageSmoothingQuality = 'high';
-      const pv = this.preview && this.preview.width === doc.width && this.preview.height === doc.height ? this.preview : null;
-      g.drawImage(pv || doc.composite(), 0, 0);
+      const pv = this.preview || null;
+      if (pv) g.drawImage(pv, 0, 0, doc.width, doc.height);
+      else g.drawImage(doc.composite(), 0, 0);
       g.imageSmoothingEnabled = true;
-      if (pv) {
+      if (pv && this.previewLabel) {
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         g.font = '600 12px system-ui, sans-serif';
-        const label = 'Vorher', lw = g.measureText(label).width + 16, lx = Math.max(8, this.x + 8), ly = Math.max(8, this.y + 8);
+        const label = this.previewLabel, lw = g.measureText(label).width + 16, lx = Math.max(8, this.x + 8), ly = Math.max(8, this.y + 8);
         g.fillStyle = 'rgba(0,0,0,0.6)';
         g.fillRect(lx, ly, lw, 22);
         g.fillStyle = '#ffffff';

@@ -22,6 +22,8 @@
     brush: 'Malt weiche Striche in der Farbe des oberen Farbfelds (unten links). Die Größe stellst du oben ein.',
     pencil: 'Malt harte, pixelgenaue Striche, gut für Pixel-Art.',
     clone: 'Kopiert Bildteile: Halte Alt gedrückt und klicke auf eine saubere Stelle. Dann male über das Störende.',
+    quickSelect: 'Male über das, was ausgewählt werden soll: die Auswahl wächst bis zu den Kanten. Mit gedrückter Alt-Taste nimmst du wieder etwas weg.',
+    objectSelect: 'Ziehe ein Rechteck um ein Objekt oder eine Person: es wird genau ausgewählt.',
     spotHeal: 'Male über kleine Störungen wie Pickel, Flecken oder Fussel. Beim Loslassen werden sie aus der Umgebung aufgefüllt.',
     remove: 'Male ganz über ein Objekt, das weg soll, samt Schatten. Beim Loslassen wird es durch passenden Hintergrund ersetzt.',
     heal: 'Alt-Klick auf eine saubere Stelle, dann über die Störung malen. Struktur kommt von dort, Licht und Farbe passen sich an.',
@@ -161,7 +163,13 @@
       { icon: 'text', label: 'Text schreiben', hint: 'Text ins Bild setzen', run: () => useTool('text', TOOL_HELP.text) },
       { icon: 'brush', label: 'Malen', hint: 'Mit dem Pinsel zeichnen', run: () => useTool('brush', 'Male mit gedrückter Maustaste. Die Farbe wählst du unten links im oberen Farbfeld, die Größe oben.', paintableLayer) },
       { icon: 'shape', label: 'Form zeichnen', hint: 'Rechteck, Kreis, Stern oder Pfeil', run: () => useTool('shapeRect', TOOL_HELP.shapeRect) },
-      { icon: 'stamp', label: 'Flecken entfernen', hint: 'Flecken oder störende Dinge wegstempeln', run: () => useTool('clone', TOOL_HELP.clone, () => !!photoLayer()) },
+    ] },
+    { title: 'Retusche & Freistellen', items: [
+      { icon: 'bandage', label: 'Flecken entfernen', hint: 'Pickel, Flecken, Fussel übermalen', run: () => useTool('spotHeal', TOOL_HELP.spotHeal, () => !!photoLayer()) },
+      { icon: 'remove', label: 'Objekt entfernen', hint: 'Störendes übermalen, es verschwindet', run: () => useTool('remove', TOOL_HELP.remove, () => !!photoLayer()) },
+      { icon: 'subject', label: 'Motiv auswählen', hint: 'Person oder Objekt automatisch auswählen', run: () => PW.runAction('select.subject') },
+      { icon: 'quick-select', label: 'Auswahl verbessern', hint: 'Mit dem Pinsel Teile hinzufügen oder wegnehmen', run: () => useTool('quickSelect', TOOL_HELP.quickSelect) },
+      { icon: 'image', label: 'Hintergrund entfernen', hint: 'Motiv freistellen, der Hintergrund wird ausgeblendet', run: () => PW.runAction('layer.removeBg') },
     ] },
     { title: 'Fertig', items: [
       { icon: 'undo', label: 'Rückgängig', hint: 'Den letzten Schritt zurücknehmen (Strg+Z)', run: () => PW.runAction('edit.undo') },
