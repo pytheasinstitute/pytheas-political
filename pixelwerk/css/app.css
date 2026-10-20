@@ -799,6 +799,24 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
 .cr-views { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .cr-views canvas { max-width: 100%; height: auto; border: 1px solid var(--line); cursor: crosshair; }
 
+/* ─── Verflüssigen workspace ─── */
+.liq { position: fixed; inset: 0; z-index: 2100; display: grid; grid-template-columns: 52px minmax(0, 1fr) 280px; background: var(--ui-0, #161618); color: var(--text); }
+.liq-tools { display: flex; flex-direction: column; gap: 4px; padding: 8px 6px; background: var(--ui-1); border-right: 1px solid var(--line); }
+.liq-tools .tool-btn.active { background: var(--accent); color: var(--on-accent); }
+.liq-stage { position: relative; display: grid; place-items: center; overflow: hidden; min-width: 0; touch-action: none; }
+.liq-canvas, .liq-cursor { grid-area: 1 / 1; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+.liq-cursor { pointer-events: none; box-shadow: none; }
+.liq-canvas { cursor: none; touch-action: none; }
+.liq-side { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--ui-1); border-left: 1px solid var(--line); overflow: auto; }
+.liq-side .ctl { grid-template-columns: 88px minmax(0, 1fr) auto; }
+.liq-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.liq-row.end { justify-content: flex-end; margin-top: auto; }
+.liq-hint { margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.4; }
+@media (max-width: 700px) {
+  .liq { grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .liq-side { grid-column: 1 / -1; max-height: 42vh; border-left: 0; border-top: 1px solid var(--line); }
+}
+
 /* ─── Narrow screens: dock slides over the canvas ─── */
 @media (max-width: 900px) {
   #main, body.dock-hidden #main { grid-template-columns: 44px minmax(0, 1fr); }

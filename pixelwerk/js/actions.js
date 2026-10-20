@@ -40,6 +40,9 @@
   def('edit.stroke', 'Kontur …', () => D().stroke());
   def('edit.contentAware', 'Inhaltsbasiert füllen', () => PW.retouch.contentAwareFill(), { key: 'Mod+Shift+Backspace' });
   def('edit.transform', 'Frei transformieren', () => app().startTransform(), { key: 'Mod+T', alt: ['Mod+Alt+T'], enabled: hasLayer });
+  def('edit.distort', 'Verzerren', () => PW.meshTransform.start('distort'), { enabled: hasLayer });
+  def('edit.perspective', 'Perspektivisch verzerren', () => PW.meshTransform.start('perspective'), { enabled: hasLayer });
+  def('edit.warp', 'Verkrümmen', () => PW.meshTransform.start('warp'), { enabled: hasLayer });
   def('edit.flipH', 'Horizontal spiegeln', () => C().flipLayer(true), { enabled: hasLayer });
   def('edit.flipV', 'Vertikal spiegeln', () => C().flipLayer(false), { enabled: hasLayer });
   def('edit.rot180', '180° drehen', () => C().rotateLayer(180), { enabled: hasLayer });
@@ -113,6 +116,7 @@
     if (f.menu !== 'filter') continue;
     def(`filter.${f.id}`, f.name, () => D().runFilter(f), { key: f.shortcut, enabled: hasLayer });
   }
+  def('filter.liquify', 'Verflüssigen …', () => PW.liquify.open(), { key: 'Mod+Shift+X', enabled: hasLayer });
 
   // ─── View ───
   def('view.zoomIn', 'Einzoomen', () => app().view.zoomStep(1), { key: 'Mod+=', alt: ['Mod++', 'Mod+Shift+='] });
@@ -171,7 +175,7 @@
     { label: 'Bearbeiten', items: [
       'edit.undo', 'edit.redo', '-', 'edit.cut', 'edit.copy', 'edit.copyMerged', 'edit.paste', 'edit.clear', '-',
       'edit.fill', 'edit.contentAware', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',
-      { label: 'Transformieren', items: ['edit.rot180', 'edit.rot90cw', 'edit.rot90ccw', '-', 'edit.flipH', 'edit.flipV'] },
+      { label: 'Transformieren', items: ['edit.distort', 'edit.perspective', 'edit.warp', '-', 'edit.rot180', 'edit.rot90cw', 'edit.rot90ccw', '-', 'edit.flipH', 'edit.flipV'] },
     ] },
     { label: 'Bild', items: [
       { label: 'Korrekturen', items: adjustItems },
@@ -190,7 +194,7 @@
       'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
-    { label: 'Filter', items: ['filter.last', '-', ...filterTop, '-', ...filterGroups] },
+    { label: 'Filter', items: ['filter.last', '-', ...filterTop, 'filter.liquify', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
     { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
     { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },

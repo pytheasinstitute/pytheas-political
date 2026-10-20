@@ -22,6 +22,7 @@
     brush: 'Malt weiche Striche in der Farbe des oberen Farbfelds (unten links). Die Größe stellst du oben ein.',
     pencil: 'Malt harte, pixelgenaue Striche, gut für Pixel-Art.',
     clone: 'Kopiert Bildteile: Halte Alt gedrückt und klicke auf eine saubere Stelle. Dann male über das Störende.',
+    historyBrush: 'Malt einen früheren Stand zurück: Wähle oben bei „Quelle“ einen Schritt aus dem Protokoll (z. B. 1. Öffnen) und male über die Stelle.',
     quickSelect: 'Male über das, was ausgewählt werden soll: die Auswahl wächst bis zu den Kanten. Mit gedrückter Alt-Taste nimmst du wieder etwas weg.',
     objectSelect: 'Ziehe ein Rechteck um ein Objekt oder eine Person: es wird genau ausgewählt.',
     spotHeal: 'Male über kleine Störungen wie Pickel, Flecken oder Fussel. Beim Loslassen werden sie aus der Umgebung aufgefüllt.',

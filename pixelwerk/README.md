@@ -85,6 +85,7 @@ Ohne Photoshop-Kenntnisse:
 | J | Bereichsreparatur-Pinsel, Entfernen-Werkzeug (beide inhaltsbasiert), Reparatur-Pinsel (Alt-Klick für die Quelle), Ausbessern-Werkzeug |
 | B | Pinsel (Größe, Härte, Deckkraft, Fluss, Stiftdruck), Buntstift |
 | S | Kopierstempel (Alt-Klick für die Quelle, ausgerichtet, alle Ebenen) |
+| Y | Protokollpinsel (malt einen gewählten Protokollschritt zurück) |
 | E | Radiergummi |
 | G | Verlauf (linear, radial, Winkel, reflektiert, Raute), Füllwerkzeug |
 | R | Weichzeichner, Scharfzeichner, Wischfinger |
@@ -93,6 +94,7 @@ Ohne Photoshop-Kenntnisse:
 | U | Rechteck (mit Radius), Ellipse, Polygon/Stern, Linie/Pfeil |
 | H, Z | Hand, Zoom |
 | Strg+T | Frei transformieren (skalieren, drehen; Umschalt: frei bzw. 15°-Schritte; Alt: von der Mitte) |
+| Bearbeiten › Transformieren | Verzerren (vier Ecken frei), Perspektivisch verzerren (Ecken paarweise), Verkrümmen (4 × 4-Gitter, Bézier); Vorschau per Dreiecksgitter, Ergebnis pixelgenau ohne Nähte |
 
 **Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Grenze: Photoshop nutzt für „Motiv“ ein neuronales Netz; Pixelwerk rechnet mit Farben und Kanten. Bei Haaren vor ähnlich farbigem Hintergrund braucht es ein paar Striche mit der Schnellauswahl.
 
@@ -101,6 +103,8 @@ Ohne Photoshop-Kenntnisse:
 **Einstellungsebenen** wie in Photoshop: Ein Klick im Bedienfeld „Korrekturen“ (oder Ebene › Neue Einstellungsebene) legt die Korrektur als eigene Ebene an. Sie wirkt auf alles darunter, die Pixel bleiben unverändert; über ihre Maske (Malen mit Schwarz, eine Auswahl wird beim Anlegen zur Maske), Deckkraft und Füllmethode lässt sie sich begrenzen, ein Doppelklick ändert die Einstellungen. Ergebnisse unter einer Einstellungsebene werden zwischengespeichert, so bleibt Malen darüber flüssig. Alt-Klick im Bedienfeld wendet die Korrektur wie bisher direkt an.
 
 **Korrekturen**: Helligkeit/Kontrast, Tonwertkorrektur (mit Histogramm), Gradationskurven (RGB und Einzelkanäle), Belichtung, Dynamik, Farbton/Sättigung (auch Färben), Farbbalance, Schwarzweiß, Fotofilter, Kanalmixer, Selektive Farbkorrektur, Tiefen/Lichter, Umkehren, Tontrennung, Schwellenwert, Verlaufsumsetzung, Sättigung verringern, Tonwertangleichung, Auto-Farbton/-Kontrast/-Farbe.
+
+**Verflüssigen** (Filter › Verflüssigen, Strg+Umschalt+X): eigener Arbeitsbereich mit Mitziehen, Rekonstruieren, Glätten, Strudel, Zusammenziehen, Aufblasen, Maske fixieren und lösen; Größe, Dichte, Druck, Gitter- und Maskenansicht. Eine Auswahl schützt alles außerhalb. Technisch ein Verschiebungsfeld (bis ~1,5 MP), das beim OK in voller Auflösung angewendet wird (12 MP in unter einer Sekunde).
 
 **Filter**: Camera-Raw-Filter (Strg+Umschalt+A: Weißabgleich, Belichtung, Kontrast, Lichter, Tiefen, Weiß, Schwarz, Struktur, Klarheit, Dunst entfernen, Dynamik, Sättigung), Rauschen reduzieren, Oberfläche weichzeichnen,
 - Gaußscher Weichzeichner, Bewegungsunschärfe

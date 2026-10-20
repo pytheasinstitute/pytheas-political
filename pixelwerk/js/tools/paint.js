@@ -295,6 +295,36 @@
     },
   });
 
+  // ─── History brush: paints back a chosen history state of this layer ───
+  paintTool({
+    id: 'historyBrush', group: 'history', name: 'Protokollpinsel-Werkzeug', historyName: 'Protokollpinsel', key: 'Y', icon: 'history-brush',
+    options: { size: 40, hardness: 50, opacity: 100, flow: 100, source: 0, pressure: false },
+    bar: [
+      { type: 'brush' },
+      { type: 'sep' },
+      { type: 'range', key: 'opacity', label: 'Deckkraft', min: 1, max: 100, unit: '%' },
+      { type: 'range', key: 'flow', label: 'Fluss', min: 1, max: 100, unit: '%' },
+      { type: 'select', key: 'source', label: 'Quelle', options: () => {
+        const doc = app().doc;
+        return doc ? doc.history.states.map((st, i) => [i, `${i + 1}. ${st.name}`]) : [[0, 'Öffnen']];
+      } },
+    ],
+    hint: 'Malt den gewählten Protokollschritt zurück, z. B. den Zustand beim Öffnen.',
+    engineOptions(layer) {
+      const doc = app().doc, states = doc.history.states;
+      const st = states[clamp(Number(this.options.source) || 0, 0, states.length - 1)];
+      const rec = st && st.snap.layers.find(r => r.id === layer.id);
+      if (!rec || st.snap.width !== doc.width || st.snap.height !== doc.height) {
+        app().toast('Diese Ebene gab es im gewählten Protokollschritt noch nicht (oder das Bild hatte eine andere Größe).');
+        return null;
+      }
+      const src = layer.targetIsMask ? rec.mask : rec.pixels;
+      if (!src) return null;
+      const o = this.options;
+      return { size: o.size, hardness: o.hardness / 100, opacity: o.opacity / 100, flow: o.flow / 100, mode: 'clone', clone: { canvas: src, dx: 0, dy: 0 }, pressureSize: o.pressure };
+    },
+  });
+
   // ─── Clone stamp ───
   paintTool({
     id: 'clone', group: 'clone', name: 'Kopierstempel-Werkzeug', historyName: 'Kopierstempel', key: 'S', icon: 'stamp',
