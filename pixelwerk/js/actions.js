@@ -38,6 +38,7 @@
   def('edit.fillFg', 'Mit Vordergrundfarbe füllen', () => C().fillWith(app().fg), { key: 'Alt+Backspace', alt: ['Alt+Delete'] });
   def('edit.fillBg', 'Mit Hintergrundfarbe füllen', () => C().fillWith(app().bg), { key: 'Mod+Backspace', alt: ['Mod+Delete'] });
   def('edit.stroke', 'Kontur …', () => D().stroke());
+  def('edit.contentAware', 'Inhaltsbasiert füllen', () => PW.retouch.contentAwareFill(), { key: 'Mod+Shift+Backspace' });
   def('edit.transform', 'Frei transformieren', () => app().startTransform(), { key: 'Mod+T', alt: ['Mod+Alt+T'], enabled: hasLayer });
   def('edit.flipH', 'Horizontal spiegeln', () => C().flipLayer(true), { enabled: hasLayer });
   def('edit.flipV', 'Vertikal spiegeln', () => C().flipLayer(false), { enabled: hasLayer });
@@ -159,7 +160,7 @@
     { label: 'Datei', items: ['file.new', 'file.open', 'file.library', 'file.place', '-', 'file.close', 'file.closeAll', '-', 'file.save', 'file.export', 'file.quickPng'] },
     { label: 'Bearbeiten', items: [
       'edit.undo', 'edit.redo', '-', 'edit.cut', 'edit.copy', 'edit.copyMerged', 'edit.paste', 'edit.clear', '-',
-      'edit.fill', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',
+      'edit.fill', 'edit.contentAware', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',
       { label: 'Transformieren', items: ['edit.rot180', 'edit.rot90cw', 'edit.rot90ccw', '-', 'edit.flipH', 'edit.flipV'] },
     ] },
     { label: 'Bild', items: [

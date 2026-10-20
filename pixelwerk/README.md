@@ -21,6 +21,7 @@ Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert de
 | `select_garment` | Kleidungsstück ab einem Punkt auf dem Stoff auswählen; Haut und Haare bleiben draußen |
 | `select_area` | Auswahl per Polygon, Rechteck oder Ellipse ändern oder aufheben |
 | `make_fabric_opaque` | Durchscheinenden Stoff abdecken; findet Durchscheinendes selbst, Kanten und Flecken lassen sich zum Nachbessern markieren |
+| `remove_area` | Gegenstände, Kabel, Flecken entfernen wie mit „Inhaltsbasiert füllen“, auf eigener Ebene |
 | `adjust` | Korrekturen und Filter, z. B. Helligkeit, Auto-Verbessern, Weichzeichnen |
 | `transform_image` | Zuschneiden (auch nach Seitenverhältnis), drehen, spiegeln |
 | `add_text` | Text als editierbare Textebene |
@@ -79,6 +80,7 @@ Ohne Photoshop-Kenntnisse:
 | W | Zauberstab (Toleranz, benachbart, alle Ebenen) |
 | C | Freistellen (Seitenverhältnisse, Drittel-Raster) |
 | I | Pipette (1 bis 11 × 11 px, Aufnahmering) |
+| J | Bereichsreparatur-Pinsel, Entfernen-Werkzeug (beide inhaltsbasiert), Reparatur-Pinsel (Alt-Klick für die Quelle), Ausbessern-Werkzeug |
 | B | Pinsel (Größe, Härte, Deckkraft, Fluss, Stiftdruck), Buntstift |
 | S | Kopierstempel (Alt-Klick für die Quelle, ausgerichtet, alle Ebenen) |
 | E | Radiergummi |
@@ -89,6 +91,8 @@ Ohne Photoshop-Kenntnisse:
 | U | Rechteck (mit Radius), Ellipse, Polygon/Stern, Linie/Pfeil |
 | H, Z | Hand, Zoom |
 | Strg+T | Frei transformieren (skalieren, drehen; Umschalt: frei bzw. 15°-Schritte; Alt: von der Mitte) |
+
+**Retusche** wie in Photoshop: Bereichsreparatur-Pinsel und Entfernen-Werkzeug bauen übermalte Stellen beim Loslassen aus der Umgebung neu auf. Bearbeiten › Inhaltsbasiert füllen (Strg+Umschalt+Rücktaste, auch unter Fläche füllen › Inhalt) macht das für eine Auswahl. Reparatur-Pinsel und Ausbessern-Werkzeug übernehmen die Struktur einer gewählten Stelle und passen Licht und Farbe an den Rand des Ziels an. Das Auffüllen sucht für jedes 7 × 7-Stück das ähnlichste Stück außerhalb (PatchMatch), grob nach fein, mit Farbanpassung, und gleicht die Naht zum Schluss an.
 
 **Korrekturen**: Helligkeit/Kontrast, Tonwertkorrektur (mit Histogramm), Gradationskurven (RGB und Einzelkanäle), Belichtung, Dynamik, Farbton/Sättigung (auch Färben), Farbbalance, Schwarzweiß, Fotofilter, Tiefen/Lichter, Umkehren, Tontrennung, Schwellenwert, Verlaufsumsetzung, Sättigung verringern, Tonwertangleichung, Auto-Farbton/-Kontrast/-Farbe.
 
@@ -149,7 +153,8 @@ pixelwerk/
   js/document.js      Dokument: Ebenenstapel, Compositing mit Füllmethoden/Stilen, Geometrie, Protokoll
   js/filters.js       Korrekturen und Filter auf ImageData, Live-Vorschau-Sitzung
   js/view.js          Zoom, Verschieben, Darstellung, Eingaben (Maus, Stift, Touch)
-  js/tools/*.js       Werkzeuge (Malen, Auswahl, Verschieben, Füllen, Text, Formen, Freistellen, Transformieren)
+  js/tools/*.js       Werkzeuge (Malen, Retusche, Auswahl, Verschieben, Füllen, Text, Formen, Freistellen, Transformieren)
+  js/inpaint.js       Inhaltsbasiert füllen (PatchMatch über mehrere Auflösungen, Farbanpassung) und Membran-Angleichung
   js/app.js           App-Zustand: Dokumente, aktives Werkzeug, Farben, Protokoll-Einträge
   js/commands.js      Befehle hinter Menüs und Kürzeln
   js/actions.js       Aktionsregister → Menüs, Tastaturkürzel, Hilfe

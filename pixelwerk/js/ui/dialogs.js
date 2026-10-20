@@ -96,7 +96,13 @@
   // Small form from control defs; resolves with values or null.
   async function form(title, defs, values, opts = {}) {
     const v = { ...values };
-    const rows = defs.map(d => control(d, v[d.key], val => (v[d.key] = val)));
+    // Rows with showIf appear only while it holds for the current values.
+    const sync = () => defs.forEach((d, i) => d.showIf && (rows[i].hidden = !d.showIf(v)));
+    const rows = defs.map(d => control(d, v[d.key], val => {
+      v[d.key] = val;
+      sync();
+    }));
+    sync();
     const res = await modal({ title, content: el('div', { class: 'form-grid' }, rows), width: opts.width || 420 });
     return res === 'ok' ? v : null;
   }
@@ -762,13 +768,14 @@
     a.finishToolWork();
     const v = { use: 'fg', blend: 'source-over', opacity: 100, preserve: false, color: a.fg };
     const res = await form('Fläche füllen', [
-      { type: 'select', key: 'use', label: 'Inhalt', options: [['fg', 'Vordergrundfarbe'], ['bg', 'Hintergrundfarbe'], ['color', 'Farbe …'], ['black', 'Schwarz'], ['gray', '50 % Grau'], ['white', 'Weiß']] },
-      { type: 'color', key: 'color', label: 'Farbe', title: 'Füllfarbe' },
+      { type: 'select', key: 'use', label: 'Inhalt', options: [['fg', 'Vordergrundfarbe'], ['bg', 'Hintergrundfarbe'], ['color', 'Farbe …'], ['content', 'Inhaltsbasiert'], ['black', 'Schwarz'], ['gray', '50 % Grau'], ['white', 'Weiß']] },
+      { type: 'color', key: 'color', label: 'Farbe', title: 'Füllfarbe', showIf: o => o.use === 'color' },
       { type: 'select', key: 'blend', label: 'Modus', options: PW.BLEND_MODES.filter(Boolean) },
       { type: 'range', key: 'opacity', label: 'Deckkraft', min: 1, max: 100, unit: '%' },
       { type: 'check', key: 'preserve', label: 'Transparente Bereiche schützen' },
     ], v);
     if (!res) return;
+    if (res.use === 'content') return PW.retouch.contentAwareFill();
     const color = { fg: a.fg, bg: a.bg, color: res.color, black: '#000000', gray: '#808080', white: '#ffffff' }[res.use];
     PW.commands.fillWith(color, res.opacity / 100, res.blend, res.preserve);
   }

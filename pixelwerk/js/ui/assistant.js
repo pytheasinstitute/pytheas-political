@@ -221,6 +221,8 @@
       '3. Sag kurz, dass das Ergebnis auf der Ebene „Blickdicht“ liegt und das Original erhalten bleibt.',
       'Nachbessern nur, wenn danach eine Kante oder ein Fleck eindeutig noch zu sehen ist: undo, dann make_fabric_opaque erneut mit lines genau entlang dieser einen Kante (width etwa 3 % der Bildbreite) bzw. areas um diesen einen Fleck. Wirkt es zu glatt oder künstlich: undo und strength 85.',
       '',
+      'Rezept „etwas entfernen“ (Gegenstand, Person im Hintergrund, Kabel, Schrift, Pickel, Fleck): remove_area mit einem Polygon ganz um das Objekt samt Schatten und etwas Rand, oder lines für Dünnes. Mehrere Dinge in einem Aufruf. Teile der Person oder Wichtiges nicht mit einschließen.',
+      '',
       'Korrekturen und Filter für adjust (id — Parameter; fehlende Parameter bleiben neutral). Wirkt auf das ganze Bild bzw. nur auf eine vorhandene Auswahl:',
       catalogue(),
       '',
@@ -358,6 +360,56 @@
           state.edited = true;
           progress('Stoff blickdicht gemacht (Ebene „Blickdicht“)');
           return res;
+        },
+      },
+      {
+        name: 'remove_area',
+        description: 'Entfernt Störendes wie Photoshops Entfernen-Werkzeug bzw. „Inhaltsbasiert füllen“: Die markierten Stellen werden aus ihrer Umgebung neu aufgebaut, Struktur, Licht und Farbe passen sich an. Für Gegenstände oder Personen im Hintergrund, Kabel, Schrift, Flecken, Pickel, Fussel, eine einzelne Kante, die durch Stoff scheint. Ergebnis auf eigener Ebene „Entfernt“, das Original bleibt.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            areas: { type: 'array', description: 'Polygone ganz um das, was weg soll, samt Schatten, mit etwas Rand', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } } }, required: ['points'] } },
+            lines: { type: 'array', description: 'Für Dünnes (Kabel, Haarsträhne, Kante): Punktfolge entlang der Mitte, width so breit, dass es sicher bedeckt ist', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, width: { type: 'number' } }, required: ['points'] } },
+          },
+        },
+        execute: async input => {
+          needGeometry();
+          const doc = a.doc, areas = shapes(input.areas), lines = shapes(input.lines, true);
+          if (!areas.length && !lines.length) throw new Error('Gib areas oder lines an.');
+          a.finishToolWork();
+          const mask = PW.util.createCanvas(doc.width, doc.height), g = mask.getContext('2d');
+          g.fillStyle = g.strokeStyle = '#fff';
+          g.lineCap = g.lineJoin = 'round';
+          for (const s of areas) {
+            if (s.points.length < 3) continue;
+            g.beginPath();
+            s.points.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+            g.closePath();
+            g.fill();
+          }
+          for (const s of lines) {
+            g.lineWidth = Math.max(2, s.width);
+            g.beginPath();
+            s.points.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+            if (s.points.length === 1) g.lineTo(s.points[0][0] + 0.01, s.points[0][1]);
+            g.stroke();
+          }
+          if (!PW.util.alphaBounds(mask)) throw new Error('Die Markierung liegt außerhalb des Bildes.');
+          // On its own layer above everything, built from what is visible.
+          const layer = doc.createLayer('Entfernt');
+          doc.addLayer(layer, doc.layers.length);
+          const sc = Math.max(1, Math.max(doc.width, doc.height) / 2000);
+          try {
+            await PW.retouch.rebuild(layer, mask, { grow: 3 * sc, reach: 1.2, sampleAll: true, clip: false, label: 'Wird entfernt' });
+          } catch (e) {
+            doc.removeLayer(layer.id);
+            throw e;
+          }
+          doc.setActive(layer.id);
+          a.commit('Entfernen', 'remove');
+          state.edited = true;
+          progress('Stelle entfernt (Ebene „Entfernt“)');
+          return { layer: layer.name };
         },
       },
       {

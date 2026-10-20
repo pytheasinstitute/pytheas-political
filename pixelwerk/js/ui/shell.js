@@ -353,8 +353,9 @@
     setTimeout(() => t.remove(), 3000);
   }
 
-  async function busy(fn) {
+  async function busy(fn, label) {
     const b = $('busy');
+    busyText(label || 'Wird berechnet …');
     b.hidden = false;
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
     try {
@@ -362,6 +363,10 @@
     } finally {
       b.hidden = true;
     }
+  }
+
+  function busyText(t) {
+    $('busy').querySelector('span').textContent = t;
   }
 
   // ─── Theme & dock ───
@@ -409,5 +414,5 @@
     renderTabs();
   }
 
-  Object.assign(PW.ui, { initShell, closeMenus, toast, busy, theme, setTheme, applySavedTheme, toggleDock, renderTabs });
+  Object.assign(PW.ui, { initShell, closeMenus, toast, busy, busyText, theme, setTheme, applySavedTheme, toggleDock, renderTabs });
 })(window.PW);
