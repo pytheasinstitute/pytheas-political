@@ -824,6 +824,28 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
   #status-pos { display: none; }
 }
 
+/* ─── Phones: the dock is a sheet from below, the picture stays visible above it ─── */
+@media (max-width: 600px) {
+  #dock {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 56vh;
+    height: 56dvh;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 14px 14px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(105%);
+  }
+  body.dock-open #dock { transform: none; }
+  body.dock-open #workspace { margin-bottom: calc(56vh - 24px); margin-bottom: calc(56dvh - 24px); }
+  /* While chatting with Claude the sheet belongs to the chat. */
+  #dock:has(.panel-group[data-panel="assistant"]:not(.collapsed)) .panel-group:not([data-panel="assistant"]) { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation-duration: 0.01ms !important; }
 }

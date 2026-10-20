@@ -27,6 +27,8 @@
       this._pointers = new Map();
       this._pinch = null;
       this._pan = null;
+      // A canvas the size of the document shown instead of it (before/after comparison), or null.
+      this.preview = null;
       this.readTheme();
 
       new ResizeObserver(() => this.resize()).observe(container);
@@ -64,9 +66,15 @@
       this.canvas.style.width = this.cw + 'px';
       this.canvas.style.height = this.ch + 'px';
       if (this.doc && !first) {
-        this.x += (this.cw - oldW) / 2;
-        this.y += (this.ch - oldH) / 2;
-        this.constrain();
+        // A picture shown whole stays whole (e.g. when a panel slides up on a phone); otherwise keep the spot.
+        const pad = oldW < 600 ? 16 : 40;
+        const wasFit = Math.min(1, (oldW - pad * 2) / this.doc.width, (oldH - pad * 2) / this.doc.height);
+        if (Math.abs(this.zoom - Math.max(0.01, wasFit)) < 1e-3 && (this.cw !== oldW || this.ch !== oldH)) this.fit(false);
+        else {
+          this.x += (this.cw - oldW) / 2;
+          this.y += (this.ch - oldH) / 2;
+          this.constrain();
+        }
       }
       this.render();
     }
@@ -181,8 +189,19 @@
       g.setTransform(dpr * z, 0, 0, dpr * z, dpr * this.x, dpr * this.y);
       g.imageSmoothingEnabled = z < 1;
       g.imageSmoothingQuality = 'high';
-      g.drawImage(doc.composite(), 0, 0);
+      const pv = this.preview && this.preview.width === doc.width && this.preview.height === doc.height ? this.preview : null;
+      g.drawImage(pv || doc.composite(), 0, 0);
       g.imageSmoothingEnabled = true;
+      if (pv) {
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.font = '600 12px system-ui, sans-serif';
+        const label = 'Vorher', lw = g.measureText(label).width + 16, lx = Math.max(8, this.x + 8), ly = Math.max(8, this.y + 8);
+        g.fillStyle = 'rgba(0,0,0,0.6)';
+        g.fillRect(lx, ly, lw, 22);
+        g.fillStyle = '#ffffff';
+        g.textBaseline = 'middle';
+        g.fillText(label, lx + 8, ly + 11);
+      }
 
       const tool = PW.app && PW.app.activeTool();
 

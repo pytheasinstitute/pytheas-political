@@ -59,6 +59,8 @@
     autoCheck: pref('pw-assistant-check', ['1', '0'], '1') === '1',
     maxImages: 0,
     before: null, // image of the state before the last request, for the automatic check
+    beforeImage: null, // {doc, canvas} full size, for the before/after button
+    showingBefore: false,
   };
   let ui = null;
   let samplePromise = null;
@@ -531,7 +533,11 @@
     a.finishToolWork();
     const auto = !!opts.auto;
     state.busy = true;
-    if (!auto) state.edited = false;
+    if (!auto) {
+      state.edited = false;
+      showBefore(false);
+      state.beforeImage = { doc: a.doc, canvas: a.doc.flattened() };
+    }
     if (auto) addLog('info', 'Claude prüft das Ergebnis …');
     else addLog('user', text);
     state.chat.push({ role: 'user', content: text });
@@ -771,7 +777,9 @@
       log.append(el('div', { class: 'asst-chips' }, [
         el('button', { type: 'button', class: 'chip-btn', text: 'Ergebnis prüfen und verbessern', onclick: () => send('Schau dir das Ergebnis an. Ist noch etwas zu sehen, das weg sollte, oder wirkt etwas bearbeitet? Dann korrigiere es; sonst sag kurz, dass es passt.') }),
         el('button', { type: 'button', class: 'chip-btn', text: 'Rückgängig', onclick: () => { app().undo(); state.edited = false; render(); } }),
-      ]));
+        canCompare() ? el('button', { type: 'button', class: 'chip-btn asst-compare', 'aria-pressed': String(state.showingBefore), text: state.showingBefore ? 'Nachher zeigen' : 'Vorher zeigen', onclick: () => showBefore(!state.showingBefore) }) : null,
+        el('button', { type: 'button', class: 'chip-btn', text: 'Bild speichern', onclick: () => PW.runAction('file.export') }),
+      ].filter(Boolean)));
     }
     const off = !available();
     form.hidden = off;
@@ -797,8 +805,27 @@
     scrollDown();
   }
 
+  // Before/after: the view shows the picture as it was before the last request instead of the document.
+  function canCompare() {
+    const b = state.beforeImage, doc = app().doc;
+    return !!(b && doc && b.doc === doc && b.canvas.width === doc.width && b.canvas.height === doc.height);
+  }
+
+  function showBefore(on) {
+    const view = app().view;
+    on = !!on && canCompare();
+    if (!on && !state.showingBefore) return;
+    state.showingBefore = on;
+    if (view) {
+      view.preview = on ? state.beforeImage.canvas : null;
+      view.requestRender();
+    }
+    render();
+  }
+
   function open(prefill) {
     PW.ui.closeMenus();
+    PW.guide.hideCoach();
     PW.panels.showTab('assistant');
     if (matchMedia('(max-width: 900px)').matches) document.body.classList.add('dock-open');
     if (ui) {
@@ -806,6 +833,10 @@
       requestAnimationFrame(() => ui && ui.box.focus());
     }
   }
+
+  // Any change or another picture ends the before view.
+  PW.bus.on('history:changed', () => showBefore(false));
+  PW.bus.on('doc:switched', () => showBefore(false));
 
   PW.assistant = { init, build, open, send, stop, exportChat, importChat, status: () => state.status, models: MODELS.map(m => m.id), _state: state };
 })(window.PW);

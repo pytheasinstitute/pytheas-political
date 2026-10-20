@@ -20,13 +20,13 @@ Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert de
 | --- | --- |
 | `select_garment` | Kleidungsstück ab einem Punkt auf dem Stoff auswählen; Haut und Haare bleiben draußen |
 | `select_area` | Auswahl per Polygon, Rechteck oder Ellipse ändern oder aufheben |
-| `make_fabric_opaque` | Durchscheinenden Stoff abdecken, optional mit markierten Kanten, Flächen und geschützten Haaren |
+| `make_fabric_opaque` | Durchscheinenden Stoff abdecken; findet Durchscheinendes selbst, Kanten und Flecken lassen sich zum Nachbessern markieren |
 | `adjust` | Korrekturen und Filter, z. B. Helligkeit, Auto-Verbessern, Weichzeichnen |
 | `transform_image` | Zuschneiden (auch nach Seitenverhältnis), drehen, spiegeln |
 | `add_text` | Text als editierbare Textebene |
 | `undo`, `get_state` | Schritte zurücknehmen, Stand abfragen |
 
-Jeder Schritt landet im Protokoll und lässt sich mit Strg+Z zurücknehmen.
+Jeder Schritt landet im Protokoll und lässt sich mit Strg+Z zurücknehmen. Nach einer Bearbeitung zeigt „Vorher zeigen“ das Bild, wie es vor der Bitte war, und „Bild speichern“ speichert das Ergebnis.
 
 Unter dem Eingabefeld lässt sich einstellen, wer antwortet:
 
@@ -38,7 +38,7 @@ Unter dem Eingabefeld lässt sich einstellen, wer antwortet:
 
 Die Wahl merkt sich der Browser. Ist ein Modell für das Konto nicht freigeschaltet, antwortet claude.ai mit der passenden Stufe, und der Chat sagt das dazu.
 
-Zum Bild bekommt Claude eine zweite Fassung mit einem beschrifteten Gitter alle 100 Pixel. Daran liest es Koordinaten für Auswahl und Markierungen ab.
+Zum Bild bekommt Claude eine zweite Fassung mit einem beschrifteten Gitter alle 100 Pixel. Daran liest es Koordinaten für Auswahl und Markierungen ab. Beim Blickdicht-Machen braucht es nur einen Punkt auf dem Stoff und einen Rahmen um das Kleidungsstück; Markierungen setzt es nur, wenn danach noch etwas zu sehen ist.
 
 Der Assistent nutzt die Fähigkeit `sample` der claude.ai-Artifacts und das Claude-Konto der Person, die die Seite ansieht. Beim ersten Mal fragt claude.ai, ob die Seite Claude benutzen und Bilder senden darf. Außerhalb von claude.ai (lokal, über `file://` oder einen eigenen Webserver) ist der Assistent nicht verfügbar, und das Bedienfeld weist darauf hin.
 
@@ -53,7 +53,7 @@ Ohne Photoshop-Kenntnisse:
   2. Die Regler öffnen sich von selbst; Stärke, Farbe des Stoffs und Stoffstruktur mit Live-Vorschau einstellen. „Linien und Muster darunter ausblenden“ entfernt schwache Kanten, etwa vom BH.
   3. Das Ergebnis liegt auf einer eigenen Ebene „Blickdicht“, das Original bleibt erhalten.
 
-  Das Verfahren trennt Licht, Körperform, durchscheinende Details und Gewebe. Durchscheinendes wird geglättet, Falten und Gewebe bleiben, damit das Ergebnis nicht bearbeitet aussieht. Über den Claude-Assistenten geht es auch ohne Lasso.
+  Dünner Stoff über Haut ist eine Mischung aus beidem; wie warm eine Stelle ist, verrät, wie viel Haut darin steckt. Diesen Anteil nimmt das Verfahren zuerst heraus. Danach trennt es Licht, Körperform, Linien und Gewebe: Licht, Form, Falten und Nähte bleiben, schwache Kanten und Flecken verschwinden, das Gewebe wird gleichmäßig. Haare über dem Stoff bleiben unverändert, und wo die Auswahl mitten im Stoff endet, läuft die Änderung weich aus. Über den Claude-Assistenten geht es auch ohne Lasso.
 - **Tipp-Leiste**: Unten im Bild erklärt sie das gewählte Werkzeug in Alltagssprache; abschaltbar unter Hilfe › Einsteiger-Tipps.
 - **Erste Schritte (F1)**: kurze Anleitungen mit „Zeig’s mir“-Knöpfen.
 - **Meine Bilder**: Alles, was du bearbeitest, bleibt gespeichert und lässt sich jederzeit wieder öffnen.
@@ -117,7 +117,7 @@ Alle Korrekturen und Filter zeigen eine Live-Vorschau und wirken nur innerhalb d
 - mehrere Dokumente in Tabs
 - Öffnen und Platzieren per Dialog, Drag & Drop oder Strg+V
 - Kopieren, auf eine Ebene reduziert kopieren, Ausschneiden, Einfügen
-- Export als PNG, JPEG oder WebP (mit Qualität und Skalierung)
+- Bild speichern als JPG (für Fotos voreingestellt, Qualität 92 %), PNG oder WebP, mit Skalierung
 - Projekte mit allen Ebenen als `.pxw` speichern und wieder öffnen
 
 **Meine Bilder** (Datei › Meine Bilder, Schnellstart oder Startbildschirm):
@@ -133,7 +133,7 @@ Alle Korrekturen und Filter zeigen eine Live-Vorschau und wirken nur innerhalb d
 - Pixelraster ab 800 %
 - dunkles und helles Design
 - Touch-Gesten (zwei Finger zoomen und verschieben)
-- Bedienfelder als Overlay auf schmalen Bildschirmen
+- Bedienfelder als Overlay auf schmalen Bildschirmen; am Handy als Fenster von unten, das Bild bleibt darüber sichtbar
 
 Alle Kürzel stehen unter **Hilfe › Tastaturbefehle**. Manche, etwa Strg+N, Strg+T und Strg+W, behält der Browser für sich. Dafür gibt es Alternativen wie Strg+Alt+N und Strg+Alt+T.
 
@@ -155,7 +155,7 @@ pixelwerk/
   js/actions.js       Aktionsregister → Menüs, Tastaturkürzel, Hilfe
   js/ui/*.js          Bedienelemente, Dialoge, Menüs/Leisten, Bedienfelder, Icons
   js/io.js            Öffnen, Platzieren, Einfügen, Drag & Drop, Projekt speichern, Export
-  js/fabric.js        „Stoff blickdichter machen“: Frequenztrennung, Zonen, Kleidungsauswahl, eigene Ebene
+  js/fabric.js        „Stoff blickdichter machen“: Entmischen nach Farbwärme, Frequenztrennung, Haarschutz, Zonen, Kleidungsauswahl
   js/ui/guide.js      Einsteigerhilfe: Rundgang, Tipp-Leiste, Schnellstart, Erste Schritte
   js/ui/assistant.js  Claude-Assistent: Chat, Bildanhang, Werkzeuge für Claude
   js/library.js       „Meine Bilder“: alle Bilder im Browser speichern, offene nach dem Neuladen zurückholen

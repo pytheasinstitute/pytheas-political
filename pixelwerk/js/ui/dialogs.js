@@ -850,27 +850,29 @@
     const a = app(), doc = a.doc;
     if (!doc) return;
     a.finishToolWork();
-    const v = { format: 'png', quality: 90, scale: 100, name: doc.name.replace(/\.[a-z0-9]+$/i, '') };
+    // A photo goes out as a photo (JPEG, high quality, ready to send); everything else as PNG.
+    const photo = /\.(jpe?g|heic|heif)$/i.test(doc.name);
+    const v = { format: photo ? 'jpeg' : 'png', quality: 92, scale: 100, name: doc.name.replace(/\.[a-z0-9]+$/i, '') };
     const nameId = 'ex-name';
     const nameIn = el('input', { id: nameId, type: 'text', class: 'text', value: v.name });
     nameIn.addEventListener('keydown', e => e.stopPropagation());
     const info = el('p', { class: 'dlg-info' });
     const upd = () => (info.textContent = `Ausgabe: ${Math.max(1, Math.round((doc.width * v.scale) / 100))} × ${Math.max(1, Math.round((doc.height * v.scale) / 100))} Pixel`);
     const q = control({ type: 'range', key: 'quality', label: 'Qualität', min: 1, max: 100, unit: '%' }, v.quality, x => (v.quality = x));
-    const fmtC = control({ type: 'select', key: 'format', label: 'Format', options: [['png', 'PNG (mit Transparenz)'], ['jpeg', 'JPEG'], ['webp', 'WebP']] }, v.format, x => {
+    const fmtC = control({ type: 'select', key: 'format', label: 'Format', options: [['jpeg', 'JPG – für Fotos'], ['png', 'PNG – mit Transparenz'], ['webp', 'WebP']] }, v.format, x => {
       v.format = x;
       q.hidden = x === 'png';
     });
-    q.hidden = true;
+    q.hidden = v.format === 'png';
     const sc = control({ type: 'number', key: 'scale', label: 'Skalierung', min: 1, max: 400, unit: '%' }, v.scale, x => {
       v.scale = x;
       upd();
     });
     upd();
     const res = await modal({
-      title: 'Exportieren als',
+      title: 'Bild speichern',
       content: el('div', { class: 'form-grid' }, [el('div', { class: 'ctl' }, [el('label', { for: nameId, text: 'Dateiname' }), nameIn]), fmtC, q, sc, info]),
-      buttons: [['ok', 'Exportieren', true], ['cancel', 'Abbrechen']],
+      buttons: [['ok', 'Speichern', true], ['cancel', 'Abbrechen']],
       width: 470,
     });
     if (res !== 'ok') return;

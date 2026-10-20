@@ -364,8 +364,8 @@
     ]);
     document.getElementById('workspace').append(coachEl);
     PW.bus.on('tool:changed', t => {
-      if (tipsOn() && !t.hidden) coach(TOOL_HELP[t.id], t.icon);
-      else if (t.hidden && tipsOn()) coach(TOOL_HELP[t.id], t.icon);
+      // Tool changes while Claude works are Claude's, not a reason for a tip.
+      if (tipsOn() && !(PW.assistant && PW.assistant._state.busy)) coach(TOOL_HELP[t.id], t.icon);
     });
     PW.bus.on('doc:switched', d => {
       if (!d) hideCoach();
