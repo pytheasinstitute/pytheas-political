@@ -6,6 +6,9 @@
   const { Layer, Selection } = PW;
 
   // ─── History: copy-on-write snapshots (unchanged layers share their pixel copy) ───
+  // Everything about a layer that changes how it looks.
+  const layerSig = L => `|${L.id}:${L.version}:${L.maskVersion}:${L.visible}:${L.opacity}:${L.blend}:${L.maskEnabled}:${L.fx ? JSON.stringify(L.fx) : ''}:${L.adjust ? JSON.stringify(L.adjust) : ''}`;
+
   class History {
     constructor(doc, limit = 50) {
       this.doc = doc;
@@ -173,6 +176,8 @@
       const i = this.layers.findIndex(l => l.id === id);
       if (i <= 0) return false;
       const upper = this.layers[i], lower = this.layers[i - 1];
+      // An adjustment layer has no pixels to merge into.
+      if (lower.adjust) return false;
       const tmp = createCanvas(this.width, this.height), g = tmp.getContext('2d');
       const lowerProps = { opacity: lower.opacity, blend: lower.blend, fx: lower.fx, visible: lower.visible };
       Object.assign(lower, { opacity: 1, blend: 'source-over', fx: null, visible: true });
@@ -199,7 +204,7 @@
       this.drawLayers(tmp.getContext('2d'), visible);
       target.ctx.clearRect(0, 0, this.width, this.height);
       target.ctx.drawImage(tmp, 0, 0);
-      Object.assign(target, { opacity: 1, blend: 'source-over', fx: null, type: 'raster', text: null });
+      Object.assign(target, { opacity: 1, blend: 'source-over', fx: null, type: 'raster', text: null, adjust: null });
       if (target.mask) target.removeMask();
       target.touch();
       this.layers = this.layers.filter(l => !l.visible || l === target);
@@ -220,10 +225,23 @@
     }
 
     // ─── Compositing ───
-    drawLayers(ctx, layers) {
+    // cache: the main composite — adjustment results are kept while nothing below them changes.
+    drawLayers(ctx, layers, cache = false) {
       const w = this.width, h = this.height;
+      let below = `${w}x${h}`;
       for (const L of layers) {
-        if (!L.visible || L.opacity <= 0) continue;
+        const sig = layerSig(L);
+        if (L.renderOverride) below = null;
+        if (!L.visible || L.opacity <= 0) {
+          if (below !== null) below += sig;
+          continue;
+        }
+        if (L.adjust) {
+          this._drawAdjust(ctx, L, cache && below !== null ? below + sig : null);
+          if (below !== null) below += sig;
+          continue;
+        }
+        if (below !== null) below += sig;
         let src = L.canvas;
         const masked = L.mask && L.maskEnabled;
         if (L.renderOverride || masked) {
@@ -245,6 +263,32 @@
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
       }
+    }
+
+    // Adjustment layer: what is below, corrected, drawn back through the mask.
+    _drawAdjust(ctx, L, key) {
+      const w = this.width, h = this.height;
+      let out = L._adjCache && key && L._adjCache.key === key ? L._adjCache.canvas : null;
+      if (!out) {
+        const op = PW.filters.ops[L.adjust.id];
+        if (!op) return;
+        const img = ctx.getImageData(0, 0, w, h);
+        op(img, L.adjust.params || {}, { x0: 0, y0: 0, W: w, H: h, fg: L.adjust.fg || '#000000', bg: L.adjust.bg || '#ffffff' });
+        out = key ? (L._adjCache && L._adjCache.canvas.width === w && L._adjCache.canvas.height === h ? L._adjCache.canvas : createCanvas(w, h)) : scratch('comp-adjust', w, h);
+        const g = out.getContext('2d');
+        g.putImageData(img, 0, 0);
+        if (L.mask && L.maskEnabled) {
+          g.globalCompositeOperation = 'destination-in';
+          g.drawImage(L.maskAlpha(), 0, 0);
+          g.globalCompositeOperation = 'source-over';
+        }
+        if (key) L._adjCache = { key, canvas: out };
+      }
+      ctx.globalAlpha = L.opacity;
+      ctx.globalCompositeOperation = L.blend;
+      ctx.drawImage(out, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
     }
 
     _drawEffectsBelow(ctx, src, L) {
@@ -283,7 +327,7 @@
       let s = `${this.width}x${this.height}`;
       for (const L of this.layers) {
         if (L.renderOverride) return null;
-        s += `|${L.id}:${L.version}:${L.maskVersion}:${L.visible}:${L.opacity}:${L.blend}:${L.maskEnabled}:${L.fx ? JSON.stringify(L.fx) : ''}`;
+        s += layerSig(L);
       }
       return s;
     }
@@ -300,7 +344,7 @@
       if (sig === null || sig !== this._compSig) {
         const g = c.getContext('2d');
         g.clearRect(0, 0, c.width, c.height);
-        this.drawLayers(g, this.layers);
+        this.drawLayers(g, this.layers, true);
         this._compSig = sig;
       }
       return c;
@@ -440,6 +484,7 @@
           type: L.type,
           text: L.text ? { ...L.text } : null,
           fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null,
+          adjust: L.adjust ? JSON.parse(JSON.stringify(L.adjust)) : null,
           maskEnabled: L.maskEnabled,
           editMask: L.editMask,
           version: L.version,
@@ -498,6 +543,7 @@
           type: r.type,
           text: r.text ? { ...r.text } : null,
           fx: r.fx ? JSON.parse(JSON.stringify(r.fx)) : null,
+          adjust: r.adjust ? JSON.parse(JSON.stringify(r.adjust)) : null,
           maskEnabled: r.maskEnabled,
           editMask: r.editMask && !!r.mask,
           renderOverride: null,

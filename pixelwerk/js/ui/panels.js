@@ -416,11 +416,12 @@
       const grid = el('div', { class: 'adj-grid' });
       for (const f of PW.filters.defs) {
         if (f.menu !== 'adjust' || !f.icon) continue;
-        const b = el('button', { type: 'button', class: 'adj-btn', title: f.name.replace('…', ''), 'aria-label': f.name.replace('…', ''), html: PW.icon(f.icon, 18) });
-        b.addEventListener('click', () => PW.runAction(`adjust.${f.id}`));
+        const b = el('button', { type: 'button', class: 'adj-btn', title: `${f.name.replace('…', '')} (Alt-Klick: direkt auf die Ebene)`, 'aria-label': f.name.replace('…', ''), html: PW.icon(f.icon, 18) });
+        // Like Photoshop's Korrekturen panel: a click adds an adjustment layer that stays editable.
+        b.addEventListener('click', e => (e.altKey ? PW.runAction(`adjust.${f.id}`) : PW.adjustLayers.create(f.id)));
         grid.append(b);
       }
-      body.append(el('p', { class: 'panel-note', text: 'Korrektur auf die aktive Ebene anwenden:' }), grid);
+      body.append(el('p', { class: 'panel-note', text: 'Einstellungsebene hinzufügen (jederzeit änderbar, Doppelklick in den Ebenen):' }), grid);
     },
     update() {},
   };
@@ -477,7 +478,7 @@
       const bottom = el('div', { class: 'layers-bottom' }, [
         btn('fx', 'Ebenenstil hinzufügen', 'layer.style'),
         btn('mask', 'Ebenenmaske hinzufügen', 'layer.maskRevealSel'),
-        btn('adjust', 'Korrekturen anzeigen', 'window.adjustments'),
+        btn('adjust', 'Neue Einstellungsebene', 'window.adjustments'),
         btn('duplicate', 'Ebene duplizieren', 'layer.duplicate'),
         btn('new-layer', 'Neue Ebene erstellen', 'layer.new'),
         btn('trash', 'Ebene löschen', 'layer.delete'),
@@ -497,7 +498,10 @@
         if (e.altKey) PW.commands.soloLayer(L);
         else PW.commands.toggleVisible(L);
       });
-      const th = el('div', { class: `thumb-wrap ${active && !L.editMask ? 'target' : ''}`, title: 'Strg/⌘-Klick: Auswahl aus Ebene laden' }, L.isText ? el('div', { class: 'text-thumb', text: 'T' }) : thumb(L.canvas, 34));
+      const adef = L.adjust && PW.adjustLayers.defOf(L.adjust.id);
+      const th = L.adjust
+        ? el('div', { class: 'thumb-wrap adjust-thumb', title: 'Doppelklick: Einstellungen ändern', html: PW.icon((adef && adef.icon) || 'adjust', 18) })
+        : el('div', { class: `thumb-wrap ${active && !L.editMask ? 'target' : ''}`, title: 'Strg/⌘-Klick: Auswahl aus Ebene laden' }, L.isText ? el('div', { class: 'text-thumb', text: 'T' }) : thumb(L.canvas, 34));
       th.addEventListener('click', e => {
         if (e.ctrlKey || e.metaKey) {
           e.stopPropagation();
@@ -512,7 +516,7 @@
 
       const parts = [eye, th];
       if (L.mask) {
-        const mt = el('div', { class: `thumb-wrap mask ${active && L.editMask ? 'target' : ''} ${L.maskEnabled ? '' : 'off'}`, title: 'Maske bearbeiten · Umschalt-Klick: deaktivieren' }, thumb(L.mask, 34, true));
+        const mt = el('div', { class: `thumb-wrap mask ${active && (L.editMask || L.adjust) ? 'target' : ''} ${L.maskEnabled ? '' : 'off'}`, title: 'Maske bearbeiten · Umschalt-Klick: deaktivieren' }, thumb(L.mask, 34, true));
         mt.addEventListener('click', e => {
           if (e.shiftKey) {
             e.stopPropagation();
@@ -550,7 +554,8 @@
         else if (zone === 'thumb' && L.isText) {
           a.setTool('text');
           PW.tools.byId.text.startEdit(L, false);
-        } else if (zone === 'row') PW.runAction('layer.style');
+        } else if ((zone === 'thumb' || zone === 'row') && L.adjust) PW.adjustLayers.edit(L);
+        else if (zone === 'row') PW.runAction('layer.style');
       });
       row.addEventListener('keydown', e => {
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {

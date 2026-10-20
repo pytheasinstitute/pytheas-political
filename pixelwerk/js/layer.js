@@ -58,6 +58,8 @@
       this.maskEnabled = true;
       this.editMask = false;
       this.fx = null;
+      // Adjustment layer: { id, params, fg, bg } — changes everything below it, through its mask.
+      this.adjust = null;
       this.version = nextVersion();
       this.maskVersion = 0;
       // Tools set this to draw a live preview instead of the stored pixels.
@@ -70,6 +72,7 @@
     get width() { return this.canvas.width; }
     get height() { return this.canvas.height; }
     get isText() { return this.type === 'text'; }
+    get isAdjust() { return !!this.adjust; }
 
     touch() { this.version = nextVersion(); }
 
@@ -84,8 +87,9 @@
     }
 
     // Canvas that paint tools write to: the mask while it is being edited, else the pixels.
-    get target() { return this.editMask && this.mask ? this.mask : this.canvas; }
-    get targetIsMask() { return !!(this.editMask && this.mask); }
+    // Adjustment layers have nothing to paint on but their mask.
+    get target() { return (this.editMask || this.adjust) && this.mask ? this.mask : this.canvas; }
+    get targetIsMask() { return !!((this.editMask || this.adjust) && this.mask); }
 
     markTarget(rect) {
       if (this.targetIsMask) this.touchMask(rect);
@@ -198,6 +202,7 @@
         type: this.type,
         text: this.text ? { ...this.text } : null,
         fx: this.fx ? JSON.parse(JSON.stringify(this.fx)) : null,
+        adjust: this.adjust ? JSON.parse(JSON.stringify(this.adjust)) : null,
         maskEnabled: this.maskEnabled,
         pixels: withPixels ? this.canvas.toDataURL('image/png') : null,
         mask: withPixels && this.mask ? this.mask.toDataURL('image/png') : null,
@@ -215,6 +220,7 @@
         type: data.type === 'text' ? 'text' : 'raster',
         text: data.text || null,
         fx: data.fx || null,
+        adjust: data.adjust || null,
         maskEnabled: data.maskEnabled !== false,
       });
       if (data.pixels) L.ctx.drawImage(await PW.util.loadImage(data.pixels), 0, 0);

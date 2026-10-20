@@ -50,6 +50,7 @@
   for (const f of PW.filters.defs) {
     if (f.sep || f.menu === 'filter') continue;
     def(`adjust.${f.id}`, f.name, () => D().runFilter(f), { key: f.shortcut, enabled: hasLayer });
+    if (f.menu === 'adjust') def(`adjlayer.${f.id}`, f.name, () => PW.adjustLayers.create(f.id), { enabled: hasDoc });
   }
   def('image.size', 'Bildgröße …', () => D().imageSize(), { key: 'Mod+Alt+I' });
   def('image.canvas', 'Arbeitsfläche …', () => D().canvasSize(), { key: 'Mod+Alt+C' });
@@ -110,7 +111,7 @@
   }, { key: 'Mod+F', alt: ['Mod+Alt+F'], enabled: () => hasLayer() && !!app().lastFilter, dynamicLabel: () => (app().lastFilter ? `Letzter Filter: ${app().lastFilter.def.name.replace('…', '')}` : 'Letzter Filter') });
   for (const f of PW.filters.defs) {
     if (f.menu !== 'filter') continue;
-    def(`filter.${f.id}`, f.name, () => D().runFilter(f), { enabled: hasLayer });
+    def(`filter.${f.id}`, f.name, () => D().runFilter(f), { key: f.shortcut, enabled: hasLayer });
   }
 
   // ─── View ───
@@ -147,14 +148,19 @@
   def('help.about', 'Über Pixelwerk', () => D().about(), { enabled: () => true });
 
   // ─── Menu structure ───
-  const adjustItems = [];
+  const adjustItems = [], adjLayerItems = [];
   for (const f of PW.filters.defs) {
     if (f.menu !== 'adjust') continue;
     adjustItems.push(f.sep ? '-' : `adjust.${f.id}`);
+    if (f.menu === 'adjust') adjLayerItems.push(f.sep ? '-' : `adjlayer.${f.id}`);
   }
-  const filterGroups = [];
+  const filterGroups = [], filterTop = [];
   for (const f of PW.filters.defs) {
     if (f.menu !== 'filter') continue;
+    if (f.top) {
+      filterTop.push(`filter.${f.id}`);
+      continue;
+    }
     let g = filterGroups.find(x => x.label === f.group);
     if (!g) filterGroups.push((g = { label: f.group, items: [] }));
     g.items.push(`filter.${f.id}`);
@@ -175,6 +181,7 @@
     ] },
     { label: 'Ebene', items: [
       'layer.new', 'layer.viaCopy', 'layer.viaCut', 'layer.duplicate', 'layer.delete', '-', 'layer.rename', 'layer.style', '-',
+      { label: 'Neue Einstellungsebene', items: adjLayerItems },
       { label: 'Ebenenmaske', items: ['layer.maskReveal', 'layer.maskHide', 'layer.maskRevealSel', 'layer.maskHideSel', '-', 'layer.maskToggle', 'layer.maskApply', 'layer.maskDelete'] },
       { label: 'Anordnen', items: ['layer.front', 'layer.forward', 'layer.backward', 'layer.back'] },
       'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.removeBg', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',
@@ -183,7 +190,7 @@
       'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
-    { label: 'Filter', items: ['filter.last', '-', ...filterGroups] },
+    { label: 'Filter', items: ['filter.last', '-', ...filterTop, '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
     { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
     { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },

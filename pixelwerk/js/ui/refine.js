@@ -147,7 +147,7 @@
       ctl({ type: 'select', label: 'Ausgabe an', options: [['selection', 'Auswahl'], ['mask', 'Ebenenmaske'], ['layer', 'Neue Ebene'], ['layerMask', 'Neue Ebene mit Ebenenmaske']] }, 'output'),
     ]);
     render();
-    const res = await PW.dialogs.modal({ title: 'Auswählen und maskieren', content, width: 400, className: 'dlg-refine' });
+    const res = await PW.dialogs.modal({ title: 'Auswählen und maskieren', content, width: 400, className: 'dlg-refine dlg-side' });
     cancelAnimationFrame(raf);
     view.preview = null;
     if (res !== 'ok') return a.render();

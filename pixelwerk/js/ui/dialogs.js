@@ -254,18 +254,22 @@
   // ─── Filter / adjustment dialog with live preview ───
   const lastParams = {};
 
+  // opts.session: an own session (adjustment layers) with opts.done; opts.initial: start values.
   async function runFilter(def, opts = {}) {
     const a = app();
     if (!a.doc) return;
     a.finishToolWork();
-    const L = a.paintLayer();
-    if (!L) return;
-    const session = new PW.filters.FilterSession(a.doc, L, def, { fg: a.fg, bg: a.bg });
-    const done = params => {
+    let session = opts.session;
+    if (!session) {
+      const L = a.paintLayer();
+      if (!L) return;
+      session = new PW.filters.FilterSession(a.doc, L, def, { fg: a.fg, bg: a.bg });
+    }
+    const done = opts.done || (params => {
       a.lastFilter = { def, params };
       a.commit(def.title || def.name.replace('…', ''), def.menu === 'filter' ? 'filter' : 'adjust');
       PW.bus.emit('filter:last');
-    };
+    });
     const busy = PW.ui.busy;
 
     if (opts.params || (!def.params && !def.dialog)) {
@@ -273,10 +277,10 @@
       await busy(() => session.run(params));
       return done(params);
     }
-    if (def.dialog === 'curves') return curves(session, done);
-    if (def.dialog === 'levels') return levels(session, done);
+    if (def.dialog === 'curves') return curves(session, done, opts.initial);
+    if (def.dialog === 'levels') return levels(session, done, opts.initial);
 
-    const params = { ...PW.filters.defaults(def), ...(lastParams[def.id] || {}) };
+    const params = { ...PW.filters.defaults(def), ...(opts.initial || lastParams[def.id] || {}) };
     if (def.randomSeed && !opts.keepSeed) params.seed = Math.floor(Math.random() * 9999) + 1;
     let previewOn = true, timer = 0, lastMs = 0, dirty = true;
 
@@ -295,10 +299,14 @@
       else timer = setTimeout(preview, Math.min(400, lastMs * 1.5));
     };
 
+    // Rows with showIf appear only while it holds (e.g. one colour range at a time).
+    const syncRows = () => def.params.forEach((p, i) => p.showIf && (rows[i].hidden = !p.showIf(params)));
     const rows = def.params.map(p => control(p, params[p.key], (v, final) => {
       params[p.key] = v;
+      syncRows();
       schedule(final);
     }));
+    syncRows();
     const pv = control({ type: 'check', key: 'preview', label: 'Vorschau' }, true, v => {
       previewOn = v;
       if (v) schedule(true);
@@ -310,7 +318,7 @@
     });
 
     preview();
-    const res = await modal({ title: def.title || def.name.replace('…', ''), content: el('div', { class: 'form-grid' }, rows), side: pv, width: 540 });
+    const res = await modal({ title: def.title || def.name.replace('…', ''), content: el('div', { class: 'form-grid' }, rows), side: pv, width: 470, className: 'dlg-side' });
     clearTimeout(timer);
     if (res === 'ok') {
       if (dirty || !previewOn || !session.applied) await busy(() => session.run(params));
@@ -336,13 +344,14 @@
   }
 
   // ─── Curves (Gradationskurven) ───
-  async function curves(session, done) {
+  async function curves(session, done, initial) {
     const a = app();
     const S = 256;
     const canvas = el('canvas', { class: 'curve-canvas', width: S * 2, height: S * 2 });
     const g = canvas.getContext('2d');
     const hist = PW.filters.histogram(session.orig);
     const pts = { rgb: [{ x: 0, y: 0 }, { x: 255, y: 255 }], r: [{ x: 0, y: 0 }, { x: 255, y: 255 }], g: [{ x: 0, y: 0 }, { x: 255, y: 255 }], b: [{ x: 0, y: 0 }, { x: 255, y: 255 }] };
+    if (initial) for (const k of ['rgb', 'r', 'g', 'b']) if (Array.isArray(initial[k])) pts[k] = initial[k].map(q => ({ x: q.x, y: q.y }));
     let ch = 'rgb', active = null, previewOn = true;
     const COL = { rgb: '#e8e8ee', r: '#ff5a5a', g: '#5ad65a', b: '#5a8aff' };
     const io = el('div', { class: 'curve-io' });
@@ -478,6 +487,7 @@
       content: el('div', { class: 'curves' }, [el('div', { class: 'row' }, [preset, chSel]), canvas, io]),
       side: pv,
       width: 470,
+      className: 'dlg-side',
     });
     clearTimeout(timer);
     if (res === 'ok') {
@@ -490,9 +500,9 @@
   }
 
   // ─── Levels (Tonwertkorrektur) ───
-  async function levels(session, done) {
+  async function levels(session, done, initial) {
     const a = app();
-    const p = { inBlack: 0, gamma: 1, inWhite: 255, outBlack: 0, outWhite: 255 };
+    const p = { inBlack: 0, gamma: 1, inWhite: 255, outBlack: 0, outWhite: 255, ...(initial || {}) };
     const W = 256, H = 120;
     const hist = PW.filters.histogram(session.orig);
     const canvas = el('canvas', { class: 'levels-hist', width: W * 2, height: H * 2 });
@@ -602,7 +612,7 @@
       el('div', { class: 'lv-grad' }), outTrack,
       el('div', { class: 'lv-nums two' }, [nums.outBlack, nums.outWhite]),
     ]);
-    const res = await modal({ title: 'Tonwertkorrektur', content, side: el('div', { class: 'side-stack' }, [auto, pv]), width: 470 });
+    const res = await modal({ title: 'Tonwertkorrektur', content, side: el('div', { class: 'side-stack' }, [auto, pv]), width: 470, className: 'dlg-side' });
     clearTimeout(timer);
     if (res === 'ok') {
       session.run(p);

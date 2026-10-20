@@ -30,6 +30,7 @@
   // def: {type, key, label, min, max, step, unit, options, gradient, title}
   // onChange(value, final) — final is true when the user lets go.
   function control(def, value, onChange) {
+    if (def.type === 'heading') return el('div', { class: 'dlg-sub', text: def.label });
     const id = nextId(def.key || def.type);
     const wrap = el('div', { class: `ctl ctl-${def.type}`, title: def.title || null });
 

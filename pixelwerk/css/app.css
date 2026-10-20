@@ -213,6 +213,9 @@ input.grad-hue { background: linear-gradient(90deg, #0ff, #00f, #f0f, #f00, #ff0
 input.grad-cr { background: linear-gradient(90deg, #00e5ff, #ff3030); height: 6px; }
 input.grad-mg { background: linear-gradient(90deg, #ff2bd6, #22d43c); height: 6px; }
 input.grad-yb { background: linear-gradient(90deg, #ffe600, #2b4bff); height: 6px; }
+input.grad-yb-rev { background: linear-gradient(90deg, #2b7bff, #ffd000); height: 6px; }
+input.grad-mg-rev { background: linear-gradient(90deg, #22d43c, #ff2bd6); height: 6px; }
+.thumb-wrap.adjust-thumb { width: 36px; height: 36px; display: grid; place-items: center; background: var(--ui-3); border-radius: 4px; color: var(--text); }
 
 .tbtn {
   display: inline-grid;
@@ -785,8 +788,13 @@ kbd { font: 11px var(--font-num); background: var(--ui-0); border: 1px solid var
 .lib-note { margin: 0; color: var(--text-3); font-size: 11.5px; line-height: 1.4; }
 
 /* ─── Auswählen und maskieren, Farbbereich ─── */
-.modal-overlay:has(.dlg-refine) { place-items: center end; background: transparent; }
-.modal-overlay:has(.dlg-refine) .dialog { margin-right: 8px; box-shadow: var(--shadow); }
+/* Dialogs with a live preview sit at the right edge so the picture stays visible. */
+.modal-overlay:has(.dlg-side) { place-items: center end; background: transparent; }
+.modal-overlay:has(.dlg-side) .dialog { margin-right: 8px; box-shadow: var(--shadow); }
+@media (max-width: 600px) {
+  .modal-overlay:has(.dlg-side) { place-items: end center; }
+  .modal-overlay:has(.dlg-side) .dialog { margin-right: 0; max-height: 58vh; }
+}
 .dlg-sub { grid-column: 1 / -1; margin-top: 6px; color: var(--text-3); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
 .cr-views { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .cr-views canvas { max-width: 100%; height: auto; border: 1px solid var(--line); cursor: crosshair; }

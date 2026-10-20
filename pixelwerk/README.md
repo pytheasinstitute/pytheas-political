@@ -98,9 +98,11 @@ Ohne Photoshop-Kenntnisse:
 
 **Retusche** wie in Photoshop: Bereichsreparatur-Pinsel und Entfernen-Werkzeug bauen übermalte Stellen beim Loslassen aus der Umgebung neu auf. Bearbeiten › Inhaltsbasiert füllen (Strg+Umschalt+Rücktaste, auch unter Fläche füllen › Inhalt) macht das für eine Auswahl. Reparatur-Pinsel und Ausbessern-Werkzeug übernehmen die Struktur einer gewählten Stelle und passen Licht und Farbe an den Rand des Ziels an. Das Auffüllen sucht für jedes 7 × 7-Stück das ähnlichste Stück außerhalb (PatchMatch), grob nach fein, mit Farbanpassung, und gleicht die Naht zum Schluss an.
 
-**Korrekturen**: Helligkeit/Kontrast, Tonwertkorrektur (mit Histogramm), Gradationskurven (RGB und Einzelkanäle), Belichtung, Dynamik, Farbton/Sättigung (auch Färben), Farbbalance, Schwarzweiß, Fotofilter, Tiefen/Lichter, Umkehren, Tontrennung, Schwellenwert, Verlaufsumsetzung, Sättigung verringern, Tonwertangleichung, Auto-Farbton/-Kontrast/-Farbe.
+**Einstellungsebenen** wie in Photoshop: Ein Klick im Bedienfeld „Korrekturen“ (oder Ebene › Neue Einstellungsebene) legt die Korrektur als eigene Ebene an. Sie wirkt auf alles darunter, die Pixel bleiben unverändert; über ihre Maske (Malen mit Schwarz, eine Auswahl wird beim Anlegen zur Maske), Deckkraft und Füllmethode lässt sie sich begrenzen, ein Doppelklick ändert die Einstellungen. Ergebnisse unter einer Einstellungsebene werden zwischengespeichert, so bleibt Malen darüber flüssig. Alt-Klick im Bedienfeld wendet die Korrektur wie bisher direkt an.
 
-**Filter**:
+**Korrekturen**: Helligkeit/Kontrast, Tonwertkorrektur (mit Histogramm), Gradationskurven (RGB und Einzelkanäle), Belichtung, Dynamik, Farbton/Sättigung (auch Färben), Farbbalance, Schwarzweiß, Fotofilter, Kanalmixer, Selektive Farbkorrektur, Tiefen/Lichter, Umkehren, Tontrennung, Schwellenwert, Verlaufsumsetzung, Sättigung verringern, Tonwertangleichung, Auto-Farbton/-Kontrast/-Farbe.
+
+**Filter**: Camera-Raw-Filter (Strg+Umschalt+A: Weißabgleich, Belichtung, Kontrast, Lichter, Tiefen, Weiß, Schwarz, Struktur, Klarheit, Dunst entfernen, Dynamik, Sättigung), Rauschen reduzieren, Oberfläche weichzeichnen,
 - Gaußscher Weichzeichner, Bewegungsunschärfe
 - Unscharf maskieren, Scharfzeichnen
 - Rauschen hinzufügen, Median

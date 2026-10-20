@@ -14,6 +14,8 @@
     brush: '<path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/>',
     pencil: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
     stamp: '<path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.66 0-3 1-3 3s1 2 1 3.5V13"/>',
+    mixer: '<path d="M6 4v16M12 4v16M18 4v16"/><rect x="3.5" y="13" width="5" height="3" rx="1" fill="currentColor"/><rect x="9.5" y="7" width="5" height="3" rx="1" fill="currentColor"/><rect x="15.5" y="11" width="5" height="3" rx="1" fill="currentColor"/>',
+    selective: '<circle cx="9" cy="9" r="5.5"/><circle cx="15" cy="9" r="5.5"/><circle cx="12" cy="14.5" r="5.5"/>',
     'quick-select': '<path d="M14.5 3.5c2.5.5 5 3 5 6.5" stroke-dasharray="2.4 2"/><path d="M4 20c1.5-1 2.4-2.8 2.9-4.6l7.4-7.4a2.1 2.1 0 0 1 3 3L9.9 18.4C8 19 6 19.7 4 20Z"/>',
     'object-select': '<path d="M3 8V4h4M17 4h4v4M21 16v4h-4M7 20H3v-4"/><path d="M8.5 15.5c0-2.5 1.6-4.2 3.5-4.2s3.5 1.7 3.5 4.2"/><circle cx="12" cy="8.6" r="2.1"/>',
     subject: '<circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20.5c.6-4 3.2-6.6 6.5-6.6s5.9 2.6 6.5 6.6"/><path d="M2.5 6V3h3M18.5 3h3v3M21.5 18v3h-3M5.5 21h-3v-3"/>',

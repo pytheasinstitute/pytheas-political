@@ -137,8 +137,10 @@
     }
     if (!isFinite(bx0)) return null;
     const sd = sg.getImageData(0, 0, wk.w, wk.h).data;
-    // Only pixels near the stroke may change (a few brush sizes), like Photoshop's quick selection.
-    const D = clamp(maxR * 4, 12, Math.max(wk.w, wk.h) / 4);
+    // Only pixels near the stroke may change, like Photoshop's quick selection: adding reaches
+    // further into even areas, subtracting stays close to the brush so it stays precise.
+    const reach = mode === 'subtract' ? maxR * 4 : Math.max(maxR * 4, Math.max(wk.w, wk.h) / 10);
+    const D = clamp(reach, 12, Math.max(wk.w, wk.h) / 4);
     const x0 = Math.max(0, Math.floor(bx0 - D - 2)), y0 = Math.max(0, Math.floor(by0 - D - 2));
     const x1 = Math.min(wk.w, Math.ceil(bx1 + D + 2)), y1 = Math.min(wk.h, Math.ceil(by1 + D + 2));
     const cw = x1 - x0, ch = y1 - y0, rgb = new Float32Array(cw * ch * 3), tri = new Uint8Array(cw * ch), painted = new Uint8Array(cw * ch);

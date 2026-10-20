@@ -48,6 +48,34 @@
     }
   }
 
+  // Mean over a (2r+1)² window (clamped edges), new array.
+  function boxMean(src, w, h, r) {
+    const tmp = new Float32Array(src.length), out = new Float32Array(src.length);
+    boxH(src, tmp, w, h, r);
+    boxV(tmp, out, w, h, r);
+    return out;
+  }
+
+  // Edge-preserving smoothing of `p` guided by `I` (He et al.); eps sets what counts as an edge.
+  function guided(I, p, w, h, r, eps) {
+    const n = I.length, Ip = new Float32Array(n), II = new Float32Array(n);
+    for (let i = 0; i < n; i++) { Ip[i] = I[i] * p[i]; II[i] = I[i] * I[i]; }
+    const mI = boxMean(I, w, h, r), mp = I === p ? mI : boxMean(p, w, h, r), mIp = boxMean(Ip, w, h, r), mII = boxMean(II, w, h, r);
+    const A = new Float32Array(n), B = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const vr = mII[i] - mI[i] * mI[i], cov = mIp[i] - mI[i] * mp[i];
+      A[i] = cov / (vr + eps);
+      B[i] = mp[i] - A[i] * mI[i];
+    }
+    const mA = boxMean(A, w, h, r), mB = boxMean(B, w, h, r), q = new Float32Array(n);
+    for (let i = 0; i < n; i++) q[i] = mA[i] * I[i] + mB[i];
+    return q;
+  }
+
+  const srgbToLin = v => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const linToSrgb = v => (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.max(0, v) ** (1 / 2.4) - 0.055);
+  const LIN = new Float32Array(256).map((_, i) => srgbToLin(i / 255));
+
   // In-place approximate gaussian blur of a single float plane.
   function blurPlane(f, w, h, sigma, tmp) {
     if (sigma < 0.3) return f;
@@ -790,6 +818,199 @@
       }
     },
 
+    // ─── Oberfläche weichzeichnen: smooths surfaces, keeps edges (threshold = what counts as edge) ───
+    surfaceBlur(img, p) {
+      const w = img.width, h = img.height, d = img.data, n = w * h;
+      const r = Math.max(1, Math.round(p.radius)), eps = (p.threshold / 255) ** 2;
+      for (let c = 0; c < 3; c++) {
+        const ch = new Float32Array(n);
+        for (let i = 0; i < n; i++) ch[i] = d[i * 4 + c] / 255;
+        const q = guided(ch, ch, w, h, r, eps);
+        for (let i = 0; i < n; i++) d[i * 4 + c] = q[i] * 255;
+      }
+    },
+
+    // ─── Rauschen reduzieren: luminance noise (edge-aware), colour noise (blurred chroma), sharpen details ───
+    reduceNoise(img, p, ctx) {
+      const w = img.width, h = img.height, d = img.data, n = w * h;
+      const Y = new Float32Array(n), Cb = new Float32Array(n), Cr = new Float32Array(n);
+      for (let i = 0, j = 0; i < n; i++, j += 4) {
+        const r = d[j] / 255, g = d[j + 1] / 255, b = d[j + 2] / 255;
+        Y[i] = 0.299 * r + 0.587 * g + 0.114 * b;
+        Cb[i] = b - Y[i];
+        Cr[i] = r - Y[i];
+      }
+      const sc = Math.max(1, Math.max(ctx.W, ctx.H) / 2000);
+      let Yd = Y;
+      if (p.strength > 0) {
+        // Stronger = wider window and a higher edge threshold; "Details erhalten" lowers it again.
+        const r = Math.max(1, Math.round((1 + p.strength * 0.35) * sc));
+        const eps = (0.0004 + p.strength * 0.0009) * (1 - (p.preserve / 100) * 0.85);
+        Yd = guided(Y, Y, w, h, r, eps);
+      }
+      if (p.color > 0) {
+        const sigma = (0.5 + (p.color / 100) * 6) * sc, t = new Float32Array(n);
+        blurPlane(Cb, w, h, sigma, t);
+        blurPlane(Cr, w, h, sigma, t);
+      }
+      if (p.sharpen > 0) {
+        const base = new Float32Array(Yd);
+        blurPlane(base, w, h, 1.2 * sc);
+        const k = (p.sharpen / 100) * 1.2;
+        for (let i = 0; i < n; i++) Yd[i] += (Yd[i] - base[i]) * k;
+      }
+      for (let i = 0, j = 0; i < n; i++, j += 4) {
+        const y = Yd[i], r = Cr[i] + y, b = Cb[i] + y, g = (y - 0.299 * r - 0.114 * b) / 0.587;
+        d[j] = r * 255;
+        d[j + 1] = g * 255;
+        d[j + 2] = b * 255;
+      }
+    },
+
+    // ─── Camera-Raw-Filter (Grundeinstellungen + Präsenz) ───
+    cameraRaw(img, p, ctx) {
+      const w = img.width, h = img.height, d = img.data, n = w * h;
+      const sc = Math.max(1, Math.max(ctx.W, ctx.H) / 2000);
+      // White balance as channel gains (temperature: blue ↔ yellow, tint: green ↔ magenta).
+      const t = p.temperature / 100, ti = p.tint / 100;
+      const gR = 1 + t * 0.4 + ti * 0.1, gG = 1 - ti * 0.22, gB = 1 - t * 0.5 + ti * 0.1;
+      const ex = 2 ** p.exposure;
+      const R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n), L = new Float32Array(n);
+      for (let i = 0, j = 0; i < n; i++, j += 4) {
+        R[i] = LIN[d[j]] * gR * ex;
+        G[i] = LIN[d[j + 1]] * gG * ex;
+        B[i] = LIN[d[j + 2]] * gB * ex;
+        L[i] = linToSrgb(Math.min(1, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i]));
+      }
+      // Dunst entfernen: dark-channel estimate of the haze, removed (or added when negative).
+      if (p.dehaze) {
+        const dark = new Float32Array(n);
+        for (let i = 0; i < n; i++) dark[i] = Math.min(R[i], G[i], B[i]);
+        const dk = boxMean(dark, w, h, Math.max(2, Math.round(7 * sc)));
+        let A = 0;
+        const sorted = Float32Array.from(dk).sort();
+        A = Math.max(0.2, sorted[Math.floor(n * 0.999)] || 1);
+        const k = p.dehaze / 100;
+        for (let i = 0; i < n; i++) {
+          if (k > 0) {
+            const tr = Math.max(0.15, 1 - 0.95 * k * (dk[i] / A));
+            R[i] = (R[i] - A) / tr + A;
+            G[i] = (G[i] - A) / tr + A;
+            B[i] = (B[i] - A) / tr + A;
+          } else {
+            const m = -k * 0.6;
+            R[i] += (A - R[i]) * m;
+            G[i] += (A - G[i]) * m;
+            B[i] += (A - B[i]) * m;
+          }
+        }
+        for (let i = 0; i < n; i++) L[i] = linToSrgb(Math.min(1, Math.max(0, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i])));
+      }
+      // Tone: highlights/shadows on a smooth local base, whites/blacks at the ends, contrast as an S-curve.
+      const base = new Float32Array(L);
+      blurPlane(base, w, h, Math.max(4, Math.min(ctx.W, ctx.H) * 0.015));
+      const hi = p.highlights / 100, sh = p.shadows / 100, wh = p.whites / 100, bl = p.blacks / 100, ct = p.contrast / 100;
+      // Struktur (fine) and Klarheit (coarse) local contrast.
+      let fine = null, coarse = null;
+      if (p.texture) { fine = new Float32Array(L); blurPlane(fine, w, h, 2.5 * sc); }
+      if (p.clarity) { coarse = new Float32Array(L); blurPlane(coarse, w, h, 25 * sc); }
+      const out = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let l = L[i];
+        const b = base[i];
+        l += sh * 0.45 * (1 - b) ** 2 * (1 - l) * (sh > 0 ? 1 : 0.6);
+        l -= hi * 0.45 * b * b * l * (hi > 0 ? 0.6 : 1);
+        l += wh * 0.25 * l * l;
+        l += bl * 0.25 * (1 - l) * (1 - l) * (bl < 0 ? 1 : 0.6);
+        if (fine) l += (L[i] - fine[i]) * (p.texture / 100) * 1.4;
+        if (coarse) {
+          const mid = 1 - Math.abs(L[i] - 0.5) * 1.6;
+          l += (L[i] - coarse[i]) * (p.clarity / 100) * 0.9 * Math.max(0, mid);
+        }
+        if (ct) {
+          const x = clamp(l, 0, 1), sCurve = x < 0.5 ? 2 * x * x : 1 - 2 * (1 - x) * (1 - x);
+          l = x + (sCurve - x) * ct * (ct > 0 ? 1 : 1.2);
+        }
+        out[i] = clamp(l, 0, 1.2);
+      }
+      const vib = p.vibrance / 100, sat = p.saturation / 100;
+      for (let i = 0, j = 0; i < n; i++, j += 4) {
+        // Back to sRGB, scaled so the luminance becomes the toned one (same measure as L above,
+        // so with everything at 0 the picture stays exactly as it was).
+        let r = linToSrgb(R[i]), g = linToSrgb(G[i]), b = linToSrgb(B[i]);
+        const l0 = linToSrgb(Math.min(1, Math.max(0, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i]))), l1 = out[i];
+        if (l0 > 1e-4) {
+          const k = l1 / l0;
+          r *= k; g *= k; b *= k;
+        } else r = g = b = l1;
+        if (vib || sat) {
+          const mx = Math.max(r, g, b), mn = Math.min(r, g, b), s0 = mx - mn, l = 0.299 * r + 0.587 * g + 0.114 * b;
+          const kk = (1 + sat) * (1 + vib * (1 - Math.min(1, s0 * 1.5)) * (vib > 0 ? 1.2 : 1));
+          r = l + (r - l) * kk;
+          g = l + (g - l) * kk;
+          b = l + (b - l) * kk;
+        }
+        d[j] = r * 255;
+        d[j + 1] = g * 255;
+        d[j + 2] = b * 255;
+      }
+    },
+
+    // ─── Selektive Farbkorrektur: C/M/Y/K per colour range ───
+    selectiveColor(img, p) {
+      const d = img.data, rel = p.method !== 'absolute';
+      const keys = ['reds', 'yellows', 'greens', 'cyans', 'blues', 'magentas', 'whites', 'neutrals', 'blacks'];
+      const adj = keys.map(k => [p[`${k}C`] || 0, p[`${k}M`] || 0, p[`${k}Y`] || 0, p[`${k}K`] || 0].map(v => v / 100));
+      const active = adj.map(a => a.some(v => v));
+      if (!active.some(Boolean)) return;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), md = r + g + b - mx - mn;
+        // How much each range applies (as in Photoshop: hues by max−mid, neutrals/whites/blacks by levels).
+        const w = new Float32Array(9);
+        if (r === mx) w[0] = mx - md; if (b === mn) w[1] = md - mn;
+        if (g === mx) w[2] = mx - md; if (r === mn) w[3] = md - mn;
+        if (b === mx) w[4] = mx - md; if (g === mn) w[5] = md - mn;
+        // r max → red; mid is the yellow/magenta share
+        if (r === mx && g >= b) { w[1] = md - mn; w[5] = 0; }
+        if (r === mx && b > g) { w[5] = md - mn; w[1] = 0; }
+        if (g === mx && r >= b) { w[1] = md - mn; w[3] = 0; }
+        if (g === mx && b > r) { w[3] = md - mn; w[1] = 0; }
+        if (b === mx && g >= r) { w[3] = md - mn; w[5] = 0; }
+        if (b === mx && r > g) { w[5] = md - mn; w[3] = 0; }
+        w[6] = Math.max(0, mn - 0.5) * 2;
+        w[8] = Math.max(0, 0.5 - mx) * 2;
+        w[7] = 1 - Math.abs(mx - 0.5) - Math.abs(mn - 0.5);
+        const ch = [1 - r, 1 - g, 1 - b];
+        const out = [r, g, b];
+        for (let k = 0; k < 9; k++) {
+          if (!active[k] || w[k] <= 0) continue;
+          const [c, m, y, kk] = adj[k];
+          [c, m, y].forEach((v, idx) => {
+            if (!v && !kk) return;
+            const amount = (v + kk) * (rel ? ch[idx] : 1);
+            out[idx] -= amount * w[k];
+          });
+        }
+        d[i] = clamp(out[0], 0, 1) * 255;
+        d[i + 1] = clamp(out[1], 0, 1) * 255;
+        d[i + 2] = clamp(out[2], 0, 1) * 255;
+      }
+    },
+
+    // ─── Kanalmixer ───
+    channelMixer(img, p) {
+      const d = img.data, m = p.mono;
+      const row = k => [p[`${k}R`] / 100, p[`${k}G`] / 100, p[`${k}B`] / 100, (p[`${k}C`] / 100) * 255];
+      const R = m ? row('gray') : row('red'), G = m ? R : row('green'), B = m ? R : row('blue');
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        d[i] = R[0] * r + R[1] * g + R[2] * b + R[3];
+        d[i + 1] = G[0] * r + G[1] * g + G[2] * b + G[3];
+        d[i + 2] = B[0] * r + B[1] * g + B[2] * b + B[3];
+      }
+    },
+
     vignette(img, p, ctx) {
       const d = img.data, w = img.width, h = img.height;
       const cx = ctx.W / 2, cy = ctx.H / 2, R = Math.hypot(cx, cy);
@@ -835,6 +1056,26 @@
     { id: 'photoFilter', menu: 'adjust', name: 'Fotofilter…', title: 'Fotofilter', icon: 'filter', params: [
       { type: 'color', key: 'color', label: 'Farbe', value: '#ec8a00' }, R('density', 'Dichte', 1, 100, 25, { unit: '%' }),
       { type: 'check', key: 'preserve', label: 'Luminanz erhalten', value: true }] },
+    { id: 'channelMixer', menu: 'adjust', name: 'Kanalmixer…', title: 'Kanalmixer', icon: 'mixer', params: [
+      { type: 'select', key: 'out', label: 'Ausgabekanal', value: 'red', options: [['red', 'Rot'], ['green', 'Grün'], ['blue', 'Blau']], showIf: p => !p.mono },
+      ...['red', 'green', 'blue'].flatMap(k => [
+        R(`${k}R`, 'Rot', -200, 200, k === 'red' ? 100 : 0, { unit: '%', showIf: p => !p.mono && p.out === k }),
+        R(`${k}G`, 'Grün', -200, 200, k === 'green' ? 100 : 0, { unit: '%', showIf: p => !p.mono && p.out === k }),
+        R(`${k}B`, 'Blau', -200, 200, k === 'blue' ? 100 : 0, { unit: '%', showIf: p => !p.mono && p.out === k }),
+        R(`${k}C`, 'Konstante', -200, 200, 0, { unit: '%', showIf: p => !p.mono && p.out === k }),
+      ]),
+      R('grayR', 'Rot', -200, 200, 40, { unit: '%', showIf: p => p.mono }), R('grayG', 'Grün', -200, 200, 40, { unit: '%', showIf: p => p.mono }),
+      R('grayB', 'Blau', -200, 200, 20, { unit: '%', showIf: p => p.mono }), R('grayC', 'Konstante', -200, 200, 0, { unit: '%', showIf: p => p.mono }),
+      { type: 'check', key: 'mono', label: 'Monochrom', value: false }] },
+    { id: 'selectiveColor', menu: 'adjust', name: 'Selektive Farbkorrektur…', title: 'Selektive Farbkorrektur', icon: 'selective', params: [
+      { type: 'select', key: 'colors', label: 'Farben', value: 'reds', options: [['reds', 'Rottöne'], ['yellows', 'Gelbtöne'], ['greens', 'Grüntöne'], ['cyans', 'Cyantöne'], ['blues', 'Blautöne'], ['magentas', 'Magentatöne'], ['whites', 'Weiß'], ['neutrals', 'Neutrale Farben'], ['blacks', 'Schwarz']] },
+      ...['reds', 'yellows', 'greens', 'cyans', 'blues', 'magentas', 'whites', 'neutrals', 'blacks'].flatMap(k => [
+        R(`${k}C`, 'Cyan', -100, 100, 0, { unit: '%', showIf: p => p.colors === k }),
+        R(`${k}M`, 'Magenta', -100, 100, 0, { unit: '%', showIf: p => p.colors === k }),
+        R(`${k}Y`, 'Gelb', -100, 100, 0, { unit: '%', showIf: p => p.colors === k }),
+        R(`${k}K`, 'Schwarz', -100, 100, 0, { unit: '%', showIf: p => p.colors === k }),
+      ]),
+      { type: 'select', key: 'method', label: 'Methode', value: 'relative', options: [['relative', 'Relativ'], ['absolute', 'Absolut']] }] },
     { sep: true, menu: 'adjust' },
     { id: 'shadowsHighlights', menu: 'adjust', name: 'Tiefen/Lichter…', title: 'Tiefen/Lichter', icon: 'sh', params: [R('shadows', 'Tiefen', 0, 100, 35, { unit: '%' }), R('highlights', 'Lichter', 0, 100, 0, { unit: '%' })] },
     { sep: true, menu: 'adjust' },
@@ -853,6 +1094,20 @@
     { id: 'autoColor', menu: 'auto', name: 'Auto-Farbe', shortcut: 'Mod+Shift+B' },
 
     // Filter
+    { id: 'cameraRaw', menu: 'filter', top: true, name: 'Camera-Raw-Filter…', title: 'Camera-Raw-Filter', shortcut: 'Mod+Shift+A', full: true, params: [
+      { type: 'heading', label: 'Weißabgleich' },
+      R('temperature', 'Temperatur', -100, 100, 0, { gradient: 'yb-rev' }), R('tint', 'Tönung', -100, 100, 0, { gradient: 'mg-rev' }),
+      { type: 'heading', label: 'Licht' },
+      R('exposure', 'Belichtung', -4, 4, 0, { step: 0.05 }), R('contrast', 'Kontrast', -100, 100, 0),
+      R('highlights', 'Lichter', -100, 100, 0), R('shadows', 'Tiefen', -100, 100, 0), R('whites', 'Weiß', -100, 100, 0), R('blacks', 'Schwarz', -100, 100, 0),
+      { type: 'heading', label: 'Präsenz' },
+      R('texture', 'Struktur', -100, 100, 0), R('clarity', 'Klarheit', -100, 100, 0), R('dehaze', 'Dunst entfernen', -100, 100, 0),
+      R('vibrance', 'Dynamik', -100, 100, 0), R('saturation', 'Sättigung', -100, 100, 0)] },
+    { id: 'reduceNoise', menu: 'filter', group: 'Rauschfilter', name: 'Rauschen reduzieren…', title: 'Rauschen reduzieren', params: [
+      R('strength', 'Stärke', 0, 10, 6), R('preserve', 'Details erhalten', 0, 100, 60, { unit: '%' }),
+      R('color', 'Farbrauschen reduzieren', 0, 100, 45, { unit: '%' }), R('sharpen', 'Details scharfzeichnen', 0, 100, 25, { unit: '%' })], margin: () => 20 },
+    { id: 'surfaceBlur', menu: 'filter', group: 'Weichzeichnungsfilter', name: 'Oberfläche weichzeichnen…', title: 'Oberfläche weichzeichnen', params: [
+      R('radius', 'Radius', 1, 100, 5, { unit: 'Pixel', log: true }), R('threshold', 'Schwellenwert', 2, 255, 15, { unit: 'Stufen' })], margin: p => p.radius * 2 },
     { id: 'gaussianBlur', menu: 'filter', group: 'Weichzeichnungsfilter', name: 'Gaußscher Weichzeichner…', title: 'Gaußscher Weichzeichner', params: [R('radius', 'Radius', 0.1, 250, 4, { step: 0.1, unit: 'Pixel', log: true })], margin: p => p.radius * 3 },
     { id: 'motionBlur', menu: 'filter', group: 'Weichzeichnungsfilter', name: 'Bewegungsunschärfe…', title: 'Bewegungsunschärfe', params: [R('angle', 'Winkel', -180, 180, 0, { unit: '°' }), R('distance', 'Abstand', 1, 200, 20, { unit: 'Pixel', log: true })], margin: p => p.distance },
     { id: 'blur', menu: 'filter', group: 'Weichzeichnungsfilter', name: 'Weichzeichnen', margin: () => 4 },
@@ -880,7 +1135,7 @@
     { id: 'highPass', menu: 'filter', group: 'Sonstige Filter', name: 'Hochpass…', title: 'Hochpass', params: [R('radius', 'Radius', 0.1, 250, 10, { step: 0.1, unit: 'Pixel', log: true })], margin: p => p.radius * 3 },
   ];
 
-  const defaults = def => Object.fromEntries((def.params || []).map(p => [p.key, p.value]));
+  const defaults = def => Object.fromEntries((def.params || []).filter(p => p.key).map(p => [p.key, p.value]));
 
   // ─── Live session: preview a filter on the active layer, then commit or cancel ───
   class FilterSession {
@@ -949,5 +1204,5 @@
     }
   }
 
-  PW.filters = { ops, defs, defaults, FilterSession, blurPlane, gaussianBlur, curveLUT, histogram, makeNoise };
+  PW.filters = { ops, defs, defaults, FilterSession, blurPlane, boxMean, guided, gaussianBlur, curveLUT, histogram, makeNoise };
 })(window.PW);

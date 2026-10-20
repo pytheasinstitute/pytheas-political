@@ -15,7 +15,7 @@
   ];
   const MAX_TURNS = 16;
   const IMG_PIXELS = 1.15e6, IMG_SIDE = 1568;
-  const FILTERS = ['gaussianBlur', 'unsharpMask', 'sharpen', 'addNoise', 'median', 'vignette'];
+  const FILTERS = ['gaussianBlur', 'unsharpMask', 'sharpen', 'addNoise', 'median', 'vignette', 'cameraRaw', 'reduceNoise', 'surfaceBlur'];
   // Who answers: an automatic tier of the `sample` capability, or a model the viewer picks.
   // A picked model the account cannot use falls back to its tier; the chat then says so.
   const MODELS = [
@@ -184,7 +184,7 @@
 
   function catalogue() {
     return adjustDefs().map(d => {
-      const ps = (d.params || []).map(p => {
+      const ps = (d.params || []).filter(p => p.key).map(p => {
         if (p.type === 'range') return `${p.key} ${p.min}…${p.max} (neutral/Standard ${p.value})`;
         if (p.type === 'check') return `${p.key} true|false`;
         if (p.type === 'select') return `${p.key} ${p.options.map(o => o[0]).join('|')}`;
@@ -459,30 +459,36 @@
       },
       {
         name: 'adjust',
-        description: 'Wendet eine Korrektur oder einen Filter aus der Liste im Auftrag an (id + params). Wirkt auf das ganze Bild (sichtbare Ebenen werden dafür zusammengefügt) oder nur in der Auswahl.',
+        description: 'Wendet eine Korrektur oder einen Filter aus der Liste im Auftrag an (id + params). Korrekturen kommen als Einstellungsebene, die die Person später ändern kann; mit vorhandener Auswahl nur dort (die Auswahl wird zur Maske). Filter wirken auf das ganze Bild (sichtbare Ebenen werden dafür zusammengefügt) oder nur in der Auswahl. cameraRaw ist der vielseitigste Fotofilter (Licht, Farbe, Klarheit, Dunst).',
         inputSchema: {
           type: 'object',
-          properties: { id: { type: 'string' }, params: { type: 'object' } },
+          properties: { id: { type: 'string' }, params: { type: 'object' }, as_layer: { type: 'boolean', description: 'Nur Korrekturen: false = direkt in die Pixel statt als Einstellungsebene' } },
           required: ['id'],
         },
-        execute: input => {
+        execute: async input => {
           const def = adjustDefs().find(d => d.id === String(input.id));
           if (!def) throw new Error(`Unbekannte Korrektur „${input.id}“. Erlaubt: ${adjustDefs().map(d => d.id).join(', ')}`);
           const doc = a.doc;
           a.finishToolWork();
           const params = { ...PW.filters.defaults(def) };
           for (const p of def.params || []) {
-            if (!input.params || input.params[p.key] === undefined) continue;
+            if (!p.key || !input.params || input.params[p.key] === undefined) continue;
             const v = input.params[p.key];
             if (p.type === 'range') params[p.key] = clamp(num(v, p.value), p.min, p.max);
             else if (p.type === 'check') params[p.key] = v === true || v === 'true';
             else if (p.type === 'select') params[p.key] = p.options.some(o => o[0] === v) ? v : p.value;
             else if (p.type === 'color') params[p.key] = /^#[0-9a-f]{6}$/i.test(String(v)) ? String(v) : p.value;
           }
+          const name = (def.title || def.name).replace('…', '');
+          if (def.menu === 'adjust' && input.as_layer !== false) {
+            await PW.adjustLayers.create(def.id, params);
+            state.edited = true;
+            progress(`${name} (Einstellungsebene)`);
+            return { done: name, adjustment_layer: true, params };
+          }
           const L = flattenForAdjust(doc);
           const session = new PW.filters.FilterSession(doc, L, def, { fg: a.fg, bg: a.bg });
           session.run(params);
-          const name = (def.title || def.name).replace('…', '');
           a.commit(name, def.menu === 'filter' ? 'filter' : 'adjust');
           state.edited = true;
           progress(name);
