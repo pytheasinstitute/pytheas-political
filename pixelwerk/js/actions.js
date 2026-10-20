@@ -106,6 +106,7 @@
   def('select.colorRange', 'Farbbereich …', () => PW.smartSelect.colorRangeDialog(), { enabled: hasDoc });
   def('select.refine', 'Auswählen und maskieren …', () => PW.refineEdge.open(), { key: 'Mod+Alt+R', enabled: hasSel });
   def('layer.removeBg', 'Hintergrund entfernen', () => PW.smartSelect.removeBackground(), { enabled: hasDoc });
+  def('filter.skin', 'Haut glätten', () => PW.skin.smooth(), { enabled: hasDoc });
 
   // ─── Filter ───
   def('filter.last', 'Letzter Filter', () => {
@@ -194,7 +195,7 @@
       'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
-    { label: 'Filter', items: ['filter.last', '-', ...filterTop, 'filter.liquify', '-', ...filterGroups] },
+    { label: 'Filter', items: ['filter.last', '-', ...filterTop, 'filter.liquify', 'filter.skin', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
     { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
     { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },

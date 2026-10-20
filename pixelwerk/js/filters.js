@@ -76,6 +76,33 @@
   const linToSrgb = v => (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.max(0, v) ** (1 / 2.4) - 0.055);
   const LIN = new Float32Array(256).map((_, i) => srgbToLin(i / 255));
 
+  // Large blurs of smooth content at a reduced size: returns (x, y) → bilinear value.
+  function smoothSampler(plane, w, h, sigma) {
+    const f = Math.max(1, Math.floor(sigma / 3));
+    if (f === 1) {
+      const c = new Float32Array(plane);
+      blurPlane(c, w, h, sigma);
+      return (x, y) => c[y * w + x];
+    }
+    const sw = Math.ceil(w / f), sh = Math.ceil(h / f), small = new Float32Array(sw * sh), cnt = new Float32Array(sw * sh);
+    for (let y = 0; y < h; y++) {
+      const o = ((y / f) | 0) * sw;
+      for (let x = 0; x < w; x++) {
+        const k = o + ((x / f) | 0);
+        small[k] += plane[y * w + x];
+        cnt[k]++;
+      }
+    }
+    for (let i = 0; i < small.length; i++) small[i] /= cnt[i] || 1;
+    blurPlane(small, sw, sh, sigma / f);
+    return (x, y) => {
+      const gx = Math.min(sw - 1, Math.max(0, (x + 0.5) / f - 0.5)), gy = Math.min(sh - 1, Math.max(0, (y + 0.5) / f - 0.5));
+      const x0 = gx | 0, y0 = gy | 0, x1 = Math.min(sw - 1, x0 + 1), y1 = Math.min(sh - 1, y0 + 1), tx = gx - x0, ty = gy - y0;
+      const a = small[y0 * sw + x0], b = small[y0 * sw + x1], c = small[y1 * sw + x0], d = small[y1 * sw + x1];
+      return (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty;
+    };
+  }
+
   // In-place approximate gaussian blur of a single float plane.
   function blurPlane(f, w, h, sigma, tmp) {
     if (sigma < 0.3) return f;
@@ -868,87 +895,85 @@
     },
 
     // ─── Camera-Raw-Filter (Grundeinstellungen + Präsenz) ───
+    // Few full-size arrays (big photos): linear colour is recomputed from the bytes when needed,
+    // the smooth bases (tone, clarity, haze) are blurred at a reduced size.
     cameraRaw(img, p, ctx) {
       const w = img.width, h = img.height, d = img.data, n = w * h;
       const sc = Math.max(1, Math.max(ctx.W, ctx.H) / 2000);
       // White balance as channel gains (temperature: blue ↔ yellow, tint: green ↔ magenta).
-      const t = p.temperature / 100, ti = p.tint / 100;
-      const gR = 1 + t * 0.4 + ti * 0.1, gG = 1 - ti * 0.22, gB = 1 - t * 0.5 + ti * 0.1;
-      const ex = 2 ** p.exposure;
-      const R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n), L = new Float32Array(n);
-      for (let i = 0, j = 0; i < n; i++, j += 4) {
-        R[i] = LIN[d[j]] * gR * ex;
-        G[i] = LIN[d[j + 1]] * gG * ex;
-        B[i] = LIN[d[j + 2]] * gB * ex;
-        L[i] = linToSrgb(Math.min(1, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i]));
-      }
+      const t = p.temperature / 100, ti = p.tint / 100, ex = 2 ** p.exposure;
+      const gR = (1 + t * 0.4 + ti * 0.1) * ex, gG = (1 - ti * 0.22) * ex, gB = (1 - t * 0.5 + ti * 0.1) * ex;
       // Dunst entfernen: dark-channel estimate of the haze, removed (or added when negative).
-      if (p.dehaze) {
+      let haze = null, A = 1;
+      const kz = (p.dehaze || 0) / 100;
+      if (kz) {
         const dark = new Float32Array(n);
-        for (let i = 0; i < n; i++) dark[i] = Math.min(R[i], G[i], B[i]);
-        const dk = boxMean(dark, w, h, Math.max(2, Math.round(7 * sc)));
-        let A = 0;
-        const sorted = Float32Array.from(dk).sort();
-        A = Math.max(0.2, sorted[Math.floor(n * 0.999)] || 1);
-        const k = p.dehaze / 100;
-        for (let i = 0; i < n; i++) {
-          if (k > 0) {
-            const tr = Math.max(0.15, 1 - 0.95 * k * (dk[i] / A));
-            R[i] = (R[i] - A) / tr + A;
-            G[i] = (G[i] - A) / tr + A;
-            B[i] = (B[i] - A) / tr + A;
+        for (let i = 0, j = 0; i < n; i++, j += 4) dark[i] = Math.min(LIN[d[j]] * gR, LIN[d[j + 1]] * gG, LIN[d[j + 2]] * gB);
+        haze = smoothSampler(dark, w, h, Math.max(3, 7 * sc));
+        let mx = 0;
+        for (let i = 0; i < n; i += 7) mx = Math.max(mx, dark[i]);
+        A = Math.max(0.2, mx);
+      }
+      const lin = (i, j, rgb) => {
+        let r = LIN[d[j]] * gR, g = LIN[d[j + 1]] * gG, b = LIN[d[j + 2]] * gB;
+        if (haze) {
+          const x = i % w, y = (i / w) | 0, dk = haze(x, y);
+          if (kz > 0) {
+            const tr = Math.max(0.15, 1 - 0.95 * kz * (dk / A));
+            r = (r - A) / tr + A; g = (g - A) / tr + A; b = (b - A) / tr + A;
           } else {
-            const m = -k * 0.6;
-            R[i] += (A - R[i]) * m;
-            G[i] += (A - G[i]) * m;
-            B[i] += (A - B[i]) * m;
+            const m = -kz * 0.6;
+            r += (A - r) * m; g += (A - g) * m; b += (A - b) * m;
           }
         }
-        for (let i = 0; i < n; i++) L[i] = linToSrgb(Math.min(1, Math.max(0, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i])));
+        rgb[0] = r; rgb[1] = g; rgb[2] = b;
+      };
+      const rgb = [0, 0, 0], L = new Float32Array(n);
+      for (let i = 0, j = 0; i < n; i++, j += 4) {
+        lin(i, j, rgb);
+        L[i] = linToSrgb(Math.min(1, Math.max(0, 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2])));
       }
       // Tone: highlights/shadows on a smooth local base, whites/blacks at the ends, contrast as an S-curve.
-      const base = new Float32Array(L);
-      blurPlane(base, w, h, Math.max(4, Math.min(ctx.W, ctx.H) * 0.015));
+      const base = smoothSampler(L, w, h, Math.max(4, Math.min(ctx.W, ctx.H) * 0.015));
       const hi = p.highlights / 100, sh = p.shadows / 100, wh = p.whites / 100, bl = p.blacks / 100, ct = p.contrast / 100;
-      // Struktur (fine) and Klarheit (coarse) local contrast.
-      let fine = null, coarse = null;
+      // Struktur (fine, full size) and Klarheit (coarse, reduced size) local contrast.
+      let fine = null;
       if (p.texture) { fine = new Float32Array(L); blurPlane(fine, w, h, 2.5 * sc); }
-      if (p.clarity) { coarse = new Float32Array(L); blurPlane(coarse, w, h, 25 * sc); }
-      const out = new Float32Array(n);
-      for (let i = 0; i < n; i++) {
-        let l = L[i];
-        const b = base[i];
-        l += sh * 0.45 * (1 - b) ** 2 * (1 - l) * (sh > 0 ? 1 : 0.6);
-        l -= hi * 0.45 * b * b * l * (hi > 0 ? 0.6 : 1);
-        l += wh * 0.25 * l * l;
-        l += bl * 0.25 * (1 - l) * (1 - l) * (bl < 0 ? 1 : 0.6);
-        if (fine) l += (L[i] - fine[i]) * (p.texture / 100) * 1.4;
-        if (coarse) {
-          const mid = 1 - Math.abs(L[i] - 0.5) * 1.6;
-          l += (L[i] - coarse[i]) * (p.clarity / 100) * 0.9 * Math.max(0, mid);
-        }
-        if (ct) {
-          const x = clamp(l, 0, 1), sCurve = x < 0.5 ? 2 * x * x : 1 - 2 * (1 - x) * (1 - x);
-          l = x + (sCurve - x) * ct * (ct > 0 ? 1 : 1.2);
-        }
-        out[i] = clamp(l, 0, 1.2);
-      }
+      const coarse = p.clarity ? smoothSampler(L, w, h, 25 * sc) : null;
       const vib = p.vibrance / 100, sat = p.saturation / 100;
       for (let i = 0, j = 0; i < n; i++, j += 4) {
+        const x = i % w, y = (i / w) | 0, L0 = L[i];
+        let l = L0;
+        const bb = base(x, y);
+        l += sh * 0.45 * (1 - bb) ** 2 * (1 - l) * (sh > 0 ? 1 : 0.6);
+        l -= hi * 0.45 * bb * bb * l * (hi > 0 ? 0.6 : 1);
+        l += wh * 0.25 * l * l;
+        l += bl * 0.25 * (1 - l) * (1 - l) * (bl < 0 ? 1 : 0.6);
+        if (fine) l += (L0 - fine[i]) * (p.texture / 100) * 1.4;
+        if (coarse) {
+          const mid = 1 - Math.abs(L0 - 0.5) * 1.6;
+          l += (L0 - coarse(x, y)) * (p.clarity / 100) * 0.9 * Math.max(0, mid);
+        }
+        if (ct) {
+          const v = clamp(l, 0, 1), sCurve = v < 0.5 ? 2 * v * v : 1 - 2 * (1 - v) * (1 - v);
+          l = v + (sCurve - v) * ct * (ct > 0 ? 1 : 1.2);
+        }
+        const l1 = clamp(l, 0, 1.2);
         // Back to sRGB, scaled so the luminance becomes the toned one (same measure as L above,
         // so with everything at 0 the picture stays exactly as it was).
-        let r = linToSrgb(R[i]), g = linToSrgb(G[i]), b = linToSrgb(B[i]);
-        const l0 = linToSrgb(Math.min(1, Math.max(0, 0.2126 * R[i] + 0.7152 * G[i] + 0.0722 * B[i]))), l1 = out[i];
+        lin(i, j, rgb);
+        let r = linToSrgb(rgb[0]), g = linToSrgb(rgb[1]), b = linToSrgb(rgb[2]);
+        const l0 = L0;
         if (l0 > 1e-4) {
           const k = l1 / l0;
           r *= k; g *= k; b *= k;
         } else r = g = b = l1;
         if (vib || sat) {
-          const mx = Math.max(r, g, b), mn = Math.min(r, g, b), s0 = mx - mn, l = 0.299 * r + 0.587 * g + 0.114 * b;
+          const mx = Math.max(r, g, b), mn = Math.min(r, g, b), s0 = mx - mn, lm = 0.299 * r + 0.587 * g + 0.114 * b;
           const kk = (1 + sat) * (1 + vib * (1 - Math.min(1, s0 * 1.5)) * (vib > 0 ? 1.2 : 1));
-          r = l + (r - l) * kk;
-          g = l + (g - l) * kk;
-          b = l + (b - l) * kk;
+          r = lm + (r - lm) * kk;
+          g = lm + (g - lm) * kk;
+          b = lm + (b - lm) * kk;
         }
         d[j] = r * 255;
         d[j + 1] = g * 255;

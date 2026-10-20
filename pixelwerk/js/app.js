@@ -233,6 +233,8 @@
         });
         return null;
       }
+      // An adjustment layer gets its (white) mask when something is first painted on it.
+      if (L.adjust && !L.mask) L.addMask(null, true);
       return L;
     },
 

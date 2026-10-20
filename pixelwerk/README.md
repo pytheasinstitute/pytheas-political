@@ -23,6 +23,7 @@ Die App nutzt klassische `<script>`-Dateien statt ES-Modulen und funktioniert de
 | `make_fabric_opaque` | Durchscheinenden Stoff abdecken; findet Durchscheinendes selbst, Kanten und Flecken lassen sich zum Nachbessern markieren |
 | `select_subject` | Motiv oder Objekt im Rechteck auswählen, mit Strichen Teile hinzufügen oder abziehen |
 | `remove_background` | Motiv freistellen, Hintergrund per Ebenenmaske ausblenden |
+| `smooth_skin` | Haut glätten (Poren bleiben), eigene Ebene, optional nur im Rechteck ums Gesicht |
 | `remove_area` | Gegenstände, Kabel, Flecken entfernen wie mit „Inhaltsbasiert füllen“, auf eigener Ebene |
 | `adjust` | Korrekturen und Filter, z. B. Helligkeit, Auto-Verbessern, Weichzeichnen |
 | `transform_image` | Zuschneiden (auch nach Seitenverhältnis), drehen, spiegeln |
@@ -103,6 +104,8 @@ Ohne Photoshop-Kenntnisse:
 **Einstellungsebenen** wie in Photoshop: Ein Klick im Bedienfeld „Korrekturen“ (oder Ebene › Neue Einstellungsebene) legt die Korrektur als eigene Ebene an. Sie wirkt auf alles darunter, die Pixel bleiben unverändert; über ihre Maske (Malen mit Schwarz, eine Auswahl wird beim Anlegen zur Maske), Deckkraft und Füllmethode lässt sie sich begrenzen, ein Doppelklick ändert die Einstellungen. Ergebnisse unter einer Einstellungsebene werden zwischengespeichert, so bleibt Malen darüber flüssig. Alt-Klick im Bedienfeld wendet die Korrektur wie bisher direkt an.
 
 **Korrekturen**: Helligkeit/Kontrast, Tonwertkorrektur (mit Histogramm), Gradationskurven (RGB und Einzelkanäle), Belichtung, Dynamik, Farbton/Sättigung (auch Färben), Farbbalance, Schwarzweiß, Fotofilter, Kanalmixer, Selektive Farbkorrektur, Tiefen/Lichter, Umkehren, Tontrennung, Schwellenwert, Verlaufsumsetzung, Sättigung verringern, Tonwertangleichung, Auto-Farbton/-Kontrast/-Farbe.
+
+**Haut glätten** (Filter › Haut glätten, auch im Schnellstart): sucht Hauttöne, glättet die mittleren Frequenzen der Helligkeit kantenerhaltend, gibt einen Teil der feinen Struktur zurück (Poren bleiben) und gleicht Farbflecken aus. Ergebnis auf eigener Ebene, Stärke über die Deckkraft.
 
 **Verflüssigen** (Filter › Verflüssigen, Strg+Umschalt+X): eigener Arbeitsbereich mit Mitziehen, Rekonstruieren, Glätten, Strudel, Zusammenziehen, Aufblasen, Maske fixieren und lösen; Größe, Dichte, Druck, Gitter- und Maskenansicht. Eine Auswahl schützt alles außerhalb. Technisch ein Verschiebungsfeld (bis ~1,5 MP), das beim OK in voller Auflösung angewendet wird (12 MP in unter einer Sekunde).
 

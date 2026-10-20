@@ -221,6 +221,8 @@
       '3. Sag kurz, dass das Ergebnis auf der Ebene „Blickdicht“ liegt und das Original erhalten bleibt.',
       'Nachbessern nur, wenn danach eine Kante oder ein Fleck eindeutig noch zu sehen ist: undo, dann make_fabric_opaque erneut mit lines genau entlang dieser einen Kante (width etwa 3 % der Bildbreite) bzw. areas um diesen einen Fleck. Wirkt es zu glatt oder künstlich: undo und strength 85.',
       '',
+      'Rezept „Haut / Porträt verschönern“: Pickel und Flecken mit remove_area (kleine Polygone), danach smooth_skin mit box ums Gesicht, dezent (strength 40–55). Augen, Lippen und Haare nicht weichzeichnen.',
+      'Rezept „Foto allgemein verbessern“: adjust mit cameraRaw (z. B. exposure, shadows, highlights, clarity, vibrance; kleine Werte), bei Rauschen reduceNoise.',
       'Rezept „Person/Objekt auswählen oder freistellen“: select_subject (ohne Angaben fürs Hauptmotiv, sonst box). Prüfe den Anteil; fehlen Teile (oft Haare vor dunklem Hintergrund) oder ist Hintergrund dabei, select_subject mit keep_selection und add/remove-Strichen. Freistellen: danach remove_background mit use_selection.',
       'Rezept „etwas entfernen“ (Gegenstand, Person im Hintergrund, Kabel, Schrift, Pickel, Fleck): remove_area mit einem Polygon ganz um das Objekt samt Schatten und etwas Rand, oder lines für Dünnes. Mehrere Dinge in einem Aufruf. Teile der Person oder Wichtiges nicht mit einschließen.',
       '',
@@ -405,6 +407,25 @@
           state.edited = true;
           progress('Hintergrund ausgeblendet (Ebenenmaske)');
           return { layers: a.doc.layers.map(l => ({ name: l.name, mask: !!l.mask })) };
+        },
+      },
+      {
+        name: 'smooth_skin',
+        description: 'Glättet Haut wie eine professionelle Retusche: Unebenheiten und Rötungen werden weicher, Poren und Struktur bleiben. Eigene Ebene „Haut geglättet“ mit Maske aus Hauttönen. box = Rechteck um Gesicht/Haut, damit nichts anderes Hautfarbenes mitgeglättet wird.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            strength: { type: 'number', description: '0–100, Standard 60; dezent 35–50' },
+            texture: { type: 'number', description: 'Wie viel feine Struktur bleibt, 0–100, Standard 45' },
+            box: { type: 'object', properties: { x: { type: 'number' }, y: { type: 'number' }, w: { type: 'number' }, h: { type: 'number' } }, required: ['x', 'y', 'w', 'h'] },
+          },
+        },
+        execute: async input => {
+          if (input.box) needGeometry();
+          const L = await PW.skin.smooth({ strength: input.strength, texture: input.texture, box: input.box ? rectToDoc(input.box) : null });
+          state.edited = true;
+          progress('Haut geglättet (Ebene „Haut geglättet“)');
+          return { layer: L && L.name };
         },
       },
       {

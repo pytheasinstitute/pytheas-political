@@ -168,6 +168,7 @@
     { title: 'Retusche & Freistellen', items: [
       { icon: 'bandage', label: 'Flecken entfernen', hint: 'Pickel, Flecken, Fussel übermalen', run: () => useTool('spotHeal', TOOL_HELP.spotHeal, () => !!photoLayer()) },
       { icon: 'remove', label: 'Objekt entfernen', hint: 'Störendes übermalen, es verschwindet', run: () => useTool('remove', TOOL_HELP.remove, () => !!photoLayer()) },
+      { icon: 'drop', label: 'Haut glätten', hint: 'Haut weicher, Poren bleiben; eigene Ebene, Stärke über Deckkraft', run: () => PW.runAction('filter.skin') },
       { icon: 'subject', label: 'Motiv auswählen', hint: 'Person oder Objekt automatisch auswählen', run: () => PW.runAction('select.subject') },
       { icon: 'quick-select', label: 'Auswahl verbessern', hint: 'Mit dem Pinsel Teile hinzufügen oder wegnehmen', run: () => useTool('quickSelect', TOOL_HELP.quickSelect) },
       { icon: 'image', label: 'Hintergrund entfernen', hint: 'Motiv freistellen, der Hintergrund wird ausgeblendet', run: () => PW.runAction('layer.removeBg') },
