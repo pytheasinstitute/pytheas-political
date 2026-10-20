@@ -214,13 +214,10 @@
       '- Nach einem Zuschnitt oder Drehen passen Koordinaten erst wieder mit dem neuen Bild der nächsten Nachricht.',
       '',
       'Rezept „durchsichtigen Stoff blickdicht machen“ (Top, Shirt, Kleid, durch das Haut oder Unterwäsche scheint):',
-      '1. select_garment: Punkt mitten auf eine gut deckende Stelle des Kleidungsstücks (nicht auf eine durchscheinende Stelle, keine Naht, keine Haare), Rahmen knapp um das ganze Kleidungsstück. Prüfe das Ergebnis (bounds). Fehlt ein großer Teil oder ist Haut dabei, korrigiere mit select_area (Polygon entlang des Kleidungsstücks, Haut und Haare draußen).',
-      '2. make_fabric_opaque. Markiere, was durchscheint, großzügig:',
-      '   - lines: Kanten, die durchscheinen (BH-Rand, Träger, Bündchen darunter) als Punktfolge entlang der Kante, width so breit, dass die Kante sicher drin ist (etwa 3 % der Bildbreite).',
-      '   - areas: Polygone um durchscheinende Flächen (BH-Körbchen, helle oder dunkle Flecken).',
-      '   - keep: Polygone um Haare oder Schmuck, die über dem Stoff liegen.',
-      '   Farbe nur angeben, wenn die Person eine bestimmte will.',
-      '3. Sag kurz, dass das Ergebnis auf der Ebene „Blickdicht“ liegt und das Original erhalten bleibt. Scheint noch etwas durch: undo und erneut mit genaueren lines/areas. Wirkt es zu künstlich: undo und strength 80–90 oder texture 100.',
+      '1. select_garment: Punkt auf den Stoff des Kleidungsstücks (nicht auf Haare oder Schmuck), Rahmen um das ganze Kleidungsstück, lieber etwas zu groß als zu klein: Was außerhalb des Rahmens liegt, bleibt unbearbeitet. Prüfe das Ergebnis (bounds, Anteil). Fehlt ein großer Teil des Kleidungsstücks, wähle neu mit größerem Rahmen; ist ein großes Stück Haut oder Hintergrund dabei, mit kleinerem Rahmen.',
+      '2. make_fabric_opaque ohne lines, areas und keep. Das Werkzeug findet Durchscheinendes selbst und lässt Haare, Falten und Licht stehen. Markiere nichts auf Verdacht: Markierungen an falschen Stellen verändern diese Stellen. Farbe nur angeben, wenn die Person eine bestimmte will.',
+      '3. Sag kurz, dass das Ergebnis auf der Ebene „Blickdicht“ liegt und das Original erhalten bleibt.',
+      'Nachbessern nur, wenn danach eine Kante oder ein Fleck eindeutig noch zu sehen ist: undo, dann make_fabric_opaque erneut mit lines genau entlang dieser einen Kante (width etwa 3 % der Bildbreite) bzw. areas um diesen einen Fleck. Wirkt es zu glatt oder künstlich: undo und strength 85.',
       '',
       'Korrekturen und Filter für adjust (id — Parameter; fehlende Parameter bleiben neutral). Wirkt auf das ganze Bild bzw. nur auf eine vorhandene Auswahl:',
       catalogue(),
@@ -329,13 +326,13 @@
       },
       {
         name: 'make_fabric_opaque',
-        description: 'Macht den ausgewählten Stoff blickdicht: Durchscheinendes verschwindet, Falten, Licht und Gewebe bleiben, damit es echt aussieht. Ergebnis auf eigener Ebene „Blickdicht“. Braucht eine Auswahl (select_garment). Liefert Ebene und Stofffarbe.',
+        description: 'Macht den ausgewählten Stoff blickdicht: erkennt selbst, wo Haut oder Unterwäsche durchscheint, und nimmt es heraus; Falten, Licht, Gewebe und Haare über dem Stoff bleiben, damit es echt aussieht. Ergebnis auf eigener Ebene „Blickdicht“. Braucht eine Auswahl (select_garment). Ohne lines/areas/keep aufrufen; die sind nur für eine Nachbesserung an einer Stelle, die danach noch sichtbar ist. Liefert Ebene und Stofffarbe.',
         inputSchema: {
           type: 'object',
           properties: {
-            lines: { type: 'array', description: 'Durchscheinende Kanten', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, width: { type: 'number' } }, required: ['points'] } },
-            areas: { type: 'array', description: 'Durchscheinende Flächen (Polygone)', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } } }, required: ['points'] } },
-            keep: { type: 'array', description: 'Bereiche, deren Details bleiben (Haare)', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } } }, required: ['points'] } },
+            lines: { type: 'array', description: 'Nur zur Nachbesserung: Kante, die nach dem ersten Durchgang noch sichtbar ist, als Punktfolge genau entlang der Kante', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, width: { type: 'number' } }, required: ['points'] } },
+            areas: { type: 'array', description: 'Nur zur Nachbesserung: Fleck, der nach dem ersten Durchgang noch sichtbar ist (Polygon)', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } } }, required: ['points'] } },
+            keep: { type: 'array', description: 'Nur falls nötig: Bereich mit Schmuck oder Mustern, der unverändert bleiben soll (Haare bleiben von selbst)', items: { type: 'object', properties: { points: { type: 'array', items: { type: 'array', items: { type: 'number' } } } }, required: ['points'] } },
             strength: { type: 'number', description: '0–100, Standard 100' },
             texture: { type: 'number', description: 'Sichtbarkeit des Gewebes 0–120, Standard 100' },
             color: { type: 'string', description: "weglassen = Farbe des Stoffs selbst (empfohlen); sonst 'light' | 'mid' | 'dark' | '#rrggbb' für eine andere Farbe" },
@@ -519,7 +516,7 @@
     images_unavailable: 'In dieser Ansicht kann Claude das Bild nicht sehen.',
   };
 
-  const CHECK = 'Automatische Prüfung: Bild 1 zeigt jetzt das Ergebnis deiner Änderungen. Schau genau hin, ob die Bitte erfüllt ist. Scheint noch etwas durch (Kanten, Flecken, Formen), passt die Auswahl nicht oder wirkt etwas künstlich, dann korrigiere es jetzt mit den Werkzeugen, zum Beispiel mit undo und make_fabric_opaque mit genaueren lines und areas. Passt alles, schreib nur einen kurzen Satz.';
+  const CHECK = 'Automatische Prüfung: Bild 1 zeigt jetzt das Ergebnis deiner Änderungen. Schau genau hin, ob die Bitte erfüllt ist. Ist eine Kante oder ein Fleck eindeutig noch zu sehen, wurde etwas verändert, das so bleiben sollte, oder wirkt etwas künstlich, dann korrigiere es jetzt mit den Werkzeugen, wie im Rezept beschrieben. Bessere nichts auf Verdacht nach. Passt alles, schreib nur einen kurzen Satz.';
 
   // opts.auto: the automatic check after an edit (one per request, shown as a note).
   async function send(text, opts = {}) {

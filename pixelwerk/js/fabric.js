@@ -243,14 +243,17 @@
         U[i] = L[i] * Math.max(0.2, 1 - wv[i] * (1 - rr));
       }
       // The un-mixed brightness in layers: lighting and body shape stay, lines and blotches go, knit evened out.
-      const U3 = nblur(U, core, w, h, 2 * sc, tmp), U25 = nblur(U, core, w, h, 25 * sc, tmp), U150 = nblur(U, core, w, h, 150 * sc, tmp);
+      const U3 = nblur(U, core, w, h, 2 * sc, tmp), U8 = nblur(U, core, w, h, 6 * sc, tmp);
+      const U25 = nblur(U, core, w, h, 25 * sc, tmp), U150 = nblur(U, core, w, h, 150 * sc, tmp);
       this.tex = new Float32Array(n);
+      this.fine = new Float32Array(n);
       this.mid = new Float32Array(n);
       this.big = new Float32Array(n);
       const tex2 = new Float32Array(n);
       for (let i = 0; i < n; i++) {
         this.tex[i] = U[i] - U3[i];
-        this.mid[i] = U3[i] - U25[i];
+        this.fine[i] = U3[i] - U8[i];
+        this.mid[i] = U8[i] - U25[i];
         this.big[i] = U25[i] - U150[i];
         tex2[i] = this.tex[i] * this.tex[i];
       }
@@ -347,25 +350,28 @@
       for (let i = 0, j = 0; i < n; i++, j += 4) {
         const a = this.alpha[i];
         if (!a) continue;
-        const big = this.big[i], mv = this.mid[i];
+        const big = this.big[i], mv = this.mid[i], fv = this.fine[i];
         let lg = big > 0 ? big * 0.5 : big;
-        // Faint lines and blotches (underwear edges, patterns) go; strong folds stay.
+        // Faint lines and blotches (underwear edges, patterns) go; strong folds stay. Fine detail
+        // (seams, stitching) stays where nothing shows through.
         let md;
         if (p.hideLines) md = mv > 0 ? mv * 0.2 : mv * (0.1 + 0.8 * smooth(t0, t1, -mv));
         else md = mv > 0 ? mv * 0.3 : mv * 0.9;
+        const fk = 1 - 0.8 * Math.min(1, this.w[i] * 2.5);
+        md += p.hideLines ? fv * (fv > 0 ? fk : Math.max(fk, 0.1 + 0.8 * smooth(t0, t1, -fv))) : fv * (fv > 0 ? 0.3 + 0.7 * fk : 0.9);
         let tki = tk, gi = this.gain[i], hf = 0.6;
         const az = area ? area[i] : 0, lz = line ? line[i] : 0, kz = keep ? keep[i] : 0;
         if (az) {
-          md += (mv * 0.15 - md) * az;
+          md += (mv * 0.15 + fv * 0.15 - md) * az;
           lg += ((big > 0 ? big * 0.15 : big * 0.6) - lg) * az;
           hf *= 1 - 0.5 * az;
         }
         if (lz) {
-          md += (mv * 0.05 - md) * lz;
+          md += ((mv + fv) * 0.05 - md) * lz;
           lg += (Math.min(lg, 0) * 0.3 - lg) * lz;
         }
         if (kz) {
-          md += (mv - md) * kz;
+          md += (mv + fv - md) * kz;
           tki += (1 - tki) * kz;
           gi += (1 - gi) * kz;
           hf += (1 - hf) * kz;
@@ -426,9 +432,10 @@
     const med = k => win.map(v => v[k]).sort((a, c) => a - c)[win.length >> 1];
     const L0 = med(0), RB0 = med(1), GB0 = med(2);
     const ok = new Uint8Array(n);
-    for (let i = 0; i < n; i++) {
-      ok[i] = L[i] - L0 <= lighter && Lc[i] - L0 >= -darker && RB[i] - RB0 <= warmer && Math.abs(GB[i] - GB0) <= warmer * 0.8 ? 1 : 0;
-    }
+    const accept = (lo, hi, rbMax, gb) => {
+      for (let i = 0; i < n; i++) ok[i] = L[i] <= hi && Lc[i] >= lo && RB[i] <= rbMax && Math.abs(GB[i] - gb) <= warmer * 0.8 ? 1 : 0;
+    };
+    accept(L0 - darker, L0 + lighter, RB0 + warmer, GB0);
     if (!ok[si]) throw new Error('Am Startpunkt ist kein Stoff erkennbar. Wähle einen Punkt mitten auf dem Kleidungsstück.');
     // Connected region from the seed.
     const stack = new Int32Array(n);
@@ -447,6 +454,21 @@
       return sel;
     };
     let sel = grow(ok, si);
+    // A seed on a see-through spot (lighter, warmer) misses the plainly opaque parts: widen the limits
+    // by the garment as found, whose darker quarter is the opaque fabric, and grow once more.
+    {
+      const ls = [], rbs = [], step = Math.max(1, Math.floor(n / 100000));
+      for (let i = 0; i < n; i += step) if (sel[i]) { ls.push(Lc[i]); rbs.push(RB[i]); }
+      if (ls.length > 50) {
+        ls.sort((a, c) => a - c);
+        rbs.sort((a, c) => a - c);
+        const L1 = ls[Math.floor(ls.length * 0.25)], RB1 = rbs[rbs.length >> 1];
+        if (L1 < L0 - 8 || RB1 > RB0 + 4) {
+          accept(Math.min(L0, L1) - darker, Math.max(L0, L1) + lighter, Math.max(RB0, RB1) + warmer, GB0);
+          sel = grow(ok, si);
+        }
+      }
+    }
     // Opening: thin slivers along neighbouring edges and whatever hangs on them (e.g. a shadow
     // in the neckline) fall away; the garment itself keeps its outline.
     const r = Math.max(3, Math.round((4 * Math.max(W, H)) / 2000)), r2 = r * r;
