@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pytheas Political — 2-axis political profile quiz
 
-## Getting Started
+12 neutral statements → position on two axes (Progressive ↔ Conservative, State ↔ Market) →
+archetype. The axes are free; the full result (archetype description, 3D prism, map, live
+comparison) unlocks for a one-time €1 via Stripe Checkout. No accounts — answers stay in the
+browser's `localStorage`.
 
-First, run the development server:
+**Status: feature-complete (v1). Ready to deploy.** New features only after real users and real
+numbers — see "After launch" below.
+
+## Stack
+
+Next.js 16 (App Router) · React 19 · Stripe Checkout · Upstash Redis (optional stats) ·
+react-three-fiber for the result prism · Inter self-hosted via `@fontsource-variable/inter`.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # optional — the quiz works without any keys
+npm run dev                  # http://localhost:3000
+npm run build && npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without `STRIPE_SECRET_KEY` the unlock button shows "Payment is temporarily unavailable".
+Without the KV variables the live comparison card is hidden.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Launch checklist (only you can do these)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Imprint data** — fill in `OPERATOR` in `src/lib/site.ts` (name, address, e-mail; VAT ID /
+   company register only if you have them). Until then `/imprint` shows a red warning.
+2. **Stripe** — create/verify the account, copy the live secret key (`sk_live_…`).
+   No products or webhooks needed: the €1 price is created on the fly per checkout.
+3. **Vercel** — import this repo, set **Root Directory = `political-quiz`**, add the env vars from
+   `.env.example`, deploy.
+4. **Upstash Redis** (optional) — Vercel → Storage → Upstash for Redis → connect to the project.
+   This injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
+5. **Domain** — connect it in Vercel. Set `NEXT_PUBLIC_SITE_URL` if you use more than one domain.
+6. **Smoke test on production** — take the quiz, pay €1 with a real card, check the unlock, then
+   refund yourself in the Stripe dashboard. Paste a `/r/<archetype>` link into WhatsApp to see
+   the preview card.
 
-## Learn More
+## How it is built for sharing
 
-To learn more about Next.js, take a look at the following resources:
+- Every result has a **Share** button (native share sheet on phones, copy-link on desktop).
+- Shared links point to `/r/<archetype>` — a landing page with the friend's archetype, its own
+  social preview image (`/r/<archetype>/opengraph-image`) and a "Take the quiz" call to action.
+- The home page has its own preview image (`src/app/opengraph-image.tsx`), plus `sitemap.xml`
+  and `robots.txt`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Legal pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`/imprint`, `/privacy`, `/terms` read operator data from `src/lib/site.ts`. The checkout requires
+an explicit checkbox (immediate delivery + loss of withdrawal right for digital content, § 18
+FAGG); the server rejects checkouts without it and stores the consent timestamp in Stripe
+metadata. Have the texts reviewed if you expand beyond the €1 unlock.
 
-## Deploy on Vercel
+## After launch (not before)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ideas, intentionally parked: more quizzes on the institute hub, German translation, a
+webhook-based unlock that survives device changes, A/B test of the price. Decide based on
+traffic and conversion data.

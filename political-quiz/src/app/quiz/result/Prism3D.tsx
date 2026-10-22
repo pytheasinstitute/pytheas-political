@@ -64,9 +64,6 @@ return [
 
 const geom = useMemo(() => {
 const g = new THREE.BufferGeometry();
-const positions: number[] = [];
-const indices: number[] = [];
-
 // Build unique vertices per face so we can later do per-face-ish shading via separate meshes.
 // (We’ll still use a single geometry for the glass shell.)
 const baseVerts = verts.map((v) => v.clone());
@@ -184,7 +181,7 @@ opacity={locked ? 0.22 : 0.60}
 
 {/* Corner nodes */}
 {verts.map((v, i) => (
-<mesh key={i} position={v.toArray() as any}>
+<mesh key={i} position={v}>
 <sphereGeometry args={[0.05, 18, 18]} />
 <meshStandardMaterial
 color={corners[i].color}
@@ -195,7 +192,7 @@ emissiveIntensity={locked ? 0.06 : 0.35}
 ))}
 
 {/* User point */}
-<mesh position={point.toArray() as any}>
+<mesh position={point}>
 <sphereGeometry args={[0.085, 28, 28]} />
 <meshStandardMaterial
 color={dotColor}

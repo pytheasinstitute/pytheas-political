@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { QUESTIONS_V1, type Likert, type QuizAnswers } from "@/lib/quiz";
+import SiteFooter from "@/components/SiteFooter";
+import {
+  LOCALSTORAGE_ANSWERS_KEY,
+  parseAnswers,
+  QUESTIONS_V1,
+  type Likert,
+  type QuizAnswers,
+} from "@/lib/quiz";
+import { useStoredString, writeStored } from "@/lib/storage";
 
 const SCALE: { label: string; value: Likert; icon: string }[] = [
   { label: "Strongly disagree", value: -2, icon: "✕✕" },
@@ -12,31 +20,14 @@ const SCALE: { label: string; value: Likert; icon: string }[] = [
   { label: "Strongly agree", value: 2, icon: "✓✓" },
 ];
 
-function getStoredAnswers(): QuizAnswers {
-  try {
-    const raw = localStorage.getItem("pytheas_answers_v1");
-    if (!raw) return {};
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-}
-
 function storeAnswers(a: QuizAnswers) {
-  try {
-    localStorage.setItem("pytheas_answers_v1", JSON.stringify(a));
-  } catch {
-    // ignore
-  }
+  writeStored(LOCALSTORAGE_ANSWERS_KEY, JSON.stringify(a));
 }
 
 export default function QuizClient() {
   const [idx, setIdx] = useState(0);
-  const [answers, setAnswers] = useState<QuizAnswers>({});
-
-  useEffect(() => {
-    setAnswers(getStoredAnswers());
-  }, []);
+  const rawAnswers = useStoredString(LOCALSTORAGE_ANSWERS_KEY);
+  const answers = useMemo(() => parseAnswers(rawAnswers), [rawAnswers]);
 
   const q = QUESTIONS_V1[idx];
   const progress = Math.round(((idx + 1) / QUESTIONS_V1.length) * 100);
@@ -44,9 +35,7 @@ export default function QuizClient() {
   const answeredTotal = Object.keys(answers).length;
 
   function setAnswer(v: Likert) {
-    const next = { ...answers, [q.id]: v };
-    setAnswers(next);
-    storeAnswers(next);
+    storeAnswers({ ...answers, [q.id]: v });
   }
 
   function next() {
@@ -59,7 +48,6 @@ export default function QuizClient() {
 
   function restart() {
     setIdx(0);
-    setAnswers({});
     storeAnswers({});
   }
 
@@ -167,13 +155,7 @@ export default function QuizClient() {
         </div>
       </main>
 
-      <footer className="footer">
-        <div className="small" style={{ textAlign: "center" }}>
-          <Link href="/methodology">Methodology</Link>
-          <span className="sep">·</span>
-          <Link href="/privacy">Privacy</Link>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

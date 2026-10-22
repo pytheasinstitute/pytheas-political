@@ -2,37 +2,52 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  LOCALSTORAGE_ANSWERS_KEY,
+  LOCALSTORAGE_STATS_KEY,
   LOCALSTORAGE_UNLOCK_KEY,
+  parseAnswers,
   profileBlurb,
   QUESTIONS_V1,
   scoreQuiz,
-  type QuizAnswers,
+  UNLOCK_PRICE_EUR,
 } from "@/lib/quiz";
-import { ARCHETYPE_DESCRIPTIONS, ARCHETYPE_LABELS, THEME_LABELS } from "@/lib/stats";
+import { ARCHETYPE_DESCRIPTIONS, ARCHETYPE_LABELS, THEME_LABELS, type ArchetypeKey } from "@/lib/stats";
 import { computeArchetype, computeThemes, formatPct, strengthLabel } from "@/lib/archetypes";
+import { readStored, useStoredString, writeStored } from "@/lib/storage";
 import Prism3D, { type PrismCorner } from "./Prism3D";
 
-function getStoredAnswers(): QuizAnswers {
-  try {
-    const raw = localStorage.getItem("pytheas_answers_v1");
-    if (!raw) return {};
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
+function setUnlocked(v: boolean) {
+  writeStored(LOCALSTORAGE_UNLOCK_KEY, v ? "true" : "false");
 }
 
-function isUnlocked(): boolean {
-  try {
-    return localStorage.getItem(LOCALSTORAGE_UNLOCK_KEY) === "true";
-  } catch {
-    return false;
+function ShareButton({ archetypeKey, label }: { archetypeKey: ArchetypeKey; label: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function share() {
+    const url = `${window.location.origin}/r/${archetypeKey}`;
+    const text = `I'm a ${label} on the Pytheas Political quiz. Where do you stand?`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "My Pytheas Political profile", text, url });
+        return;
+      } catch {
+        // cancelled or unsupported payload -> fall back to copying
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    } catch {
+      window.prompt("Copy this link:", url);
+    }
   }
-}
-function setUnlocked(v: boolean) {
-  try {
-    localStorage.setItem(LOCALSTORAGE_UNLOCK_KEY, v ? "true" : "false");
-  } catch {}
+
+  return (
+    <button className="btn" onClick={share} type="button">
+      {copied ? "Link copied ✓" : "Share my result ↗"}
+    </button>
+  );
 }
 
 function Chip({ text }: { text: string }) {
@@ -137,15 +152,42 @@ function MapDot({ xPct, yPct }: { xPct: number; yPct: number }) {
 function LockedOverlay({
   children,
   archetype,
+  archetypeKey,
   themes,
 }: {
   children: React.ReactNode;
   archetype: string;
+  archetypeKey: ArchetypeKey;
   themes: string[];
 }) {
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function startCheckout() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ consent: true }),
+      });
+      const json = await res.json().catch(() => null);
+      if (json?.url) {
+        window.location.href = json.url;
+        return;
+      }
+      setError("Payment is temporarily unavailable. Please try again later.");
+    } catch {
+      setError("Could not reach the payment page. Check your connection and try again.");
+    }
+    setBusy(false);
+  }
+
   return (
     <div style={{ position: "relative" }}>
-      <div style={{ filter: "blur(6px)", opacity: 0.50, pointerEvents: "none", userSelect: "none" }}>
+      <div inert aria-hidden="true" style={{ filter: "blur(6px)", opacity: 0.50, pointerEvents: "none", userSelect: "none" }}>
         {children}
       </div>
       <div
@@ -193,29 +235,45 @@ function LockedOverlay({
             )}
           </div>
 
-          <div className="small" style={{ marginBottom: 18 }}>
-            One-time unlock (~€1 equivalent). No subscription. No account required.
+          <div className="small" style={{ marginBottom: 14 }}>
+            One-time unlock for €{UNLOCK_PRICE_EUR} (final price). No subscription. No account required.
           </div>
+
+          <label className="small" style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16, cursor: "pointer", lineHeight: 1.5 }}>
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              style={{ marginTop: 3, flexShrink: 0 }}
+            />
+            <span>
+              I agree to the <Link href="/terms">Terms</Link> and request immediate access to the
+              full result. I understand that I lose my right of withdrawal once access is granted.
+            </span>
+          </label>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               className="btn btnPrimary btnLg"
               style={{ flex: 1, justifyContent: "center" }}
-              onClick={async () => {
-                const res = await fetch("/api/create-checkout-session", {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ origin: window.location.origin }),
-                });
-                const json = await res.json();
-                if (json?.url) window.location.href = json.url;
-              }}
+              disabled={!consent || busy}
+              onClick={startCheckout}
             >
-              🔓 Unlock for €1
+              {busy ? "Opening checkout…" : `🔓 Unlock for €${UNLOCK_PRICE_EUR}`}
             </button>
             <Link className="btn" href="/quiz" style={{ padding: "14px 20px" }}>
               Adjust answers
             </Link>
+          </div>
+
+          {error && (
+            <div className="small" role="alert" style={{ marginTop: 12, color: "#b42318" }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
+            <ShareButton archetypeKey={archetypeKey} label={archetype} />
           </div>
         </div>
       </div>
@@ -224,13 +282,9 @@ function LockedOverlay({
 }
 
 export default function ResultClient() {
-  const [answers, setAnswers] = useState<QuizAnswers>({});
-  const [unlocked, setUnlockedState] = useState(false);
-
-  useEffect(() => {
-    setAnswers(getStoredAnswers());
-    setUnlockedState(isUnlocked());
-  }, []);
+  const rawAnswers = useStoredString(LOCALSTORAGE_ANSWERS_KEY);
+  const answers = useMemo(() => parseAnswers(rawAnswers), [rawAnswers]);
+  const unlocked = useStoredString(LOCALSTORAGE_UNLOCK_KEY) === "true";
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -244,10 +298,11 @@ export default function ResultClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ sessionId }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => null);
       if (json?.paid) {
         setUnlocked(true);
-        setUnlockedState(true);
+        // Drop the session id from the address bar so a shared/bookmarked URL stays clean.
+        window.history.replaceState(null, "", "/quiz/result");
       }
     })();
   }, []);
@@ -291,38 +346,45 @@ export default function ResultClient() {
 
   const [livePct, setLivePct] = useState<string | null>(null);
   const [liveN, setLiveN] = useState<number | null>(null);
+  const [liveOff, setLiveOff] = useState(false);
+
+  const isComplete = answeredCount >= QUESTIONS_V1.length;
 
   useEffect(() => {
-    const handler = () => setUnlockedState(isUnlocked());
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
-  }, []);
-
-  useEffect(() => {
-    if (!unlocked) return;
+    if (!unlocked || !isComplete) return;
     (async () => {
-      await fetch("/api/stats/record", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ archetype: archetypeKey }),
-      });
-      const res = await fetch(`/api/stats/archetype?archetype=${archetypeKey}`);
-      const json = await res.json();
+      // Count each distinct result once per device, not on every page view.
+      const fingerprint = `${archetypeKey}:${rawAnswers ?? ""}`;
+      if (readStored(LOCALSTORAGE_STATS_KEY) !== fingerprint) {
+        const rec = await fetch("/api/stats/record", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ archetype: archetypeKey }),
+        }).catch(() => null);
+        if (rec?.ok) writeStored(LOCALSTORAGE_STATS_KEY, fingerprint);
+      }
+      const res = await fetch(`/api/stats/archetype?archetype=${archetypeKey}`).catch(() => null);
+      const json = res?.ok ? await res.json().catch(() => null) : null;
+      // Hide the comparison card instead of showing "Loading…" forever.
+      if (!json?.ok) {
+        setLiveOff(true);
+        return;
+      }
       if (json?.ok && typeof json.total === "number" && typeof json.share === "number") {
         setLiveN(json.total);
         setLivePct(formatPct(json.share, json.total));
       }
     })();
-  }, [unlocked, archetypeKey]);
+  }, [unlocked, isComplete, archetypeKey, rawAnswers]);
 
-  if (answeredCount < QUESTIONS_V1.length) {
+  if (!isComplete) {
     return (
       <main style={{ paddingBottom: 48 }}>
         <div className="card" style={{ padding: "32px 36px", maxWidth: 560 }}>
           <div className="kicker" style={{ marginBottom: 12 }}>Pytheas Political</div>
-          <h1 className="h1" style={{ marginTop: 0, fontSize: 32 }}>Your result isn't ready yet</h1>
+          <h1 className="h1" style={{ marginTop: 0, fontSize: 32 }}>Your result isn&apos;t ready yet</h1>
           <p className="p">
-            You've answered <strong>{answeredCount}</strong> of{" "}
+            You&apos;ve answered <strong>{answeredCount}</strong> of{" "}
             <strong>{QUESTIONS_V1.length}</strong> questions.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
@@ -381,7 +443,7 @@ export default function ResultClient() {
           )}
         </div>
 
-        {unlocked && (
+        {unlocked && !liveOff && (
           <div className="card" style={{ padding: "22px 24px" }}>
             <div className="kicker" style={{ marginBottom: 10 }}>Live comparison</div>
             <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>
@@ -424,16 +486,12 @@ export default function ResultClient() {
           </div>
           <p className="small" style={{ marginTop: 14, lineHeight: 1.65 }}>{blurb.paragraph}</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-            <button
-              className="btn"
-              onClick={() => {
-                setUnlocked(false);
-                setUnlockedState(false);
-              }}
-              style={{ fontSize: 12 }}
-            >
-              Lock (dev)
-            </button>
+            {process.env.NODE_ENV !== "production" && (
+              <button className="btn" onClick={() => setUnlocked(false)} style={{ fontSize: 12 }}>
+                Lock (dev)
+              </button>
+            )}
+            <ShareButton archetypeKey={archetypeKey} label={ARCHETYPE_LABELS[archetypeKey]} />
             <Link className="btn btnPrimary" href="/quiz">
               Retake quiz →
             </Link>
@@ -462,6 +520,7 @@ export default function ResultClient() {
       ) : (
         <LockedOverlay
           archetype={ARCHETYPE_LABELS[archetypeKey]}
+          archetypeKey={archetypeKey}
           themes={themesKeys.map((t) => THEME_LABELS[t])}
         >
           {fullResult}

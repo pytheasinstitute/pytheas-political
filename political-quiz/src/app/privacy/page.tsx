@@ -1,64 +1,99 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import LegalShell from "@/components/LegalShell";
+import { OPERATOR } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+};
 
 export default function PrivacyPage() {
   return (
-    <div className="container">
-      <header className="nav">
-        <div className="brand">
-          <span className="dot" />
-          <span>Pytheas Institute</span>
-        </div>
-        <nav style={{ display: "flex", gap: 14 }}>
-          <Link href="/" className="small">
-            Home
-          </Link>
-          <Link href="/methodology" className="small">
-            Methodology
-          </Link>
-          <Link href="/quiz" className="small">
-            Start quiz
-          </Link>
-        </nav>
-      </header>
+    <LegalShell kicker="Privacy" title="Privacy Policy">
+      <p className="p">
+        This quiz works without an account. You never have to enter your name or e-mail address to
+        get a result. This policy explains which data is processed anyway, why, and what your rights
+        are (Art. 13 GDPR).
+      </p>
 
-      <main className="card" style={{ padding: 22 }}>
-        <div className="kicker">Privacy</div>
-        <h1 style={{ fontSize: 28, marginTop: 10 }}>Privacy-first by default</h1>
-        <p className="p">
-          This project is designed to work without accounts. You don’t need to create a profile or enter
-          your email to get a result.
-        </p>
+      <h2>Controller</h2>
+      <p className="p">
+        {OPERATOR.name}
+        {OPERATOR.addressLines.map((line) => (
+          <span key={line}>
+            <br />
+            {line}
+          </span>
+        ))}
+        <br />
+        E-mail: {OPERATOR.email}
+      </p>
 
-        <h2 style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>What we collect</h2>
-        <ul className="p" style={{ paddingLeft: 18 }}>
-          <li>Anonymous quiz responses (for generating your result).</li>
-          <li>Anonymous event analytics (to improve the experience). (Planned)</li>
-        </ul>
+      <h2>Your quiz answers stay on your device</h2>
+      <p className="p">
+        Your answers and your result are calculated in your browser and saved in its local storage
+        (<code>localStorage</code>) so you can continue later. They are not sent to our servers. We
+        store these entries:
+      </p>
+      <ul className="p">
+        <li><code>pytheas_answers_v1</code> — your answers</li>
+        <li><code>pytheas_unlock_v1</code> — whether you unlocked the full result</li>
+        <li><code>pytheas_stats_recorded_v1</code> — whether your archetype was already counted</li>
+      </ul>
+      <p className="p">
+        You can delete them at any time by clearing this site&apos;s data in your browser settings.
+        We do not set cookies and do not use analytics, tracking pixels or advertising.
+      </p>
 
-        <h2 style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>What we don’t do</h2>
-        <ul className="p" style={{ paddingLeft: 18 }}>
-          <li>No subscription billing.</li>
-          <li>No selling of personal data.</li>
-          <li>No targeted political persuasion.</li>
-        </ul>
+      <h2>Anonymous archetype statistics</h2>
+      <p className="p">
+        After unlocking, your browser sends only the name of your archetype (for example
+        &quot;Pragmatic Centrist&quot;) to our server once, so we can show how common each archetype
+        is. We store nothing but running totals per archetype — no answers, no IP address, no
+        identifier. The counters are kept with our database provider Upstash, Inc. Legal basis:
+        legitimate interest in showing comparison figures (Art. 6(1)(f) GDPR).
+      </p>
 
-        <p className="small">
-          Note: This is an early draft. If you deploy publicly, you’ll want a proper legal privacy policy
-          tailored to your jurisdiction.
-        </p>
-      </main>
+      <h2>Payment</h2>
+      <p className="p">
+        If you buy the full result, payment is handled by Stripe Payments Europe, Ltd., 1 Grand
+        Canal Street Lower, Dublin 2, Ireland. You enter your payment details directly on
+        Stripe&apos;s checkout page; we never see your card details. We only receive the information
+        whether the payment succeeded. Stripe processes your data to execute the payment and to meet
+        its legal obligations (Art. 6(1)(b) and (c) GDPR); see{" "}
+        <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">
+          stripe.com/privacy
+        </a>
+        . Stripe&apos;s checkout page may set its own cookies.
+      </p>
 
-      <footer className="footer">
-        <div className="small">
-          <Link href="/" className="small">
-            Home
-          </Link>
-          {" · "}
-          <Link href="/methodology" className="small">
-            Methodology
-          </Link>
-        </div>
-      </footer>
-    </div>
+      <h2>Hosting</h2>
+      <p className="p">
+        This website is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. When
+        you open a page, technically necessary data (IP address, time, requested page, browser type)
+        is processed in server logs to deliver the site and keep it secure (Art. 6(1)(f) GDPR).
+        Transfers to the USA are based on the EU-U.S. Data Privacy Framework and/or Standard
+        Contractual Clauses.
+      </p>
+
+      <h2>Fonts</h2>
+      <p className="p">
+        All fonts are served from this website itself. No requests are made to Google Fonts or
+        other font services.
+      </p>
+
+      <h2>Your rights</h2>
+      <p className="p">
+        You have the right to access, rectification, erasure, restriction of processing, data
+        portability and objection. Write to {OPERATOR.email}. You can also lodge a complaint with a
+        supervisory authority — in Austria the Datenschutzbehörde (
+        <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer">dsb.gv.at</a>).
+      </p>
+
+      <p className="small" style={{ marginTop: 24 }}>
+        Last updated: October 2026 · See also our <Link href="/terms">Terms</Link> and{" "}
+        <Link href="/imprint">Imprint</Link>.
+      </p>
+    </LegalShell>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function MethodologyPage() {
   return (
@@ -20,7 +21,7 @@ export default function MethodologyPage() {
           {/* ─── Hero ─── */}
           <div style={{ paddingTop: 44, paddingBottom: 36 }}>
             <div className="kicker" style={{ marginBottom: 14 }}>Transparency</div>
-            <h1 className="h1">What this quiz is<br />(and isn't)</h1>
+            <h1 className="h1">What this quiz is<br />(and isn&apos;t)</h1>
             <p className="p" style={{ maxWidth: 540 }}>
               This is a short self-reflection tool. It estimates your position on two broad axes
               based on your responses — not a scientific diagnosis.
@@ -125,19 +126,7 @@ export default function MethodologyPage() {
         </div>
       </main>
 
-      <footer className="footer">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <div className="brand" style={{ fontSize: 13 }}>
-            <span className="dot" style={{ width: 8, height: 8 }} />
-            Pytheas Institute
-          </div>
-          <div className="small">
-            <Link href="/">Home</Link>
-            <span className="sep">·</span>
-            <Link href="/privacy">Privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
