@@ -106,6 +106,8 @@ Ohne Photoshop-Kenntnisse:
 - Entfernen und Inhaltsbasiert füllen: MI-GAN malt einen ersten Entwurf, die Fleckensuche (PatchMatch) baut ihn aus echten Pixeln des Fotos nach, so passen Körnung und Schärfe.
 - Ohne KI (ausgeschaltet oder Modelle nicht vorhanden) nimmt Pixelwerk die klassischen Verfahren. Die Modelle baut `tools/build-ai.py` in den Ordner `ai/` (siehe `ai/README.md`).
 
+**Smartobjekte** (Ebene › Smartobjekte, Filter › Für Smartfilter konvertieren): Die Ebene behält ihr Original. Frei transformieren, Verschieben und die Bildgröße rechnen jedes Mal vom Original aus, so verliert ein Smartobjekt beim Verkleinern und wieder Vergrößern nichts. Filter auf einem Smartobjekt werden zu Smartfiltern: Sie stehen unter der Ebene, lassen sich per Auge aus- und einblenden, per Doppelklick neu einstellen und mit × löschen. „Inhalt bearbeiten“ öffnet das Original als eigenes Dokument; jede Änderung dort erscheint sofort im Smartobjekt. Datei › Platzieren legt Bilder als Smartobjekt an. Malen auf einem Smartobjekt fragt, ob eine neue Ebene angelegt oder gerastert werden soll.
+
 **Pfade** (Fenster › Pfade, Bearbeiten › Pfade): Bézier-Pfade wie in Photoshop. Was der Zeichenstift oder ein Formwerkzeug im Modus „Pfad“ zeichnet, landet im Arbeitspfad; ein Doppelklick im Bedienfeld speichert ihn unter einem Namen. Pfad als Auswahl laden (Strg+Enter, oder Strg-Klick auf den Pfad), Arbeitspfad aus Auswahl erstellen (Umriss nachgezogen, mit Toleranz vereinfacht, runde Kurven), Pfad füllen und Pfadkontur füllen mit der Vordergrundfarbe. Bildgröße, Arbeitsfläche, Drehen und Spiegeln nehmen die Pfade mit; sie stehen im Protokoll und werden im Projekt und in „Meine Bilder“ gespeichert.
 
 **Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (mit KI siehe oben; ohne KI GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Ohne KI rechnet Pixelwerk nur mit Farben und Kanten; bei Haaren vor ähnlich farbigem Hintergrund braucht es dann ein paar Striche mit der Schnellauswahl.
@@ -175,6 +177,7 @@ pixelwerk/
   js/layer.js         Ebene: Pixel, Maske, Text, Stile, Serialisierung
   js/selection.js     Auswahlmaske, Kombinieren, Distanzfeld (Erweitern/Verkleinern), Ameisenlinie
   js/paths.js         Pfade: Bézier-Modell, Pfad ↔ Auswahl (Umriss nachziehen, vereinfachen, glätten), Anzeige
+  js/smartobj.js      Smartobjekte: Original + Platzierung (Matrix), verlustfreies Neuzeichnen, Smartfilter, Inhalt bearbeiten
   js/document.js      Dokument: Ebenenstapel, Compositing mit Füllmethoden/Stilen, Geometrie, Protokoll
   js/filters.js       Korrekturen und Filter auf ImageData, Live-Vorschau-Sitzung
   js/view.js          Zoom, Verschieben, Darstellung, Eingaben (Maus, Stift, Touch)

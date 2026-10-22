@@ -62,7 +62,8 @@
       }
       const target = L.target, W = target.width, H = target.height;
       this.base = cloneCanvas(target);
-      if (!sel.empty) {
+      // A smart object always moves as a whole (its placement is part of the object).
+      if (!sel.empty && !(L.smart && !L.targetIsMask)) {
         this.mode = 'float';
         this.float = createCanvas(W, H);
         const fg = this.float.getContext('2d');
@@ -154,6 +155,11 @@
     finish() {
       const moved = this.dx || this.dy;
       if (moved && this.mode === 'float') app().doc.selection.offset(this.dx, this.dy);
+      if (moved) {
+        const T = PW.smart.mat.translate(this.dx, this.dy);
+        const smart = this.mode === 'group' ? this.items.map(it => it.L).filter(X => X.smart) : this.mode === 'layer' && this.L.smart && !this.L.targetIsMask ? [this.L] : [];
+        for (const X of smart) X.smart.matrix = PW.smart.mat.mul(T, X.smart.matrix);
+      }
       this.L = null;
       this.start = null;
       this.base = this.float = this.items = null;

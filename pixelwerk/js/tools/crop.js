@@ -224,6 +224,10 @@
       }
       const sel = doc.selection;
       const parts = layers.map(X => {
+        if (X.smart && !X.targetIsMask) {
+          // Smart object: the whole object, redrawn from its original (no quality loss).
+          return { L: X, smart: true, matrix: X.smart.matrix.slice(), orig: cloneCanvas(X.canvas), b: PW.smart.quadBounds(X) };
+        }
         const target = X.target, W = target.width, H = target.height;
         const src = createCanvas(W, H), sg = src.getContext('2d');
         sg.drawImage(target, 0, 0);
@@ -249,7 +253,7 @@
       const b = { x: x0, y: y0, w: Math.max(...bs.map(r => r.x + r.w)) - x0, h: Math.max(...bs.map(r => r.y + r.h)) - y0 };
       this.L = L;
       this.parts = parts;
-      this.selMask = sel.empty ? null : cloneCanvas(sel.mask);
+      this.selMask = sel.empty || parts.some(q => q.smart) ? null : cloneCanvas(sel.mask);
       this.b = b;
       this.t = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 };
       this.render();
@@ -263,9 +267,21 @@
       g.scale(t.sx, t.sy);
     },
 
-    render() {
+    // The tool's own transform as a matrix: content box b → its new place.
+    toolMatrix() {
+      const t = this.t, b = this.b, M = PW.smart.mat, c = Math.cos(t.rot), s = Math.sin(t.rot);
+      return M.mul(M.mul([c, s, -s, c, t.cx, t.cy], M.scale(t.sx, t.sy)), M.translate(-(b.x + b.w / 2), -(b.y + b.h / 2)));
+    },
+
+    render(final = false) {
       const b = this.b;
       for (const q of this.parts) {
+        if (q.smart) {
+          // Filters only on the final rendering, so dragging stays quick.
+          q.L.smart.matrix = q.matrix;
+          PW.smart.render(q.L, { extra: this.toolMatrix(), filters: final ? undefined : false });
+          continue;
+        }
         const g = q.L.target.getContext('2d');
         g.save();
         g.setTransform(1, 0, 0, 1, 0, 0);
@@ -381,6 +397,14 @@
     commitTransform() {
       const a = app();
       if (!this.L) return a.restoreTool();
+      if (this.parts.some(q => q.smart)) {
+        const T = this.toolMatrix();
+        for (const q of this.parts) {
+          if (!q.smart) continue;
+          q.L.smart.matrix = PW.smart.mat.mul(T, q.matrix);
+          PW.smart.render(q.L);
+        }
+      }
       if (this.selMask) {
         const b = this.b, m = this.selMask;
         const doc = a.doc;
@@ -399,6 +423,7 @@
     cancelTransform() {
       const a = app();
       for (const q of this.parts || []) {
+        if (q.smart) q.L.smart.matrix = q.matrix;
         const g = q.L.target.getContext('2d');
         g.save();
         g.globalCompositeOperation = 'copy';

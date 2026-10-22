@@ -214,6 +214,28 @@
         this.toast('Eine Gruppe hat keine eigenen Pixel. Wähle im Ebenen-Bedienfeld eine Ebene in der Gruppe.');
         return null;
       }
+      if (L.smart && !L.targetIsMask) {
+        // Like Photoshop: pixels of a smart object are not painted directly.
+        const painting = this.dragging;
+        if (this.dragging) this.pointer('cancel');
+        PW.dialogs.confirm(painting
+          ? 'Diese Ebene ist ein Smartobjekt: das Original bleibt unverändert erhalten. Male am besten auf einer neuen Ebene darüber. Oder rastere das Smartobjekt, dann ist es eine normale Ebene.'
+          : 'Diese Ebene ist ein Smartobjekt. Dafür muss es gerastert werden, danach ist es eine normale Ebene. Filter wirken auf Smartobjekte übrigens als Smartfilter, die bearbeitbar bleiben.', {
+          title: 'Smartobjekt', ok: painting ? 'Neue Ebene anlegen' : 'Rastern', alt: painting ? 'Rastern' : undefined,
+        }).then(r => {
+          if (r === 'ok' && painting) {
+            this.doc.addLayer(this.doc.createLayer());
+            this.commit('Neue Ebene', 'new-layer');
+            this.toast('Neue Ebene angelegt – jetzt kannst du malen.');
+            return;
+          }
+          if ((r === 'ok' || r === 'alt') && L.smart) {
+            L.rasterize();
+            this.commit('Smartobjekt rastern', 'layers');
+          }
+        });
+        return null;
+      }
       if (L.isText && !L.targetIsMask) {
         // Like Photoshop: ask first, because the text stops being editable.
         // When painting, offer a fresh layer instead – the friendlier choice.

@@ -477,6 +477,7 @@
           const L2 = doc.layers[i];
           if (doc.ancestorsOf(L2).some(g => g.collapsed)) continue;
           list.append(this.row(doc, L2, i));
+          if (L2.smart && L2.smart.filters.length) list.append(...this.filterRows(doc, L2));
         }
       }
       const btn = (icon, title, action, extra) => el('button', { type: 'button', class: 'tbtn', title, 'aria-label': title, html: PW.icon(icon, 16), onclick: () => PW.runAction(action), ...extra });
@@ -522,6 +523,7 @@
         }
       });
 
+      if (L.smart) th.append(el('span', { class: 'smart-badge', title: 'Smartobjekt · Ebene › Smartobjekte › Inhalt bearbeiten', html: PW.icon('smart', 11) }));
       // Groups: indent by level, a triangle opens and closes the group.
       const depth = doc.depthOf(L);
       const twisty = L.isGroup
@@ -618,6 +620,32 @@
       });
       this.dragReorder(row, doc, L);
       return row;
+    },
+
+    // Smart filters under a smart object: eye switches one on/off, double-click edits, × removes.
+    filterRows(doc, L) {
+      const indent = doc.depthOf(L) * 14 + 46;
+      const head = el('div', { class: 'filter-row head' }, [el('span', { class: 'filter-name', text: 'Smartfilter' })]);
+      head.style.paddingLeft = `${indent}px`;
+      const rows = L.smart.filters.map((f, k) => {
+        const eye = el('button', { type: 'button', class: `eye ${f.enabled ? 'on' : ''}`, title: 'Filter ein-/ausblenden', 'aria-label': f.enabled ? 'Filter ausblenden' : 'Filter einblenden', 'aria-pressed': String(f.enabled), html: f.enabled ? PW.icon('eye', 13) : '' });
+        eye.addEventListener('click', e => {
+          e.stopPropagation();
+          PW.smart.toggleFilter(L, k);
+        });
+        const del = el('button', { type: 'button', class: 'tbtn filter-del', title: 'Smartfilter löschen', 'aria-label': 'Smartfilter löschen', html: PW.icon('x', 12) });
+        del.addEventListener('click', e => {
+          e.stopPropagation();
+          PW.smart.removeFilter(L, k);
+        });
+        const name = el('span', { class: 'filter-name', text: PW.smart.filterName(f), title: 'Doppelklick: Einstellungen ändern' });
+        const row = el('div', { class: `filter-row ${f.enabled ? '' : 'off'}` }, [eye, name, del]);
+        row.style.paddingLeft = `${indent - 26}px`;
+        row.addEventListener('click', () => doc.setActive(L.id));
+        row.addEventListener('dblclick', () => PW.smart.editFilter(L, k));
+        return row;
+      });
+      return [head, ...rows];
     },
 
     renameInline(L, doc) {

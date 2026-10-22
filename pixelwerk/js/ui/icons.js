@@ -111,6 +111,7 @@
     layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',
     'folder-open': '<path d="M3 18.5V6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h7.8A1.5 1.5 0 0 1 20 8.7V10"/><path d="M3 18.5 5.6 11h16l-2.6 7.6a1.5 1.5 0 0 1-1.4 1H4.4A1.4 1.4 0 0 1 3 18.5z"/>',
     twisty: '<path d="m9 6 6 6-6 6"/>',
+    smart: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 16V9.5L12 13l4-3.5V16"/>',
     'path-select': '<path d="M5 3l14 8-6.2 1.6L10 19z" fill="currentColor"/>',
     'direct-select': '<path d="M5 3l14 8-6.2 1.6L10 19z"/>',
     'path-to-sel': '<path d="M4 18C4 10 10 4 18 4" stroke-dasharray="2.5 2"/><rect x="2.5" y="16.5" width="3" height="3"/><rect x="16.5" y="2.5" width="3" height="3"/>',

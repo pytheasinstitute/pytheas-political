@@ -64,6 +64,8 @@
       // directly below it in the stack, like in Photoshop files.
       this.parent = null;
       this.collapsed = false;
+      // Smart object: { source (original pixels), matrix, filters, version } — see PW.smart.
+      this.smart = null;
       this.version = nextVersion();
       this.maskVersion = 0;
       // Tools set this to draw a live preview instead of the stored pixels.
@@ -199,6 +201,10 @@
     }
 
     rasterize() {
+      if (this.smart) {
+        this.smart = null;
+        this.touch();
+      }
       if (!this.isText) return;
       this.type = 'raster';
       this.text = null;
@@ -220,6 +226,7 @@
         adjust: this.adjust ? JSON.parse(JSON.stringify(this.adjust)) : null,
         maskEnabled: this.maskEnabled,
         collapsed: this.collapsed || undefined,
+        smart: this.smart ? { matrix: this.smart.matrix, filters: this.smart.filters, source: withPixels ? this.smart.source.toDataURL('image/png') : null } : null,
         pixels: withPixels && !this.isGroup ? this.canvas.toDataURL('image/png') : null,
         mask: withPixels && this.mask ? this.mask.toDataURL('image/png') : null,
       };
@@ -242,6 +249,11 @@
         maskEnabled: data.maskEnabled !== false,
       });
       if (data.pixels && !group) L.ctx.drawImage(await PW.util.loadImage(data.pixels), 0, 0);
+      if (data.smart && data.smart.source && data.smart.matrix) {
+        const img = await PW.util.loadImage(data.smart.source), src = createCanvas(img.width, img.height);
+        src.getContext('2d').drawImage(img, 0, 0);
+        L.smart = { source: src, matrix: data.smart.matrix.slice(), filters: data.smart.filters || [], version: 1 };
+      }
       if (data.mask) {
         L.mask = createCanvas(w, h);
         L.mask.getContext('2d').drawImage(await PW.util.loadImage(data.mask), 0, 0);

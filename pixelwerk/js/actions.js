@@ -87,6 +87,10 @@
   def('path.new', 'Neuer Pfad', () => PW.pathCommands.newPath(), { enabled: hasDoc });
   def('path.save', 'Pfad speichern …', () => PW.pathCommands.save(), { enabled: () => !!(app().doc && app().doc.activePath) });
   def('path.delete', 'Pfad löschen', () => PW.pathCommands.remove(), { enabled: () => !!(app().doc && app().doc.activePath) });
+  const isSmart = () => !!(app().doc && app().doc.active && app().doc.active.smart);
+  def('layer.toSmart', 'In Smartobjekt konvertieren', () => C().toSmart(), { enabled: hasLayer });
+  def('layer.smartEdit', 'Inhalt bearbeiten', () => C().smartEdit(), { enabled: isSmart });
+  def('filter.toSmart', 'Für Smartfilter konvertieren', () => C().toSmart(), { enabled: hasLayer });
   def('layer.style', 'Ebenenstil …', () => D().layerStyle(), { enabled: hasLayer });
   def('layer.maskReveal', 'Alles einblenden', () => C().addMask('reveal'), { enabled: hasLayer });
   def('layer.maskHide', 'Alles ausblenden', () => C().addMask('hide'), { enabled: hasLayer });
@@ -101,7 +105,7 @@
   def('layer.back', 'In den Hintergrund', () => C().arrange('back'), { key: 'Mod+Shift+[', enabled: hasLayer });
   def('layer.lock', 'Ebene sperren', () => C().toggleLock(), { key: 'Mod+/', enabled: hasLayer, checked: () => hasLayer() && app().doc.active.locked });
   def('layer.lockAlpha', 'Transparente Pixel fixieren', () => C().toggleLockAlpha(), { enabled: hasLayer, checked: () => hasLayer() && app().doc.active.lockAlpha });
-  def('layer.rasterize', 'Ebene rastern', () => C().rasterize(), { enabled: () => hasLayer() && app().doc.active.isText });
+  def('layer.rasterize', 'Ebene rastern', () => C().rasterize(), { enabled: () => hasLayer() && (app().doc.active.isText || !!app().doc.active.smart) });
   def('layer.mergeDown', 'Auf eine Ebene reduzieren', () => C().mergeDown(), { key: 'Mod+E', enabled: hasLayer });
   def('layer.mergeVisible', 'Sichtbare auf eine Ebene reduzieren', () => C().mergeVisible(), { key: 'Mod+Shift+E' });
   def('layer.flatten', 'Auf Hintergrundebene reduzieren', () => C().flatten());
@@ -204,6 +208,7 @@
       'layer.new', 'layer.viaCopy', 'layer.viaCut', 'layer.duplicate', 'layer.delete', '-', 'layer.rename', 'layer.style', '-',
       { label: 'Neue Einstellungsebene', items: adjLayerItems },
       { label: 'Gruppen', items: ['layer.newGroup', 'layer.group', 'layer.ungroup', '-', 'layer.mergeGroup'] },
+      { label: 'Smartobjekte', items: ['layer.toSmart', 'layer.smartEdit', '-', 'layer.rasterize'] },
       { label: 'Ebenenmaske', items: ['layer.maskReveal', 'layer.maskHide', 'layer.maskRevealSel', 'layer.maskHideSel', '-', 'layer.maskToggle', 'layer.maskApply', 'layer.maskDelete'] },
       { label: 'Anordnen', items: ['layer.front', 'layer.forward', 'layer.backward', 'layer.back'] },
       'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.removeBg', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',
@@ -212,7 +217,7 @@
       'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', 'path.toSelection', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
-    { label: 'Filter', items: ['filter.last', '-', ...filterTop, 'filter.liquify', 'filter.skin', '-', ...filterGroups] },
+    { label: 'Filter', items: ['filter.last', '-', 'filter.toSmart', '-', ...filterTop, 'filter.liquify', 'filter.skin', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
     { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.paths', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
     { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },

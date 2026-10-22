@@ -270,6 +270,7 @@
       for (const s of block) {
         const L = s.isGroup ? Layer.group(this.width, this.height, s.name) : new Layer(this.width, this.height, s.name);
         if (!s.isGroup) L.ctx.drawImage(s.canvas, 0, 0);
+        L.smart = PW.smart.cloneSmart(s.smart);
         Object.assign(L, {
           visible: s.visible, opacity: s.opacity, blend: s.blend, type: s.type, collapsed: s.collapsed,
           text: s.text ? { ...s.text } : null,
@@ -313,6 +314,7 @@
       lower.ctx.drawImage(tmp, 0, 0);
       lower.type = 'raster';
       lower.text = null;
+      lower.smart = null;
       if (lower.mask) lower.removeMask();
       lower.touch();
       this.layers.splice(i, 1);
@@ -333,7 +335,7 @@
       }
       target.ctx.clearRect(0, 0, this.width, this.height);
       target.ctx.drawImage(tmp, 0, 0);
-      Object.assign(target, { opacity: 1, blend: 'source-over', fx: null, type: 'raster', text: null, adjust: null, parent: null });
+      Object.assign(target, { opacity: 1, blend: 'source-over', fx: null, type: 'raster', text: null, adjust: null, parent: null, smart: null });
       if (target.mask) target.removeMask();
       target.touch();
       const gone = new Set(visible.filter(l => l !== target).map(l => l.id));
@@ -556,10 +558,17 @@
     _remapAll(nw, nh, draw, textFn, pointFn) {
       nw = Math.max(1, Math.round(nw));
       nh = Math.max(1, Math.round(nh));
+      const A = pointFn ? PW.smart.mat.fromPoints(pointFn) : null;
       for (const L of this.layers) {
         if (L.isGroup) {
           L._gw = nw;
           L._gh = nh;
+        } else if (L.smart && A) {
+          // Smart object: new placement of the original, rendered again (no quality loss).
+          L.smart.matrix = PW.smart.mat.mul(A, L.smart.matrix);
+          L.canvas.width = nw;
+          L.canvas.height = nh;
+          PW.smart.render(L);
         } else if (L.isText && textFn && textFn(L.text) !== false) {
           L.canvas.width = nw;
           L.canvas.height = nh;
@@ -682,6 +691,7 @@
           text: L.text ? { ...L.text } : null,
           fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null,
           adjust: L.adjust ? JSON.parse(JSON.stringify(L.adjust)) : null,
+          smart: PW.smart.cloneSmart(L.smart),
           parent: L.parent,
           collapsed: L.collapsed,
           maskEnabled: L.maskEnabled,
@@ -750,6 +760,7 @@
           text: r.text ? { ...r.text } : null,
           fx: r.fx ? JSON.parse(JSON.stringify(r.fx)) : null,
           adjust: r.adjust ? JSON.parse(JSON.stringify(r.adjust)) : null,
+          smart: PW.smart.cloneSmart(r.smart),
           parent: r.parent || null,
           collapsed: !!r.collapsed,
           maskEnabled: r.maskEnabled,

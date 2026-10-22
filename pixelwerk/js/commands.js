@@ -263,6 +263,8 @@
       if (!doc || !doc.active) return;
       const src = doc.active, sel = doc.selection;
       if (sel.empty && cut) return a.toast('Zum Ausschneiden zuerst einen Bereich auswählen.');
+      if (src.isGroup) return a.toast('Wähle dafür eine Ebene in der Gruppe.');
+      if (cut && src.smart) return a.toast('Aus einem Smartobjekt lässt sich nichts ausschneiden. Rastere es zuerst (Ebene › Smartobjekte › Rastern).');
       if (sel.empty) {
         doc.duplicateLayer(src.id);
         return a.commit('Ebene durch Kopie', 'duplicate');
@@ -397,9 +399,26 @@
     rasterize() {
       const a = app(), L = needLayer();
       if (!L) return;
-      if (!L.isText) return a.toast('Die Ebene enthält bereits Pixel.');
+      if (!L.isText && !L.smart) return a.toast('Die Ebene enthält bereits Pixel.');
+      const smart = !!L.smart;
       L.rasterize();
-      a.commit('Ebene rastern', 'layers');
+      a.commit(smart ? 'Smartobjekt rastern' : 'Ebene rastern', 'layers');
+    },
+
+    // ─── Smart objects ───
+    toSmart() {
+      const a = app(), doc = needDoc(), L = doc && doc.active;
+      if (!L) return;
+      if (L.smart) return a.toast('Die Ebene ist bereits ein Smartobjekt.');
+      if (L.adjust) return a.toast('Einstellungsebenen lassen sich nicht in Smartobjekte umwandeln.');
+      PW.smart.convert(doc, L);
+      a.commit('In Smartobjekt konvertieren', 'smart');
+    },
+
+    smartEdit() {
+      const a = app(), doc = needDoc(), L = doc && doc.active;
+      if (!L || !L.smart) return a.toast('Wähle zuerst ein Smartobjekt aus.');
+      PW.smart.editContents(doc, L);
     },
 
     toggleLock(L) {

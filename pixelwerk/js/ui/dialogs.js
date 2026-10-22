@@ -260,6 +260,9 @@
     if (!a.doc) return;
     a.finishToolWork();
     let session = opts.session;
+    // On a smart object the filter becomes an editable smart filter.
+    const A = a.doc.active;
+    if (!session && A && A.smart && !A.targetIsMask && A.visible && !A.locked) return PW.smart.runFilter(def, opts);
     if (!session) {
       const L = a.paintLayer();
       if (!L) return;

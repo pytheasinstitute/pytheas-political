@@ -67,16 +67,14 @@
     const a = app();
     if (!a.doc) return openFile(file);
     try {
-      let c = await canvasFromFile(file);
+      // Like Photoshop: a placed image is a smart object, so it can be scaled later without loss.
+      const c = await canvasFromFile(file);
       const doc = a.doc, k = Math.min(1, doc.width / c.width, doc.height / c.height);
-      if (k < 1) {
-        const s = createCanvas(Math.round(c.width * k), Math.round(c.height * k));
-        const g = s.getContext('2d');
-        g.imageSmoothingQuality = 'high';
-        g.drawImage(c, 0, 0, s.width, s.height);
-        c = s;
-      }
-      PW.commands.pasteCanvas(c, baseName(file.name), { x: Math.round((doc.width - c.width) / 2), y: Math.round((doc.height - c.height) / 2) });
+      const w = c.width * k, h = c.height * k, M = PW.smart.mat;
+      const matrix = M.mul(M.translate(Math.round((doc.width - w) / 2), Math.round((doc.height - h) / 2)), M.scale(k, k));
+      a.finishToolWork();
+      doc.addLayer(PW.smart.createLayer(doc, c, matrix, baseName(file.name)));
+      a.commit('Platzieren', 'smart');
     } catch (err) {
       PW.dialogs.alert(`Das Bild konnte nicht platziert werden. ${err.message || ''}`);
     }

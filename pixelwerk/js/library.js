@@ -79,7 +79,15 @@
       e.maskBlob = await toBlob(L.mask);
       e.maskVersion = L.maskVersion;
     }
-    return { ...(await L.serialize(false)), pixels: e.blob, mask: L.mask ? e.maskBlob : null };
+    const data = { ...(await L.serialize(false)), pixels: e.blob, mask: L.mask ? e.maskBlob : null };
+    if (L.smart) {
+      if (e.source !== L.smart.source || !e.sourceBlob) {
+        e.sourceBlob = await toBlob(L.smart.source);
+        e.source = L.smart.source;
+      }
+      data.smart = { ...data.smart, source: e.sourceBlob };
+    }
+    return data;
   }
 
   async function thumbnail(doc) {
@@ -119,7 +127,7 @@
       return u;
     };
     try {
-      return await PW.Doc.deserialize({ ...data, layers: data.layers.map(l => ({ ...l, pixels: url(l.pixels), mask: url(l.mask) })) });
+      return await PW.Doc.deserialize({ ...data, layers: data.layers.map(l => ({ ...l, pixels: url(l.pixels), mask: url(l.mask), smart: l.smart ? { ...l.smart, source: url(l.smart.source) } : null })) });
     } finally {
       urls.forEach(u => URL.revokeObjectURL(u));
     }

@@ -501,6 +501,15 @@ body.dock-hidden #dock { display: none; }
 .layer-list:not(:has(.group-row)) .twisty-space { display: none; }
 .thumb-wrap.group-thumb { color: var(--text-2); }
 .layer-row.group-row .layer-name { font-weight: 600; }
+.thumb-wrap { position: relative; }
+.smart-badge { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px; background: var(--ui-1); color: var(--text); border: 1px solid var(--line-2); }
+.filter-row { display: flex; align-items: center; gap: 6px; height: 26px; padding-right: 8px; border-bottom: 1px solid var(--line); color: var(--text-2); font-size: 12px; }
+.filter-row.head { color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; height: 22px; }
+.filter-row.off .filter-name { opacity: 0.5; text-decoration: line-through; }
+.filter-row .eye { width: 20px; height: 20px; }
+.filter-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-del { width: 20px; height: 20px; opacity: 0.6; }
+.filter-del:hover { opacity: 1; }
 .layers-bottom { display: flex; justify-content: flex-end; gap: 2px; padding: 4px 6px; border-top: 1px solid var(--line); flex: none; }
 
 /* Paths */
