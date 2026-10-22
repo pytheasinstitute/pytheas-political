@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRedis, statsKeyArchetype, statsKeyTotal, type ArchetypeKey } from "@/lib/stats";
+import { ARCHETYPE_LABELS, getRedis, statsKeyArchetype, statsKeyTotal, type ArchetypeKey } from "@/lib/stats";
 
 export async function POST(request: Request) {
 const redis = getRedis();
@@ -11,7 +11,9 @@ return NextResponse.json(
 }
 
 const body = (await request.json().catch(() => ({}))) as { archetype?: ArchetypeKey };
-if (!body.archetype) return NextResponse.json({ ok: false, error: "Missing archetype" }, { status: 400 });
+if (!body.archetype || !(body.archetype in ARCHETYPE_LABELS)) {
+return NextResponse.json({ ok: false, error: "Unknown archetype" }, { status: 400 });
+}
 
 await redis.pipeline().incr(statsKeyTotal()).incr(statsKeyArchetype(body.archetype)).exec();
 return NextResponse.json({ ok: true });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRedis, statsKeyArchetype, statsKeyTotal, type ArchetypeKey } from "@/lib/stats";
+import { ARCHETYPE_LABELS, getRedis, statsKeyArchetype, statsKeyTotal, type ArchetypeKey } from "@/lib/stats";
 export async function GET(request: Request) {
 const redis = getRedis();
 if (!redis) {
@@ -11,7 +11,9 @@ return NextResponse.json(
 
 const url = new URL(request.url);
 const archetype = url.searchParams.get("archetype") as ArchetypeKey | null;
-if (!archetype) return NextResponse.json({ ok: false, error: "Missing archetype" }, { status: 400 });
+if (!archetype || !(archetype in ARCHETYPE_LABELS)) {
+return NextResponse.json({ ok: false, error: "Unknown archetype" }, { status: 400 });
+}
 
 const [total, aCount] = await redis.pipeline().get(statsKeyTotal()).get(statsKeyArchetype(archetype)).exec();
 const totalNum = Number(total) || 0;

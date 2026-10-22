@@ -12,13 +12,17 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as {
-    origin?: string;
+    consent?: boolean;
   };
 
-  const origin = body.origin || "";
-  if (!origin.startsWith("http")) {
-    return NextResponse.json({ error: "Missing origin" }, { status: 400 });
+  // EU digital content: the buyer must expressly request immediate access and
+  // acknowledge losing the right of withdrawal before we may deliver.
+  if (body.consent !== true) {
+    return NextResponse.json({ error: "Consent required" }, { status: 400 });
   }
+
+  // Redirect targets come from our own request, never from the client body.
+  const origin = new URL(request.url).origin;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -39,6 +43,8 @@ export async function POST(request: Request) {
     cancel_url: `${origin}/quiz/result?cancel=1`,
     metadata: {
       product: "pytheas_unlock_v1",
+      withdrawal_waiver: "accepted",
+      withdrawal_waiver_at: new Date().toISOString(),
     },
   });
 

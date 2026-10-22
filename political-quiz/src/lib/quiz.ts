@@ -145,3 +145,15 @@ export function profileBlurb(score: QuizScore): { title: string; bullets: string
 
 export const UNLOCK_PRICE_EUR = 1;
 export const LOCALSTORAGE_UNLOCK_KEY = "pytheas_unlock_v1";
+export const LOCALSTORAGE_ANSWERS_KEY = "pytheas_answers_v1";
+export const LOCALSTORAGE_STATS_KEY = "pytheas_stats_recorded_v1";
+
+export function parseAnswers(raw: string | null): QuizAnswers {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as QuizAnswers) : {};
+  } catch {
+    return {};
+  }
+}

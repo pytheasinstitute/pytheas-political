@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 import ResultClient from "./resultClient";
 
 export default function ResultPage() {
@@ -19,23 +20,7 @@ export default function ResultPage() {
 
       <ResultClient />
 
-      <footer className="footer">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <div className="brand" style={{ fontSize: 13 }}>
-            <span className="dot" style={{ width: 8, height: 8 }} />
-            Pytheas Institute
-          </div>
-          <div className="small">
-            <Link href="/">Home</Link>
-            <span className="sep">·</span>
-            <Link href="/quiz">Retake quiz</Link>
-            <span className="sep">·</span>
-            <Link href="/methodology">Methodology</Link>
-            <span className="sep">·</span>
-            <Link href="/privacy">Privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
