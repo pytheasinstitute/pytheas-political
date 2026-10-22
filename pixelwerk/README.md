@@ -92,8 +92,10 @@ Ohne Photoshop-Kenntnisse:
 | G | Verlauf (linear, radial, Winkel, reflektiert, Raute), Füllwerkzeug |
 | R | Weichzeichner, Scharfzeichner, Wischfinger |
 | O | Abwedler, Nachbelichter (Tiefen/Mitteltöne/Lichter) |
+| P | Zeichenstift (Klick: Ecke, Ziehen: Kurve, Klick auf den ersten Punkt schließt; auf einem Pfad: Klick auf die Linie fügt einen Punkt ein, Klick auf einen Punkt löscht ihn; Alt wandelt Punkte um, Strg/⌘ verschiebt Punkte) |
 | T | Text (editierbare Textebenen, Schriften, Fett/Kursiv, Ausrichtung) |
-| U | Rechteck (mit Radius), Ellipse, Polygon/Stern, Linie/Pfeil |
+| A | Pfadauswahl (ganze Pfade verschieben, Alt kopiert), Direktauswahl (Punkte und Griffe, Rahmen wählt mehrere, Entf löscht) |
+| U | Rechteck (mit Radius), Ellipse, Polygon/Stern, Linie/Pfeil – als Pixel oder als Pfad |
 | H, Z | Hand, Zoom |
 | Strg+T | Frei transformieren (skalieren, drehen; Umschalt: frei bzw. 15°-Schritte; Alt: von der Mitte) |
 | Bearbeiten › Transformieren | Verzerren (vier Ecken frei), Perspektivisch verzerren (Ecken paarweise), Verkrümmen (4 × 4-Gitter, Bézier); Vorschau per Dreiecksgitter, Ergebnis pixelgenau ohne Nähte |
@@ -103,6 +105,8 @@ Ohne Photoshop-Kenntnisse:
 - Objektauswahl: auf ein Objekt klicken (Umschalt fügt hinzu, Alt nimmt weg) oder ein Rechteck darum ziehen; beim Darüberfahren zeigt eine rosa Fläche, was ein Klick auswählen würde.
 - Entfernen und Inhaltsbasiert füllen: MI-GAN malt einen ersten Entwurf, die Fleckensuche (PatchMatch) baut ihn aus echten Pixeln des Fotos nach, so passen Körnung und Schärfe.
 - Ohne KI (ausgeschaltet oder Modelle nicht vorhanden) nimmt Pixelwerk die klassischen Verfahren. Die Modelle baut `tools/build-ai.py` in den Ordner `ai/` (siehe `ai/README.md`).
+
+**Pfade** (Fenster › Pfade, Bearbeiten › Pfade): Bézier-Pfade wie in Photoshop. Was der Zeichenstift oder ein Formwerkzeug im Modus „Pfad“ zeichnet, landet im Arbeitspfad; ein Doppelklick im Bedienfeld speichert ihn unter einem Namen. Pfad als Auswahl laden (Strg+Enter, oder Strg-Klick auf den Pfad), Arbeitspfad aus Auswahl erstellen (Umriss nachgezogen, mit Toleranz vereinfacht, runde Kurven), Pfad füllen und Pfadkontur füllen mit der Vordergrundfarbe. Bildgröße, Arbeitsfläche, Drehen und Spiegeln nehmen die Pfade mit; sie stehen im Protokoll und werden im Projekt und in „Meine Bilder“ gespeichert.
 
 **Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (mit KI siehe oben; ohne KI GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Ohne KI rechnet Pixelwerk nur mit Farben und Kanten; bei Haaren vor ähnlich farbigem Hintergrund braucht es dann ein paar Striche mit der Schnellauswahl.
 
@@ -170,6 +174,7 @@ pixelwerk/
   js/core.js          Namensraum PW, Hilfsfunktionen, Farbumrechnung, Event-Bus, Werkzeugregister
   js/layer.js         Ebene: Pixel, Maske, Text, Stile, Serialisierung
   js/selection.js     Auswahlmaske, Kombinieren, Distanzfeld (Erweitern/Verkleinern), Ameisenlinie
+  js/paths.js         Pfade: Bézier-Modell, Pfad ↔ Auswahl (Umriss nachziehen, vereinfachen, glätten), Anzeige
   js/document.js      Dokument: Ebenenstapel, Compositing mit Füllmethoden/Stilen, Geometrie, Protokoll
   js/filters.js       Korrekturen und Filter auf ImageData, Live-Vorschau-Sitzung
   js/view.js          Zoom, Verschieben, Darstellung, Eingaben (Maus, Stift, Touch)

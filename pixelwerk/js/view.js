@@ -225,6 +225,9 @@
         g.setLineDash([]);
       }
 
+      // The active path (Pfade); path tools draw its points themselves.
+      if (doc.activePath && this.showExtras && !(tool && tool.drawsPath)) PW.paths.drawOverlay(g, this, doc.activePath);
+
       // Tool overlays in screen space (constant line widths)
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (tool && tool.drawOverlay) {

@@ -8,9 +8,9 @@
   const GROUPS = [
     { id: 'g1', panels: ['quick', 'assistant', 'color', 'swatches'] },
     { id: 'g2', panels: ['navigator', 'histogram', 'adjustments'] },
-    { id: 'g3', panels: ['layers', 'history'], grow: true },
+    { id: 'g3', panels: ['layers', 'paths', 'history'], grow: true },
   ];
-  const TITLES = { quick: 'Schnellstart', assistant: 'Claude', color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', history: 'Protokoll' };
+  const TITLES = { quick: 'Schnellstart', assistant: 'Claude', color: 'Farbe', swatches: 'Farbfelder', navigator: 'Navigator', histogram: 'Histogramm', adjustments: 'Korrekturen', layers: 'Ebenen', paths: 'Pfade', history: 'Protokoll' };
   const state = { active: { g1: 'quick', g2: 'navigator', g3: 'layers' }, hidden: {}, collapsed: { g2: true } };
   const bodies = {};
   const renderers = {};
@@ -741,6 +741,57 @@
     },
   };
 
+  // ─── Paths (Pfade) ───
+  renderers.paths = {
+    build(body) {
+      const a = app(), doc = a.doc;
+      const list = el('div', { class: 'path-list', role: 'listbox', 'aria-label': 'Pfade' });
+      if (doc) {
+        for (const P of doc.paths) {
+          const active = P.id === doc.activePathId;
+          const th = el('div', { class: 'thumb-wrap' }, PW.paths.thumb(P, doc.width, doc.height, 34));
+          const name = el('span', { class: `layer-name ${P.work ? 'work-path' : ''}`, text: P.name });
+          const row = el('div', { class: `path-row ${active ? 'active' : ''}`, role: 'option', 'aria-selected': String(active), title: P.work ? 'Doppelklick: als Pfad speichern' : 'Doppelklick: umbenennen' }, [th, name]);
+          row.dataset.id = P.id;
+          row.addEventListener('click', e => {
+            e.stopPropagation();
+            if (e.ctrlKey || e.metaKey) {
+              PW.pathCommands.select(P);
+              return PW.pathCommands.toSelection(e.shiftKey ? 'add' : e.altKey ? 'subtract' : 'replace');
+            }
+            if (doc.activePathId !== P.id) PW.pathCommands.select(P);
+          });
+          row.addEventListener('dblclick', e => {
+            e.stopPropagation();
+            PW.pathCommands.save(P);
+          });
+          list.append(row);
+        }
+        if (!doc.paths.length) list.append(el('p', { class: 'panel-note', text: 'Noch keine Pfade. Zeichne einen mit dem Zeichenstift (P) oder mach aus einer Auswahl einen Pfad (Knopf unten).' }));
+      }
+      // A click on the empty area deselects the path (its outline disappears).
+      list.addEventListener('click', () => {
+        if (doc && doc.activePathId) PW.pathCommands.select(null);
+      });
+      const btn = (icon, title, action) => el('button', { type: 'button', class: 'tbtn', title, 'aria-label': title, html: PW.icon(icon, 16), onclick: () => PW.runAction(action) });
+      const bottom = el('div', { class: 'layers-bottom' }, [
+        btn('path-fill', 'Pfad mit Vordergrundfarbe füllen', 'path.fill'),
+        btn('path-stroke', 'Pfadkontur füllen', 'path.stroke'),
+        btn('path-to-sel', 'Pfad als Auswahl laden (Strg+Enter)', 'path.toSelection'),
+        btn('sel-to-path', 'Arbeitspfad aus Auswahl erstellen', 'path.fromSelection'),
+        btn('new-layer', 'Neuen Pfad erstellen', 'path.new'),
+        btn('trash', 'Pfad löschen', 'path.delete'),
+      ]);
+      body.append(list, bottom);
+    },
+    update() {
+      const b = mounted('paths');
+      if (!b) return;
+      b.innerHTML = '';
+      this.build(b);
+    },
+  };
+
   // ─── History ───
   renderers.history = {
     build(body) {
@@ -796,6 +847,10 @@
       hist();
     });
     PW.bus.on('history:changed', throttle(() => renderers.history.update()));
+    const paths = throttle(() => renderers.paths.update());
+    PW.bus.on('paths:changed', paths);
+    PW.bus.on('history:changed', paths);
+    PW.bus.on('doc:switched', paths);
     PW.bus.on('doc:switched', () => {
       layers();
       nav();

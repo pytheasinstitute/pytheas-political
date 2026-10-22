@@ -282,7 +282,7 @@ window.PW = {};
   PW.tools = {
     list: [],
     byId: {},
-    groups: ['move', 'marquee', 'lasso', 'wand', 'crop', 'eyedropper', 'heal', 'brush', 'clone', 'history', 'eraser', 'fill', 'blur', 'dodge', 'text', 'shape', 'hand', 'zoom'],
+    groups: ['move', 'marquee', 'lasso', 'wand', 'crop', 'eyedropper', 'heal', 'brush', 'clone', 'history', 'eraser', 'fill', 'blur', 'dodge', 'pen', 'text', 'pathsel', 'shape', 'hand', 'zoom'],
     register(def) {
       def.options = def.options || {};
       this.list.push(def);

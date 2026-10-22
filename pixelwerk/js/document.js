@@ -105,7 +105,12 @@
       this.savedSelection = null;
       this.compositeCanvas = createCanvas(this.width, this.height);
       this._compSig = null;
+      // Pfade (pen tool): see PW.paths. One of them may be the temporary "Arbeitspfad".
+      this.paths = [];
+      this.activePathId = null;
     }
+
+    get activePath() { return this.paths.find(p => p.id === this.activePathId) || null; }
 
     // ─── Layer stack ───
     get active() { return this.layers.find(l => l.id === this.activeId) || null; }
@@ -547,7 +552,8 @@
 
     // ─── Geometry operations (callers record history) ───
     // draw(ctx, oldCanvas) paints the old content into the new-sized canvas.
-    _remapAll(nw, nh, draw, textFn) {
+    // pointFn(x, y) → [x, y]: where a point of a path goes.
+    _remapAll(nw, nh, draw, textFn, pointFn) {
       nw = Math.max(1, Math.round(nw));
       nh = Math.max(1, Math.round(nh));
       for (const L of this.layers) {
@@ -580,6 +586,7 @@
         L._strokeCache = null;
         L.touch();
       }
+      if (pointFn) for (const P of this.paths) PW.paths.transform(P, pointFn);
       this.width = nw;
       this.height = nh;
       this.selection.remap(nw, nh, draw);
@@ -597,7 +604,7 @@
         t.x *= sx;
         t.y *= sy;
         t.size = Math.max(1, t.size * Math.sqrt(sx * sy));
-      });
+      }, (x, y) => [x * sx, y * sy]);
     }
 
     // Offset (dx, dy) of the old content inside the new canvas; bottom layer optionally filled.
@@ -606,7 +613,7 @@
       this._remapAll(nw, nh, (g, old) => g.drawImage(old, Math.round(dx), Math.round(dy)), t => {
         t.x += dx;
         t.y += dy;
-      });
+      }, (x, y) => [x + Math.round(dx), y + Math.round(dy)]);
       if (fill && bottom && !bottom.isText) {
         const g = bottom.ctx;
         g.save();
@@ -632,7 +639,10 @@
         g.rotate((deg * Math.PI) / 180);
         g.drawImage(old, -w / 2, -h / 2);
         g.restore();
-      }, () => false);
+      }, () => false, (x, y) => {
+        const r = (deg * Math.PI) / 180, c = Math.round(Math.cos(r)), s = Math.round(Math.sin(r)), X = x - w / 2, Y = y - h / 2;
+        return [nw / 2 + c * X - s * Y, nh / 2 + s * X + c * Y];
+      });
     }
 
     flip(horizontal) {
@@ -648,7 +658,7 @@
         }
         g.drawImage(old, 0, 0);
         g.restore();
-      }, () => false);
+      }, () => false, (x, y) => (horizontal ? [w - x, y] : [x, h - y]));
     }
 
     trimBounds() {
@@ -691,6 +701,8 @@
         layers,
         selVersion: sel.version,
         selection: prev && prev.selVersion === sel.version ? prev.selection : sel.snapshot(),
+        paths: this.paths.map(PW.paths.clone),
+        activePathId: this.activePathId,
       };
     }
 
@@ -749,6 +761,9 @@
       });
       this.activeId = snap.activeId;
       this.layerCounter = snap.layerCounter;
+      this.paths = (snap.paths || []).map(PW.paths.clone);
+      this.activePathId = snap.activePathId || null;
+      PW.bus.emit('paths:changed', this);
       this.selection.restore(snap.selection, this.width, this.height);
       this._compSig = null;
       if (resized) PW.bus.emit('doc:resized', this);
@@ -765,6 +780,7 @@
         height: this.height,
         activeIndex: this.activeIndex,
         layers: await Promise.all(this.layers.map(async L => ({ ...(await L.serialize()), parent: this.parentIndex(L) }))),
+        paths: this.paths.map(PW.paths.clone),
       };
     }
 
@@ -784,6 +800,7 @@
         if (ld.parent >= 0 && p && p.isGroup) doc.layers[i].parent = p.id;
       });
       doc.normalize();
+      doc.paths = Array.isArray(data.paths) ? data.paths.map(PW.paths.clone) : [];
       doc.layerCounter = doc.layers.length;
       const active = doc.layers[data.activeIndex] || doc.layers[doc.layers.length - 1];
       doc.activeId = active ? active.id : null;

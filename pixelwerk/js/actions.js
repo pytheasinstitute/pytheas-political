@@ -78,6 +78,15 @@
   def('layer.group', 'Ebenen gruppieren', () => C().groupLayers(), { key: 'Mod+G', enabled: hasLayer });
   def('layer.ungroup', 'Gruppierung aufheben', () => C().ungroup(), { key: 'Mod+Shift+G', enabled: () => !!(app().doc && app().doc.active && app().doc.active.isGroup) });
   def('layer.mergeGroup', 'Gruppe zusammenfügen', () => C().mergeGroup(), { enabled: () => !!(app().doc && app().doc.active && app().doc.active.isGroup) });
+  // ─── Paths ───
+  const hasPath = () => !!(app().doc && app().doc.activePath && !PW.paths.empty(app().doc.activePath));
+  def('path.toSelection', 'Pfad als Auswahl laden', () => PW.pathCommands.toSelection(), { key: 'Mod+Enter', enabled: hasPath });
+  def('path.fromSelection', 'Arbeitspfad aus Auswahl erstellen …', () => PW.pathCommands.fromSelection(), { enabled: () => !!(app().doc && !app().doc.selection.empty) });
+  def('path.fill', 'Pfad füllen', () => PW.pathCommands.fill(), { enabled: hasPath });
+  def('path.stroke', 'Pfadkontur füllen …', () => PW.pathCommands.stroke(), { enabled: hasPath });
+  def('path.new', 'Neuer Pfad', () => PW.pathCommands.newPath(), { enabled: hasDoc });
+  def('path.save', 'Pfad speichern …', () => PW.pathCommands.save(), { enabled: () => !!(app().doc && app().doc.activePath) });
+  def('path.delete', 'Pfad löschen', () => PW.pathCommands.remove(), { enabled: () => !!(app().doc && app().doc.activePath) });
   def('layer.style', 'Ebenenstil …', () => D().layerStyle(), { enabled: hasLayer });
   def('layer.maskReveal', 'Alles einblenden', () => C().addMask('reveal'), { enabled: hasLayer });
   def('layer.maskHide', 'Alles ausblenden', () => C().addMask('hide'), { enabled: hasLayer });
@@ -143,7 +152,7 @@
   def('view.themeLight', 'Oberfläche: Hell', () => PW.ui.setTheme('light'), { enabled: () => true, checked: () => PW.ui.theme() === 'light' });
 
   // ─── Window ───
-  for (const [id, label] of [['quick', 'Schnellstart'], ['assistant', 'Claude-Assistent'], ['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['history', 'Protokoll']]) {
+  for (const [id, label] of [['quick', 'Schnellstart'], ['assistant', 'Claude-Assistent'], ['color', 'Farbe'], ['swatches', 'Farbfelder'], ['navigator', 'Navigator'], ['histogram', 'Histogramm'], ['adjustments', 'Korrekturen'], ['layers', 'Ebenen'], ['paths', 'Pfade'], ['history', 'Protokoll']]) {
     def(`window.${id}`, label, () => PW.panels.show(id), { enabled: () => true, checked: () => PW.panels && PW.panels.isVisible(id) });
   }
   def('window.toggleDock', 'Bedienfelder ein-/ausblenden', () => PW.ui.toggleDock(), { key: 'Tab', enabled: () => true });
@@ -182,6 +191,7 @@
       'edit.undo', 'edit.redo', '-', 'edit.cut', 'edit.copy', 'edit.copyMerged', 'edit.paste', 'edit.clear', '-',
       'edit.fill', 'edit.contentAware', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',
       { label: 'Transformieren', items: ['edit.distort', 'edit.perspective', 'edit.warp', '-', 'edit.rot180', 'edit.rot90cw', 'edit.rot90ccw', '-', 'edit.flipH', 'edit.flipV'] },
+      { label: 'Pfade', items: ['path.new', 'path.save', 'path.delete', '-', 'path.fill', 'path.stroke', '-', 'path.toSelection', 'path.fromSelection'] },
       '-', 'edit.ai',
     ] },
     { label: 'Bild', items: [
@@ -199,12 +209,12 @@
       'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.removeBg', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',
     ] },
     { label: 'Auswahl', items: [
-      'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', '-',
+      'select.all', 'select.none', 'select.reselect', 'select.inverse', '-', 'select.subject', 'select.colorRange', 'select.refine', '-', 'select.layer', 'path.toSelection', '-',
       { label: 'Auswahl verändern', items: ['select.border', 'select.expand', 'select.contract', 'select.feather'] },
     ] },
     { label: 'Filter', items: ['filter.last', '-', ...filterTop, 'filter.liquify', 'filter.skin', '-', ...filterGroups] },
     { label: 'Ansicht', items: ['view.zoomIn', 'view.zoomOut', 'view.fit', 'view.actual', '-', 'view.extras', 'view.pixelGrid', '-', 'view.themeDark', 'view.themeLight'] },
-    { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
+    { label: 'Fenster', items: ['window.quick', 'window.assistant', 'window.color', 'window.swatches', 'window.navigator', 'window.histogram', 'window.adjustments', 'window.layers', 'window.paths', 'window.history', '-', 'window.toggleDock', 'window.reset'] },
     { label: 'Hilfe', items: ['help.assistant', '-', 'help.basics', 'help.tour', 'help.tips', '-', 'help.shortcuts', 'help.about'] },
   ];
 

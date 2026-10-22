@@ -60,6 +60,40 @@
     }
   }
 
+  // The same shapes as a subpath (Bézier anchors) for the "Pfad" mode.
+  function shapeSubpath(kind, r, o) {
+    const A = (x, y) => PW.paths.anchor(x, y), K = 0.5523;
+    const curve = (x, y, ix, iy, ox, oy) => ({ x, y, ix, iy, ox, oy, smooth: true });
+    if (kind === 'ellipse') {
+      const cx = r.x + r.w / 2, cy = r.y + r.h / 2, rx = r.w / 2, ry = r.h / 2;
+      return { closed: true, pts: [
+        curve(cx, r.y, cx - rx * K, r.y, cx + rx * K, r.y),
+        curve(r.x + r.w, cy, r.x + r.w, cy - ry * K, r.x + r.w, cy + ry * K),
+        curve(cx, r.y + r.h, cx + rx * K, r.y + r.h, cx - rx * K, r.y + r.h),
+        curve(r.x, cy, r.x, cy + ry * K, r.x, cy - ry * K),
+      ] };
+    }
+    if (kind === 'polygon') {
+      const n = Math.max(3, o.sides | 0), cx = r.x + r.w / 2, cy = r.y + r.h / 2, pts = o.star ? n * 2 : n, out = [];
+      for (let i = 0; i < pts; i++) {
+        const a = -Math.PI / 2 + (i / pts) * Math.PI * 2, k = o.star && i % 2 ? 0.45 : 1;
+        out.push(A(cx + Math.cos(a) * (r.w / 2) * k, cy + Math.sin(a) * (r.h / 2) * k));
+      }
+      return { closed: true, pts: out };
+    }
+    const rad = Math.min(o.radius || 0, r.w / 2, r.h / 2), x0 = r.x, y0 = r.y, x1 = r.x + r.w, y1 = r.y + r.h;
+    if (rad <= 0) return { closed: true, pts: [A(x0, y0), A(x1, y0), A(x1, y1), A(x0, y1)] };
+    const c = rad * (1 - K), pt = (x, y, ix, iy, ox, oy) => ({ x, y, ix, iy, ox, oy, smooth: false });
+    return { closed: true, pts: [
+      pt(x0 + rad, y0, x0 + c, y0, x0 + rad, y0), pt(x1 - rad, y0, x1 - rad, y0, x1 - c, y0),
+      pt(x1, y0 + rad, x1, y0 + c, x1, y0 + rad), pt(x1, y1 - rad, x1, y1 - rad, x1, y1 - c),
+      pt(x1 - rad, y1, x1 - c, y1, x1 - rad, y1), pt(x0 + rad, y1, x0 + rad, y1, x0 + c, y1),
+      pt(x0, y1 - rad, x0, y1 - c, x0, y1 - rad), pt(x0, y0 + rad, x0, y0 + rad, x0, y0 + c),
+    ] };
+  }
+
+  const MODE = { type: 'select', key: 'mode', title: 'Pixel oder Pfad', options: [['pixels', 'Pixel'], ['path', 'Pfad']] };
+
   const FILL_STROKE = [
     { type: 'check', key: 'fill', label: 'Fläche (Vordergrundfarbe)' },
     { type: 'check', key: 'stroke', label: 'Kontur' },
@@ -106,6 +140,14 @@
         this.start = null;
         if (Math.hypot(e.x - s.x, e.y - s.y) < 2) return app().render();
         const a = app(), doc = a.doc;
+        if (this.options.mode === 'path' && this.kind !== 'line') {
+          // Pfad mode: the shape becomes part of the active path (or the Arbeitspfad).
+          const path = PW.pathTools.activePath(doc, true);
+          const r = { x: Math.min(s.x, e.x), y: Math.min(s.y, e.y), w: Math.abs(e.x - s.x), h: Math.abs(e.y - s.y) };
+          path.subpaths.push(shapeSubpath(this.kind, r, this.options));
+          a.commit(`${this.historyName} (Pfad)`, 'pen');
+          return;
+        }
         const L = doc.createLayer(doc.nextLayerName(this.layerName));
         drawShape(L.ctx, this.kind, s, e, this.options, a.fg);
         L.touch();
@@ -119,6 +161,11 @@
       drawOverlay(g, view) {
         if (!this.start) return;
         const [s, e] = this.points(), d = view.dpr;
+        if (this.options.mode === 'path' && this.kind !== 'line') {
+          const r = { x: Math.min(s.x, e.x), y: Math.min(s.y, e.y), w: Math.abs(e.x - s.x), h: Math.abs(e.y - s.y) };
+          PW.paths.drawOverlay(g, view, { subpaths: [shapeSubpath(this.kind, r, this.options)] });
+          return;
+        }
         g.save();
         g.setTransform(d * view.zoom, 0, 0, d * view.zoom, d * view.x, d * view.y);
         g.globalAlpha = 0.85;
@@ -131,18 +178,18 @@
 
   shapeTool({
     id: 'shapeRect', group: 'shape', kind: 'rect', name: 'Rechteck-Werkzeug', layerName: 'Rechteck', historyName: 'Rechteck', key: 'U', icon: 'shape-rect',
-    options: { fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4, radius: 0 },
-    bar: [...FILL_STROKE, { type: 'sep' }, { type: 'number', key: 'radius', label: 'Radius', min: 0, max: 2000, unit: 'Px' }],
+    options: { mode: 'pixels', fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4, radius: 0 },
+    bar: [MODE, { type: 'sep' }, ...FILL_STROKE, { type: 'sep' }, { type: 'number', key: 'radius', label: 'Radius', min: 0, max: 2000, unit: 'Px' }],
   });
   shapeTool({
     id: 'shapeEllipse', group: 'shape', kind: 'ellipse', name: 'Ellipse-Werkzeug', layerName: 'Ellipse', historyName: 'Ellipse', key: 'U', icon: 'shape-ellipse',
-    options: { fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4 },
-    bar: FILL_STROKE,
+    options: { mode: 'pixels', fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4 },
+    bar: [MODE, { type: 'sep' }, ...FILL_STROKE],
   });
   shapeTool({
     id: 'shapePolygon', group: 'shape', kind: 'polygon', name: 'Polygon-Werkzeug', layerName: 'Polygon', historyName: 'Polygon', key: 'U', icon: 'shape-polygon',
-    options: { fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4, sides: 5, star: false },
-    bar: [...FILL_STROKE, { type: 'sep' }, { type: 'number', key: 'sides', label: 'Seiten', min: 3, max: 64 }, { type: 'check', key: 'star', label: 'Stern' }],
+    options: { mode: 'pixels', fill: true, stroke: false, strokeColor: '#000000', strokeWidth: 4, sides: 5, star: false },
+    bar: [MODE, { type: 'sep' }, ...FILL_STROKE, { type: 'sep' }, { type: 'number', key: 'sides', label: 'Seiten', min: 3, max: 64 }, { type: 'check', key: 'star', label: 'Stern' }],
   });
   shapeTool({
     id: 'shapeLine', group: 'shape', kind: 'line', name: 'Linienzeichner-Werkzeug', layerName: 'Linie', historyName: 'Linie', key: 'U', icon: 'shape-line',

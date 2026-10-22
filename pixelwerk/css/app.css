@@ -503,6 +503,15 @@ body.dock-hidden #dock { display: none; }
 .layer-row.group-row .layer-name { font-weight: 600; }
 .layers-bottom { display: flex; justify-content: flex-end; gap: 2px; padding: 4px 6px; border-top: 1px solid var(--line); flex: none; }
 
+/* Paths */
+.panel-body.panel-paths { display: flex; flex-direction: column; padding: 0; overflow: hidden; flex: 1; }
+.path-list { flex: 1; overflow-y: auto; min-height: 60px; }
+.path-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; height: 46px; padding: 0 8px; border-bottom: 1px solid var(--line); }
+.path-row:hover { background: var(--ui-2); }
+.path-row.active { background: var(--accent-soft); }
+.work-path { font-style: italic; }
+.path-list .panel-note { padding: 10px; }
+
 /* History */
 .panel-body.panel-history { display: flex; flex-direction: column; flex: 1; }
 .history-list { display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
