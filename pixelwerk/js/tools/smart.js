@@ -61,14 +61,62 @@
 
   const tick = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 
+  // ─── AI (on this device): SAM mask at its own size → document alpha with a soft edge ───
+  function aiAlpha(doc, r) {
+    return toDocAlpha(doc, { w: r.w, h: r.h, f: doc.width / r.w }, r.mask);
+  }
+
+  // Like aiAlpha, but the edge follows the picture (hair, fur) via the guided filter of
+  // "Auswählen und maskieren", worked out at the working size and scaled up.
+  function aiAlphaRefined(doc, r) {
+    const wk = work(doc), { w, h } = wk;
+    const mc = createCanvas(r.w, r.h), mg = mc.getContext('2d'), mi = mg.createImageData(r.w, r.h);
+    for (let i = 0; i < r.mask.length; i++) mi.data[i * 4 + 3] = r.mask[i] ? 255 : 0;
+    mg.putImageData(mi, 0, 0);
+    const ac = createCanvas(w, h), ag = ac.getContext('2d');
+    ag.imageSmoothingQuality = 'high';
+    ag.drawImage(mc, 0, 0, w, h);
+    const ad = ag.getImageData(0, 0, w, h).data, a0 = new Float32Array(w * h), rgba = new Uint8ClampedArray(w * h * 4);
+    for (let i = 0; i < w * h; i++) {
+      a0[i] = ad[i * 4 + 3] / 255;
+      rgba[i * 4] = wk.rgb[i * 3];
+      rgba[i * 4 + 1] = wk.rgb[i * 3 + 1];
+      rgba[i * 4 + 2] = wk.rgb[i * 3 + 2];
+      rgba[i * 4 + 3] = 255;
+    }
+    const R = Math.max(3, Math.ceil((2.5 * w) / r.w) + 1);
+    const al = PW.refineEdge.refine(a0, rgba, w, h, { radius: R, smooth: 0, feather: 0, contrast: 0, shift: 0, scale: 1 });
+    const oc = createCanvas(w, h), og = oc.getContext('2d'), oi = og.createImageData(w, h);
+    for (let i = 0; i < w * h; i++) oi.data[i * 4 + 3] = Math.round(al[i] * 255);
+    og.putImageData(oi, 0, 0);
+    const big = createCanvas(doc.width, doc.height), bg = big.getContext('2d');
+    bg.imageSmoothingQuality = 'high';
+    bg.drawImage(oc, 0, 0, doc.width, doc.height);
+    const d = bg.getImageData(0, 0, doc.width, doc.height).data, out = new Uint8Array(doc.width * doc.height);
+    for (let i = 0; i < out.length; i++) out[i] = d[i * 4 + 3];
+    return out;
+  }
+  const aiKey = doc => doc.history.current;
+
   // ─── Motiv auswählen ───
   // box (document px, optional) around the subject; mode replace/add/subtract/intersect.
+  // With the AI switched on, saliency + Segment Anything find it; otherwise GrabCut does.
   async function selectSubject(opts = {}) {
     const a = app(), doc = a.doc;
     if (!doc) return null;
     a.finishToolWork();
+    const useAi = opts.ai !== false && (await PW.ai.ensure(opts.box ? 'object' : 'subject', { ask: opts.ask }));
     const res = await PW.ui.busy(async () => {
       await tick();
+      if (useAi) {
+        try {
+          const src = doc.composite(), key = aiKey(doc);
+          const r = opts.box ? await PW.ai.segment(await PW.ai.embed(src, key), [], [], opts.box) : await PW.ai.subject(src, key);
+          if (r) return aiAlphaRefined(doc, r);
+        } catch (e) {
+          console.warn('Pixelwerk KI:', e);
+        }
+      }
       const wk = work(doc);
       const box = opts.box ? { x: opts.box.x / wk.f, y: opts.box.y / wk.fy, w: opts.box.w / wk.f, h: opts.box.h / wk.fy } : null;
       const mask = PW.segment.subject(wk.rgb, wk.w, wk.h, box);
@@ -272,32 +320,117 @@
     },
   });
 
+  // Object at a clicked point (AI). Returns the selection bounds or null.
+  async function selectObjectAt(pt, mode = 'replace') {
+    const a = app(), doc = a.doc;
+    const e = await PW.ai.embed(doc.composite(), aiKey(doc));
+    const r = await PW.ai.segment(e, [[pt.x, pt.y]], [1]);
+    doc.selection.fromAlpha(aiAlpha(doc, r), mode);
+    return doc.selection.bounds;
+  }
+
+  // Object in a rectangle: with the AI Segment Anything, otherwise GrabCut.
+  async function selectObjectIn(rect, mode) {
+    const doc = app().doc;
+    if (PW.ai.isReady('object')) {
+      try {
+        const e = await PW.ai.embed(doc.composite(), aiKey(doc));
+        const r = await PW.ai.segment(e, [], [], rect);
+        doc.selection.fromAlpha(aiAlpha(doc, r), mode);
+        return doc.selection.bounds;
+      } catch (err) {
+        console.warn('Pixelwerk KI:', err);
+      }
+    }
+    return selectObject(rect, mode);
+  }
+
   PW.tools.register({
     id: 'objectSelect', group: 'wand', name: 'Objektauswahlwerkzeug', key: 'W', icon: 'object-select',
     options: { mode: 'replace' },
     bar: [MODES, { type: 'sep' }, SUBJECT_BTN, MASK_BTN],
-    hint: 'Ein Rechteck um das Objekt ziehen: es wird genau ausgewählt.',
+    hint: 'Auf ein Objekt klicken oder ein Rechteck darum ziehen: es wird genau ausgewählt.',
+    activate() {
+      this.prepare();
+    },
+    deactivate() {
+      this.preview = null;
+    },
+    // With the AI allowed, the picture is analysed in the background, so clicks and the
+    // highlight under the mouse are quick.
+    async prepare() {
+      const doc = app().doc;
+      if (!doc || this.preparing || PW.ai.consent() !== 'on') return;
+      this.preparing = true;
+      try {
+        if (await PW.ai.ensure('object', { ask: false, quiet: true })) await PW.ai.embed(doc.composite(), aiKey(doc));
+      } catch (e) {
+        console.warn('Pixelwerk KI:', e);
+      } finally {
+        this.preparing = false;
+      }
+    },
     down(p) {
       if (this.working) return;
       this.mode = pickMode(this, p);
       this.start = { x: p.x, y: p.y };
       this.cur = { x: p.x, y: p.y };
+      this.preview = null;
     },
     move(p) {
       if (!this.start) return;
       this.cur = { x: p.x, y: p.y };
       app().render();
     },
+    hover(p) {
+      if (this.start || this.working || !p) return;
+      clearTimeout(this.hoverTimer);
+      const doc = app().doc;
+      if (!PW.ai.isReady('object') || !PW.ai.embedded(aiKey(doc))) return;
+      const q = { x: p.x, y: p.y };
+      this.hoverTimer = setTimeout(async () => {
+        if (this.start || this.working || this.hoverBusy) return;
+        this.hoverBusy = true;
+        try {
+          const e = await PW.ai.embed(doc.composite(), aiKey(doc)), r = await PW.ai.segment(e, [[q.x, q.y]], [1]);
+          const c = createCanvas(r.w, r.h), g = c.getContext('2d'), img = g.createImageData(r.w, r.h);
+          for (let i = 0; i < r.mask.length; i++) {
+            if (!r.mask[i]) continue;
+            img.data[i * 4] = 233;
+            img.data[i * 4 + 1] = 60;
+            img.data[i * 4 + 2] = 160;
+            img.data[i * 4 + 3] = 110;
+          }
+          g.putImageData(img, 0, 0);
+          if (!this.start && app().doc === doc) {
+            this.preview = { canvas: c, doc };
+            app().render();
+          }
+        } catch (err) {
+          console.warn('Pixelwerk KI:', err);
+        } finally {
+          this.hoverBusy = false;
+        }
+      }, 90);
+    },
     async up() {
       if (!this.start || this.working) return;
-      const r = normRect(this.start.x, this.start.y, this.cur.x, this.cur.y), mode = this.mode;
+      const z = app().view.zoom, r = normRect(this.start.x, this.start.y, this.cur.x, this.cur.y), mode = this.mode, pt = this.start;
       this.start = this.cur = null;
-      if (r.w * app().view.zoom < 6 || r.h * app().view.zoom < 6) return app().render();
+      this.preview = null;
+      const click = r.w * z < 6 && r.h * z < 6;
+      if (click && !(await PW.ai.ensure('object'))) {
+        app().toast('Ziehe ein Rechteck um das Objekt.');
+        return app().render();
+      }
       this.working = true;
       try {
         await PW.ui.busy(async () => {
           await tick();
-          selectObject(r, mode);
+          if (click) {
+            if (!PW.ai.embedded(aiKey(app().doc))) PW.ui.busyText('Bild wird analysiert …');
+            await selectObjectAt(pt, mode);
+          } else await selectObjectIn(r, mode);
         }, 'Objekt wird gesucht …');
         app().commit('Objektauswahl', 'selection');
       } catch (e) {
@@ -305,13 +438,24 @@
       } finally {
         this.working = false;
         app().render();
+        this.prepare();
       }
     },
     cancel() {
       this.start = this.cur = null;
+      this.preview = null;
       app().render();
     },
     drawOverlay(g, view) {
+      const pv = this.preview;
+      if (pv && pv.doc === app().doc && !this.start && view.hover) {
+        const z = view.zoom, d = view.dpr, doc = pv.doc;
+        g.save();
+        g.setTransform(d * z, 0, 0, d * z, d * view.x, d * view.y);
+        g.imageSmoothingEnabled = true;
+        g.drawImage(pv.canvas, 0, 0, doc.width, doc.height);
+        g.restore();
+      }
       if (!this.start) return;
       const a = view.ds(this.start.x, this.start.y), b = view.ds(this.cur.x, this.cur.y);
       g.save();
@@ -473,5 +617,5 @@
     a.commit('Hintergrund entfernen', 'mask');
   }
 
-  PW.smartSelect = { removeBackground, work, selectSubject, selectObject, quickSelect, colorRangeAlpha, colorRangeDialog, toDocAlpha };
+  PW.smartSelect = { removeBackground, work, selectSubject, selectObject, selectObjectAt, selectObjectIn, quickSelect, colorRangeAlpha, colorRangeDialog, toDocAlpha };
 })(window.PW);

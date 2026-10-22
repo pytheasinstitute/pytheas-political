@@ -69,7 +69,17 @@
       if (src.data[i * 4 + 3] < 250) avoid[i] = 1;
     }
     hole = grow(hole, r.w, r.h, Math.round(opts.grow || 0));
-    const filled = await withProgress(opts.label || 'Wird aufgefüllt', set => PW.inpaint.fill(src.data, r.w, r.h, hole, { avoid, onProgress: set }));
+    // opts.ai: the AI (MI-GAN, on this device) paints a first draft of what belongs there; the patch
+    // search then rebuilds that draft from real pixels of the photo, so grain and sharpness match.
+    let init = null;
+    if (opts.ai && (await PW.ai.ensure('remove'))) {
+      try {
+        init = await PW.ui.busy(() => PW.ai.inpaint(src.data, r.w, r.h, hole), `${opts.label || 'Wird aufgefüllt'} …`);
+      } catch (e) {
+        console.warn('Pixelwerk KI:', e);
+      }
+    }
+    const filled = await withProgress(opts.label || 'Wird aufgefüllt', set => PW.inpaint.fill(src.data, r.w, r.h, hole, { avoid, onProgress: set, init }));
     // The fill already meets its surroundings; a slight feather only smooths the stair steps.
     const a = new Float32Array(n);
     for (let i = 0; i < n; i++) a[i] = hole[i];
@@ -207,7 +217,7 @@
         this.working = true;
         try {
           const sc = scaleOf(app().doc);
-          const ok = await rebuild(layer, this.mask, { grow: this.growPx * sc, reach: this.reach, sampleAll: this.options.sampleAll, label: this.busyLabel });
+          const ok = await rebuild(layer, this.mask, { grow: this.growPx * sc, reach: this.reach, sampleAll: this.options.sampleAll, label: this.busyLabel, ai: this.ai });
           this.mg.clearRect(0, 0, this.mask.width, this.mask.height);
           if (ok) app().commit(this.historyName, this.icon);
         } catch (e) {
@@ -253,7 +263,7 @@
     options: { size: 70, hardness: 90, sampleAll: false },
     bar: [{ type: 'brush' }, { type: 'sep' }, { type: 'check', key: 'sampleAll', label: 'Alle Ebenen aufnehmen' }, { type: 'hint', text: 'Ganz über das Objekt malen, auch über seinen Schatten' }],
     hint: 'Über ein Objekt malen, das weg soll (Person, Kabel, Schrift): es wird durch passenden Hintergrund ersetzt.',
-    tint: 'rgba(233,60,110,1)', growPx: 4, reach: 1.2, busyLabel: 'Wird entfernt',
+    tint: 'rgba(233,60,110,1)', growPx: 4, reach: 1.2, busyLabel: 'Wird entfernt', ai: true,
   });
 
   // ─── Healing brush: like the clone stamp, then light and colour from the target's edge ───
@@ -477,7 +487,7 @@
     if (!layer) return;
     try {
       // The selection decides where; inside it the whole area is rebuilt, its soft edge blends.
-      const ok = await rebuild(layer, doc.selection.mask, { grow: 2 * scaleOf(doc), reach: 1.3, clip: false, label: 'Inhaltsbasiert füllen' });
+      const ok = await rebuild(layer, doc.selection.mask, { grow: 2 * scaleOf(doc), reach: 1.3, clip: false, label: 'Inhaltsbasiert füllen', ai: true });
       if (ok) a.commit('Inhaltsbasiert füllen', 'bandage');
     } catch (e) {
       a.toast(e.message || String(e));

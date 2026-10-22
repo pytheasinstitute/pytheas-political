@@ -39,6 +39,7 @@
   def('edit.fillBg', 'Mit Hintergrundfarbe füllen', () => C().fillWith(app().bg), { key: 'Mod+Backspace', alt: ['Mod+Delete'] });
   def('edit.stroke', 'Kontur …', () => D().stroke());
   def('edit.contentAware', 'Inhaltsbasiert füllen', () => PW.retouch.contentAwareFill(), { key: 'Mod+Shift+Backspace' });
+  def('edit.ai', 'KI auf diesem Gerät …', () => PW.ai.settings(), { enabled: () => true });
   def('edit.transform', 'Frei transformieren', () => app().startTransform(), { key: 'Mod+T', alt: ['Mod+Alt+T'], enabled: hasLayer });
   def('edit.distort', 'Verzerren', () => PW.meshTransform.start('distort'), { enabled: hasLayer });
   def('edit.perspective', 'Perspektivisch verzerren', () => PW.meshTransform.start('perspective'), { enabled: hasLayer });
@@ -177,6 +178,7 @@
       'edit.undo', 'edit.redo', '-', 'edit.cut', 'edit.copy', 'edit.copyMerged', 'edit.paste', 'edit.clear', '-',
       'edit.fill', 'edit.contentAware', 'edit.fillFg', 'edit.fillBg', 'edit.stroke', '-', 'edit.transform',
       { label: 'Transformieren', items: ['edit.distort', 'edit.perspective', 'edit.warp', '-', 'edit.rot180', 'edit.rot90cw', 'edit.rot90ccw', '-', 'edit.flipH', 'edit.flipV'] },
+      '-', 'edit.ai',
     ] },
     { label: 'Bild', items: [
       { label: 'Korrekturen', items: adjustItems },

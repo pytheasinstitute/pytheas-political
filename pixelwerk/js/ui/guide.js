@@ -24,7 +24,7 @@
     clone: 'Kopiert Bildteile: Halte Alt gedrückt und klicke auf eine saubere Stelle. Dann male über das Störende.',
     historyBrush: 'Malt einen früheren Stand zurück: Wähle oben bei „Quelle“ einen Schritt aus dem Protokoll (z. B. 1. Öffnen) und male über die Stelle.',
     quickSelect: 'Male über das, was ausgewählt werden soll: die Auswahl wächst bis zu den Kanten. Mit gedrückter Alt-Taste nimmst du wieder etwas weg.',
-    objectSelect: 'Ziehe ein Rechteck um ein Objekt oder eine Person: es wird genau ausgewählt.',
+    objectSelect: 'Klicke auf ein Objekt oder eine Person – oder ziehe ein Rechteck darum: es wird genau ausgewählt. Umschalt-Klick fügt hinzu, Alt-Klick nimmt weg.',
     spotHeal: 'Male über kleine Störungen wie Pickel, Flecken oder Fussel. Beim Loslassen werden sie aus der Umgebung aufgefüllt.',
     remove: 'Male ganz über ein Objekt, das weg soll, samt Schatten. Beim Loslassen wird es durch passenden Hintergrund ersetzt.',
     heal: 'Alt-Klick auf eine saubere Stelle, dann über die Störung malen. Struktur kommt von dort, Licht und Farbe passen sich an.',

@@ -80,7 +80,7 @@ Ohne Photoshop-Kenntnisse:
 | V | Verschieben (Auswahlinhalt schwebend, Alt dupliziert, Pfeiltasten) |
 | M | Auswahlrechteck, Auswahlellipse (Umschalt/Alt/beides = hinzufügen/subtrahieren/Schnittmenge, weiche Kante, feste Größe/Verhältnis) |
 | L | Lasso, Polygon-Lasso |
-| W | Zauberstab (Toleranz, benachbart, alle Ebenen), Schnellauswahl (Pinsel, wächst bis zu Kanten, Alt nimmt weg), Objektauswahl (Rechteck um ein Objekt) |
+| W | Zauberstab (Toleranz, benachbart, alle Ebenen), Schnellauswahl (Pinsel, wächst bis zu Kanten, Alt nimmt weg), Objektauswahl (Klick auf ein Objekt mit KI, oder Rechteck darum) |
 | C | Freistellen (Seitenverhältnisse, Drittel-Raster) |
 | I | Pipette (1 bis 11 × 11 px, Aufnahmering) |
 | J | Bereichsreparatur-Pinsel, Entfernen-Werkzeug (beide inhaltsbasiert), Reparatur-Pinsel (Alt-Klick für die Quelle), Ausbessern-Werkzeug |
@@ -97,7 +97,13 @@ Ohne Photoshop-Kenntnisse:
 | Strg+T | Frei transformieren (skalieren, drehen; Umschalt: frei bzw. 15°-Schritte; Alt: von der Mitte) |
 | Bearbeiten › Transformieren | Verzerren (vier Ecken frei), Perspektivisch verzerren (Ecken paarweise), Verkrümmen (4 × 4-Gitter, Bézier); Vorschau per Dreiecksgitter, Ergebnis pixelgenau ohne Nähte |
 
-**Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Grenze: Photoshop nutzt für „Motiv“ ein neuronales Netz; Pixelwerk rechnet mit Farben und Kanten. Bei Haaren vor ähnlich farbigem Hintergrund braucht es ein paar Striche mit der Schnellauswahl.
+**KI auf dem eigenen Gerät** (Bearbeiten › KI auf diesem Gerät): Motiv auswählen, die Objektauswahl und das Entfernen nutzen kleine neuronale Netze, die im Browser laufen (ONNX Runtime als WebAssembly in einem Worker). Pixelwerk fragt vor dem ersten Laden (einmalig etwa 40 bzw. 15 MB) und speichert die Modelle danach auf dem Gerät; Bilder werden nirgendwohin geschickt.
+- Motiv auswählen: U²-Netp findet das Hauptmotiv, MobileSAM (Segment Anything) schneidet es genau aus, ein geführter Filter legt die Kante an Haare an.
+- Objektauswahl: auf ein Objekt klicken (Umschalt fügt hinzu, Alt nimmt weg) oder ein Rechteck darum ziehen; beim Darüberfahren zeigt eine rosa Fläche, was ein Klick auswählen würde.
+- Entfernen und Inhaltsbasiert füllen: MI-GAN malt einen ersten Entwurf, die Fleckensuche (PatchMatch) baut ihn aus echten Pixeln des Fotos nach, so passen Körnung und Schärfe.
+- Ohne KI (ausgeschaltet oder Modelle nicht vorhanden) nimmt Pixelwerk die klassischen Verfahren. Die Modelle baut `tools/build-ai.py` in den Ordner `ai/` (siehe `ai/README.md`).
+
+**Intelligente Auswahl**: Auswahl › Motiv sucht das Hauptmotiv (mit KI siehe oben; ohne KI GrabCut: Farbmodelle für Motiv und Hintergrund, Schnitt entlang der Kanten per Graph-Cut, grob nach fein). Auswahl › Farbbereich nimmt Farben per Klick auf oder nach Vorgabe (Rottöne … Magentatöne, Hauttöne, Lichter, Mitteltöne, Tiefen). Auswählen und maskieren (Strg+Alt+R) verbessert die Kante: Radius für Haare (geführter Filter), Abrunden, weiche Kante, Kontrast, Kante verschieben, Farben dekontaminieren, Ausgabe als Auswahl, Ebenenmaske oder neue Ebene. Ebene › Hintergrund entfernen stellt das Motiv per Ebenenmaske frei. Ohne KI rechnet Pixelwerk nur mit Farben und Kanten; bei Haaren vor ähnlich farbigem Hintergrund braucht es dann ein paar Striche mit der Schnellauswahl.
 
 **Retusche** wie in Photoshop: Bereichsreparatur-Pinsel und Entfernen-Werkzeug bauen übermalte Stellen beim Loslassen aus der Umgebung neu auf. Bearbeiten › Inhaltsbasiert füllen (Strg+Umschalt+Rücktaste, auch unter Fläche füllen › Inhalt) macht das für eine Auswahl. Reparatur-Pinsel und Ausbessern-Werkzeug übernehmen die Struktur einer gewählten Stelle und passen Licht und Farbe an den Rand des Ziels an. Das Auffüllen sucht für jedes 7 × 7-Stück das ähnlichste Stück außerhalb (PatchMatch), grob nach fein, mit Farbanpassung, und gleicht die Naht zum Schluss an.
 
@@ -168,7 +174,10 @@ pixelwerk/
   js/view.js          Zoom, Verschieben, Darstellung, Eingaben (Maus, Stift, Touch)
   js/tools/*.js       Werkzeuge (Malen, Retusche, Auswahl, Verschieben, Füllen, Text, Formen, Freistellen, Transformieren)
   js/segment.js       Segmentierung: Graph-Cut (Boykov–Kolmogorov), GrabCut, geführter Filter
-  js/inpaint.js       Inhaltsbasiert füllen (PatchMatch über mehrere Auflösungen, Farbanpassung) und Membran-Angleichung
+  js/inpaint.js       Inhaltsbasiert füllen (PatchMatch über mehrere Auflösungen, Farbanpassung, optional nach KI-Entwurf) und Membran-Angleichung
+  js/ai.js            KI auf dem Gerät: ONNX Runtime im Worker, Modelle laden und zwischenspeichern, Motiv, Segment Anything, MI-GAN
+  ai/                 die gepackten Modelle (von tools/build-ai.py erzeugt, nicht eingecheckt)
+  tools/build-ai.py   holt die Modelle von npm, speichert die Gewichte als float16 und teilt sie in Textstücke
   js/app.js           App-Zustand: Dokumente, aktives Werkzeug, Farben, Protokoll-Einträge
   js/commands.js      Befehle hinter Menüs und Kürzeln
   js/actions.js       Aktionsregister → Menüs, Tastaturkürzel, Hilfe

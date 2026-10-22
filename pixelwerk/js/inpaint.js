@@ -127,7 +127,45 @@
         g.avoid[o] = avoidAny;
       }
     }
+    if (f.guide) g.guide = halve(f.guide, f.w, f.h);
     return g;
+  }
+
+  // Plain 2 × 2 average of a 3-channel image (the guide picture of the next level).
+  function halve(v, w, h) {
+    const nw = Math.ceil(w / 2), nh = Math.ceil(h / 2), out = new Float32Array(nw * nh * 3);
+    for (let y = 0; y < nh; y++) {
+      for (let x = 0; x < nw; x++) {
+        let n = 0;
+        const o = (y * nw + x) * 3;
+        for (let dy = 0; dy < 2; dy++) {
+          const yy = 2 * y + dy;
+          if (yy >= h) continue;
+          for (let dx = 0; dx < 2; dx++) {
+            const xx = 2 * x + dx;
+            if (xx >= w) continue;
+            const i = (yy * w + xx) * 3;
+            out[o] += v[i];
+            out[o + 1] += v[i + 1];
+            out[o + 2] += v[i + 2];
+            n++;
+          }
+        }
+        out[o] /= n;
+        out[o + 1] /= n;
+        out[o + 2] /= n;
+      }
+    }
+    return out;
+  }
+
+  // Pulls the hole towards the guide picture (AI first draft) by `k` (0–1).
+  function towardGuide(L, k) {
+    if (!L.guide || k <= 0) return;
+    for (let i = 0; i < L.w * L.h; i++) {
+      if (!L.hole[i]) continue;
+      for (let c = 0; c < 3; c++) L.img[i * 3 + c] += (L.guide[i * 3 + c] - L.img[i * 3 + c]) * k;
+    }
   }
 
   // Patches that may serve as a source: fully inside, nothing of the hole or the avoided area in them.
@@ -400,7 +438,9 @@
 
   // ─── Fill ───
   // data: RGBA (Uint8ClampedArray, w*h*4) of the area to work in; hole: Uint8Array (1 = rebuild);
-  // opts.avoid: Uint8Array (1 = never copy from here); opts.onProgress(0–1); opts.seed.
+  // opts.avoid: Uint8Array (1 = never copy from here); opts.onProgress(0–1); opts.seed;
+  // opts.init: RGBA first draft of the hole (from the AI). The patches then follow its layout while
+  // the pixels still come from the photo itself, so grain and sharpness match.
   // Returns a new RGBA array with the hole filled (alpha kept).
   async function fill(data, w, h, hole, opts = {}) {
     const rand = rng(opts.seed || 12345);
@@ -413,6 +453,15 @@
       L0.hole[i] = hole[i] ? 1 : 0;
       if (opts.avoid && opts.avoid[i]) L0.avoid[i] = 1;
       holeN += L0.hole[i];
+    }
+    if (opts.init) {
+      L0.guide = new Float32Array(w * h * 3);
+      for (let i = 0; i < w * h; i++) {
+        const d = L0.hole[i] ? opts.init : data;
+        L0.guide[i * 3] = d[i * 4];
+        L0.guide[i * 3 + 1] = d[i * 4 + 1];
+        L0.guide[i * 3 + 2] = d[i * 4 + 2];
+      }
     }
     const out = new Uint8ClampedArray(data);
     if (!holeN) return out;
@@ -443,9 +492,10 @@
     for (let l = pyr.length - 1; l >= 0; l--) {
       const L = pyr[l], S = new Solver(L, rand), { w: lw, h: lh } = L;
       if (!prev) {
-        // Coarsest: a smooth first guess, random matches.
+        // Coarsest: a smooth first guess (or the AI draft), random matches.
         const known = Uint8Array.from(L.hole, v => (v ? 0 : 1));
         membrane(L.img, known, lw, lh, 3, 60);
+        towardGuide(L, 1);
       } else {
         // Hole from the coarser result, matches scaled up.
         const C = prev.L;
@@ -467,6 +517,7 @@
           const nx = Math.min(lw - 1 - R, Math.max(R, 2 * sx + (qx & 1))), ny = Math.min(lh - 1 - R, Math.max(R, 2 * sy + (qy & 1)));
           S.nn[q] = ny * lw + nx;
         }
+        towardGuide(L, 0.6);
         S.init();
         S.vote(1);
       }
@@ -477,7 +528,10 @@
         // The last vote changed the hole, so the stored distances are stale.
         if (e) S.refreshDist();
         S.search(pm, radius);
-        S.vote(l === 0 && e === em - 1 ? 0.5 : 1);
+        const last = l === 0 && e === em - 1;
+        S.vote(last ? 0.5 : 1);
+        // With a draft, the layout stays close to it; the very last vote is pure photo pixels.
+        if (!last) towardGuide(L, l === 0 ? 0.25 : 0.4);
         report(pm / Math.pow(4, l));
         await tick();
       }

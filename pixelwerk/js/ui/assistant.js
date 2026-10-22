@@ -466,7 +466,7 @@
           doc.addLayer(layer, doc.layers.length);
           const sc = Math.max(1, Math.max(doc.width, doc.height) / 2000);
           try {
-            await PW.retouch.rebuild(layer, mask, { grow: 3 * sc, reach: 1.2, sampleAll: true, clip: false, label: 'Wird entfernt' });
+            await PW.retouch.rebuild(layer, mask, { grow: 3 * sc, reach: 1.2, sampleAll: true, clip: false, label: 'Wird entfernt', ai: true });
           } catch (e) {
             doc.removeLayer(layer.id);
             throw e;
