@@ -1,0 +1,14 @@
+{
+  "name": "pixelwerk-desktop",
+  "productName": "Pixelwerk",
+  "version": "1.0.0",
+  "description": "Pixelwerk als Mac-Programm: ein eigenes Fenster für Pixelwerk auf claude.ai",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0"
+  }
+}

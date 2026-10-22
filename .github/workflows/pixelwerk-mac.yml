@@ -1,0 +1,93 @@
+# Builds Pixelwerk as a Mac program on a real Mac: pack, sign ad hoc, start once as a test,
+# put it into a .dmg per processor type and attach both to a (pre-)release for direct download.
+name: Pixelwerk für Mac
+
+on:
+  push:
+    branches: [claude/photoshop-nachbauen-hp8txe]
+    paths:
+      - 'pixelwerk/desktop/**'
+      - '.github/workflows/pixelwerk-mac.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pixelwerk-mac
+  cancel-in-progress: true
+
+env:
+  TAG: pixelwerk-mac-v1.0.0
+
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pixelwerk/desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Programm packen
+        run: |
+          npm install --no-audit --no-fund
+          node build.mjs
+
+      - name: Ad hoc signieren und prüfen
+        run: |
+          for arch in arm64 x64; do
+            app="dist/Pixelwerk-darwin-$arch/Pixelwerk.app"
+            codesign --force --deep --sign - "$app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+          done
+
+      - name: Einmal starten (Apple-Chip)
+        run: |
+          app="dist/Pixelwerk-darwin-arm64/Pixelwerk.app"
+          "$app/Contents/MacOS/Pixelwerk" > start.log 2>&1 &
+          pid=$!
+          sleep 20
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "Pixelwerk ist beim Start abgestürzt:"
+            cat start.log
+            exit 1
+          fi
+          kill "$pid"
+          echo "Pixelwerk lief 20 Sekunden ohne Absturz."
+
+      - name: DMG erstellen
+        run: |
+          make_dmg() {
+            stage="stage-$1"
+            rm -rf "$stage" && mkdir "$stage"
+            ditto "dist/Pixelwerk-darwin-$1/Pixelwerk.app" "$stage/Pixelwerk.app"
+            ln -s /Applications "$stage/Programme"
+            hdiutil create -volname "Pixelwerk" -srcfolder "$stage" -ov -format UDZO "$2"
+          }
+          make_dmg arm64 Pixelwerk-Mac-Apple-Chip.dmg
+          make_dmg x64 Pixelwerk-Mac-Intel.dmg
+          ls -lh *.dmg
+
+      - name: Als Download bereitstellen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Pixelwerk als Mac-Programm. Apple-Chip (M1 und neuer) oder Intel: steht im Apple-Menü unter „Über diesen Mac“. Beim ersten Öffnen: Systemeinstellungen › Datenschutz & Sicherheit › „Dennoch öffnen“."
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" Pixelwerk-Mac-Apple-Chip.dmg Pixelwerk-Mac-Intel.dmg --clobber
+          else
+            gh release create "$TAG" Pixelwerk-Mac-Apple-Chip.dmg Pixelwerk-Mac-Intel.dmg \
+              --target "$GITHUB_SHA" --prerelease --title "Pixelwerk für Mac 1.0" --notes "$notes"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixelwerk-mac
+          path: pixelwerk/desktop/*.dmg
+          retention-days: 30
