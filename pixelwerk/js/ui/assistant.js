@@ -171,7 +171,7 @@
     const sel = doc.selection;
     return {
       image: { width: map.iw, height: map.ih },
-      layers: [...doc.layers].reverse().map(L => ({ name: L.name, visible: L.visible, opacity: Math.round(L.opacity * 100), text: L.isText || undefined })),
+      layers: [...doc.layers].reverse().map(L => ({ name: L.name, visible: L.visible, opacity: Math.round(L.opacity * 100), text: L.isText || undefined, group: L.isGroup || undefined, in_group: L.parent ? (doc.layerById(L.parent) || {}).name : undefined })),
       active_layer: doc.active ? doc.active.name : null,
       selection: sel.empty ? null : rectToImg(sel.bounds),
       last_steps: doc.history.states.slice(Math.max(0, doc.history.index - 4), doc.history.index + 1).map(s => s.name),

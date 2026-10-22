@@ -210,6 +210,10 @@
         this.toast('Die Ebene ist gesperrt.');
         return null;
       }
+      if (L.isGroup && !L.targetIsMask) {
+        this.toast('Eine Gruppe hat keine eigenen Pixel. Wähle im Ebenen-Bedienfeld eine Ebene in der Gruppe.');
+        return null;
+      }
       if (L.isText && !L.targetIsMask) {
         // Like Photoshop: ask first, because the text stops being editable.
         // When painting, offer a fresh layer instead – the friendlier choice.

@@ -453,7 +453,7 @@
     build(body) {
       const a = app(), doc = a.doc;
       const L = doc && doc.active;
-      const blendOpts = PW.BLEND_MODES.filter(Boolean);
+      const blendOpts = L && L.isGroup ? [['pass-through', 'Hindurchwirken'], ...PW.BLEND_MODES.filter(Boolean)] : PW.BLEND_MODES.filter(Boolean);
       const blend = PW.ui.control({ type: 'select', key: 'blend', options: blendOpts, title: 'Füllmethode' }, L ? L.blend : 'source-over', v => {
         if (!doc.active) return;
         doc.active.blend = v;
@@ -472,13 +472,19 @@
 
       const list = el('div', { class: 'layer-list', role: 'listbox', 'aria-label': 'Ebenen' });
       if (doc) {
-        for (let i = doc.layers.length - 1; i >= 0; i--) list.append(this.row(doc, doc.layers[i], i));
+        // Contents of a closed group are not listed.
+        for (let i = doc.layers.length - 1; i >= 0; i--) {
+          const L2 = doc.layers[i];
+          if (doc.ancestorsOf(L2).some(g => g.collapsed)) continue;
+          list.append(this.row(doc, L2, i));
+        }
       }
       const btn = (icon, title, action, extra) => el('button', { type: 'button', class: 'tbtn', title, 'aria-label': title, html: PW.icon(icon, 16), onclick: () => PW.runAction(action), ...extra });
       const bottom = el('div', { class: 'layers-bottom' }, [
         btn('fx', 'Ebenenstil hinzufügen', 'layer.style'),
         btn('mask', 'Ebenenmaske hinzufügen', 'layer.maskRevealSel'),
         btn('adjust', 'Neue Einstellungsebene', 'window.adjustments'),
+        btn('folder', 'Neue Gruppe erstellen', 'layer.newGroup'),
         btn('duplicate', 'Ebene duplizieren', 'layer.duplicate'),
         btn('new-layer', 'Neue Ebene erstellen', 'layer.new'),
         btn('trash', 'Ebene löschen', 'layer.delete'),
@@ -499,9 +505,11 @@
         else PW.commands.toggleVisible(L);
       });
       const adef = L.adjust && PW.adjustLayers.defOf(L.adjust.id);
-      const th = L.adjust
-        ? el('div', { class: 'thumb-wrap adjust-thumb', title: 'Doppelklick: Einstellungen ändern', html: PW.icon((adef && adef.icon) || 'adjust', 18) })
-        : el('div', { class: `thumb-wrap ${active && !L.editMask ? 'target' : ''}`, title: 'Strg/⌘-Klick: Auswahl aus Ebene laden' }, L.isText ? el('div', { class: 'text-thumb', text: 'T' }) : thumb(L.canvas, 34));
+      const th = L.isGroup
+        ? el('div', { class: 'thumb-wrap group-thumb', title: 'Gruppe · Strg/⌘-Klick: Auswahl aus dem Inhalt laden', html: PW.icon(L.collapsed ? 'folder' : 'folder-open', 20) })
+        : L.adjust
+          ? el('div', { class: 'thumb-wrap adjust-thumb', title: 'Doppelklick: Einstellungen ändern', html: PW.icon((adef && adef.icon) || 'adjust', 18) })
+          : el('div', { class: `thumb-wrap ${active && !L.editMask ? 'target' : ''}`, title: 'Strg/⌘-Klick: Auswahl aus Ebene laden' }, L.isText ? el('div', { class: 'text-thumb', text: 'T' }) : thumb(L.canvas, 34));
       th.addEventListener('click', e => {
         if (e.ctrlKey || e.metaKey) {
           e.stopPropagation();
@@ -514,7 +522,20 @@
         }
       });
 
-      const parts = [eye, th];
+      // Groups: indent by level, a triangle opens and closes the group.
+      const depth = doc.depthOf(L);
+      const twisty = L.isGroup
+        ? el('button', { type: 'button', class: `twisty ${L.collapsed ? '' : 'open'}`, title: L.collapsed ? 'Gruppe öffnen' : 'Gruppe schließen', 'aria-label': L.collapsed ? 'Gruppe öffnen' : 'Gruppe schließen', 'aria-expanded': String(!L.collapsed), html: PW.icon('twisty', 12) })
+        : el('span', { class: 'twisty-space' });
+      if (L.isGroup) {
+        twisty.addEventListener('click', e => {
+          e.stopPropagation();
+          PW.commands.toggleCollapsed(L);
+        });
+      }
+      const lead = el('div', { class: 'lr-lead' }, [twisty, th]);
+      lead.style.marginLeft = `${depth * 14}px`;
+      const parts = [eye, lead];
       if (L.mask) {
         const mt = el('div', { class: `thumb-wrap mask ${active && (L.editMask || L.adjust) ? 'target' : ''} ${L.maskEnabled ? '' : 'off'}`, title: 'Maske bearbeiten · Umschalt-Klick: deaktivieren' }, thumb(L.mask, 34, true));
         mt.addEventListener('click', e => {
@@ -538,12 +559,27 @@
       if (L.lockAlpha) badges.append(el('span', { class: 'badge', html: PW.icon('lock-alpha', 13), title: 'Transparenz fixiert' }));
       if (L.locked) badges.append(el('span', { class: 'badge', html: PW.icon('lock', 13), title: 'Gesperrt' }));
       parts.push(badges);
-      const row = el('div', { class: `layer-row ${active ? 'active' : ''} ${L.visible ? '' : 'hidden-layer'}`, role: 'option', 'aria-selected': String(active), tabindex: active ? '0' : '-1' }, parts);
+      const picked = !active && doc.picked && doc.picked.has(L.id);
+      const row = el('div', { class: `layer-row ${active ? 'active' : ''} ${picked ? 'picked' : ''} ${L.isGroup ? 'group-row' : ''} ${doc.shown(L) ? '' : 'hidden-layer'}`, role: 'option', 'aria-selected': String(active || !!picked), tabindex: active ? '0' : '-1' }, parts);
       row.dataset.index = index;
       row.dataset.id = L.id;
       // Double-clicks are matched by layer id, because the first click may re-render the list.
       row.addEventListener('click', e => {
         const zone = e.target.closest('.layer-name') ? 'name' : e.target.closest('.thumb-wrap:not(.mask)') ? 'thumb' : e.target.closest('.eye') ? 'eye' : 'row';
+        // Umschalt- or Strg/⌘-click picks several layers (for grouping or deleting them together).
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          if (L.id !== doc.activeId) {
+            doc.picked = doc.picked || new Set();
+            if (doc.picked.has(L.id)) doc.picked.delete(L.id);
+            else doc.picked.add(L.id);
+            PW.bus.emit('layers:changed', doc);
+          }
+          return;
+        }
+        if (doc.picked && doc.picked.size) {
+          doc.picked = null;
+          if (doc.activeId === L.id) PW.bus.emit('layers:changed', doc);
+        }
         const now = performance.now(), prev = lastClick;
         lastClick = { id: L.id, zone, t: now };
         if (doc.activeId !== L.id) doc.setActive(L.id);
@@ -555,15 +591,24 @@
           a.setTool('text');
           PW.tools.byId.text.startEdit(L, false);
         } else if ((zone === 'thumb' || zone === 'row') && L.adjust) PW.adjustLayers.edit(L);
+        else if (L.isGroup) PW.commands.toggleCollapsed(L);
         else if (zone === 'row') PW.runAction('layer.style');
       });
       row.addEventListener('keydown', e => {
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && L.isGroup && L.collapsed === (e.key === 'ArrowRight')) {
           e.preventDefault();
           e.stopPropagation();
-          const i = doc.layers.indexOf(L) + (e.key === 'ArrowUp' ? 1 : -1);
-          if (doc.layers[i]) {
-            doc.setActive(doc.layers[i].id);
+          PW.commands.toggleCollapsed(L);
+          requestAnimationFrame(() => {
+            const r = document.querySelector('.layer-row.active');
+            if (r) r.focus();
+          });
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          const rows = [...row.parentElement.querySelectorAll('.layer-row')], j = rows.indexOf(row) + (e.key === 'ArrowUp' ? -1 : 1);
+          if (rows[j]) {
+            doc.setActive(rows[j].dataset.id);
             requestAnimationFrame(() => {
               const r = document.querySelector('.layer-row.active');
               if (r) r.focus();
@@ -601,12 +646,13 @@
       input.addEventListener('blur', () => finish(true));
     },
 
-    // Pointer-based drag to reorder (works with mouse, pen and touch).
+    // Pointer-based drag to reorder (works with mouse, pen and touch). Dropping on the middle of
+    // a group row puts the layer into the group; between rows it goes to that place.
     dragReorder(row, doc, L) {
       row.addEventListener('pointerdown', e => {
-        if (e.button !== 0 || e.target.closest('.eye') || e.target.closest('input')) return;
-        const list = row.parentElement, startY = e.clientY;
-        let dragging = false, marker = null, target = null;
+        if (e.button !== 0 || e.target.closest('.eye') || e.target.closest('.twisty') || e.target.closest('input')) return;
+        const list = row.parentElement, startY = e.clientY, own = new Set(doc.blockOf(L).map(x => x.id));
+        let dragging = false, marker = null, target = null, intoRow = null;
         const move = ev => {
           if (!dragging && Math.abs(ev.clientY - startY) < 5) return;
           if (!dragging) {
@@ -615,19 +661,41 @@
             marker = el('div', { class: 'drop-marker' });
             list.append(marker);
           }
-          const rows = [...list.querySelectorAll('.layer-row')];
-          const lr = list.getBoundingClientRect();
-          let pos = rows.length;
-          for (let i = 0; i < rows.length; i++) {
-            const r = rows[i].getBoundingClientRect();
-            if (ev.clientY < r.top + r.height / 2) {
-              pos = i;
-              break;
+          const rows = [...list.querySelectorAll('.layer-row')], lr = list.getBoundingClientRect();
+          if (intoRow) intoRow.classList.remove('drop-into');
+          intoRow = null;
+          target = null;
+          let line = null;
+          for (const r of rows) {
+            const b = r.getBoundingClientRect();
+            if (ev.clientY < b.top || ev.clientY >= b.bottom) continue;
+            const R = doc.layerById(r.dataset.id), rel = (ev.clientY - b.top) / b.height;
+            if (R.isGroup && rel > 0.3 && rel < 0.7) {
+              target = { kind: 'into', R };
+              intoRow = r;
+            } else if (rel < 0.5) {
+              target = { kind: 'above', R };
+              line = b.top;
+            } else {
+              target = { kind: 'below', R };
+              line = b.bottom;
+            }
+            break;
+          }
+          if (!target && rows.length) {
+            const last = rows[rows.length - 1], b = last.getBoundingClientRect();
+            if (ev.clientY >= b.bottom) {
+              target = { kind: 'bottom' };
+              line = b.bottom;
+            } else if (ev.clientY < rows[0].getBoundingClientRect().top) {
+              target = { kind: 'above', R: doc.layerById(rows[0].dataset.id) };
+              line = rows[0].getBoundingClientRect().top;
             }
           }
-          const ref = rows[pos] ? rows[pos].getBoundingClientRect().top : rows[rows.length - 1].getBoundingClientRect().bottom;
-          marker.style.top = `${ref - lr.top + list.scrollTop - 1}px`;
-          target = pos;
+          if (target && target.R && own.has(target.R.id)) target = null;
+          if (intoRow && target) intoRow.classList.add('drop-into');
+          marker.hidden = !(target && line != null);
+          if (line != null) marker.style.top = `${line - lr.top + list.scrollTop - 1}px`;
         };
         const up = () => {
           window.removeEventListener('pointermove', move);
@@ -635,16 +703,27 @@
           if (!dragging) return;
           row.classList.remove('dragging');
           if (marker) marker.remove();
-          if (target == null) return;
-          // rows are top→bottom; layer indices bottom→top
-          const n = doc.layers.length, from = doc.layers.indexOf(L);
-          let to = n - target;
-          if (to > from) to -= 1;
-          to = clamp(to, 0, n - 1);
-          if (to !== from) {
-            doc.moveLayer(L.id, to);
-            app().commit('Ebenen anordnen', 'layers');
-          } else PW.bus.emit('layers:changed', doc);
+          if (intoRow) intoRow.classList.remove('drop-into');
+          if (!target) return PW.bus.emit('layers:changed', doc);
+          const rest = doc.layers.filter(x => !own.has(x.id)), R = target.R;
+          let at, parent;
+          if (target.kind === 'bottom') {
+            at = 0;
+            parent = null;
+          } else if (target.kind === 'into' || (target.kind === 'below' && R.isGroup && !R.collapsed)) {
+            at = rest.indexOf(R);
+            parent = R.id;
+          } else if (target.kind === 'above') {
+            at = rest.indexOf(R) + 1;
+            parent = R.parent;
+          } else {
+            at = rest.indexOf(doc.blockOf(R)[0]);
+            parent = R.parent;
+          }
+          const before = doc.layers.map(x => `${x.id}/${x.parent}`).join();
+          doc.moveBlock(L, at, parent);
+          if (doc.layers.map(x => `${x.id}/${x.parent}`).join() !== before) app().commit('Ebenen anordnen', 'layers');
+          else PW.bus.emit('layers:changed', doc);
         };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);

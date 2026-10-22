@@ -60,6 +60,10 @@
       this.fx = null;
       // Adjustment layer: { id, params, fg, bg } — changes everything below it, through its mask.
       this.adjust = null;
+      // Groups: id of the group this layer is in (null: top level). A group's contents lie
+      // directly below it in the stack, like in Photoshop files.
+      this.parent = null;
+      this.collapsed = false;
       this.version = nextVersion();
       this.maskVersion = 0;
       // Tools set this to draw a live preview instead of the stored pixels.
@@ -69,10 +73,21 @@
       this._maskDirty = 'all';
     }
 
-    get width() { return this.canvas.width; }
-    get height() { return this.canvas.height; }
+    // A group has no pixels of its own (a 1 × 1 canvas), but the size of the document.
+    static group(w, h, name = 'Gruppe') {
+      const L = new Layer(1, 1, name);
+      L.type = 'group';
+      L.blend = 'pass-through';
+      L._gw = w;
+      L._gh = h;
+      return L;
+    }
+
+    get width() { return this.type === 'group' ? this._gw : this.canvas.width; }
+    get height() { return this.type === 'group' ? this._gh : this.canvas.height; }
     get isText() { return this.type === 'text'; }
     get isAdjust() { return !!this.adjust; }
+    get isGroup() { return this.type === 'group'; }
 
     touch() { this.version = nextVersion(); }
 
@@ -204,26 +219,29 @@
         fx: this.fx ? JSON.parse(JSON.stringify(this.fx)) : null,
         adjust: this.adjust ? JSON.parse(JSON.stringify(this.adjust)) : null,
         maskEnabled: this.maskEnabled,
-        pixels: withPixels ? this.canvas.toDataURL('image/png') : null,
+        collapsed: this.collapsed || undefined,
+        pixels: withPixels && !this.isGroup ? this.canvas.toDataURL('image/png') : null,
         mask: withPixels && this.mask ? this.mask.toDataURL('image/png') : null,
       };
     }
 
     static async deserialize(data, w, h) {
-      const L = new Layer(w, h, data.name);
+      const group = data.type === 'group';
+      const L = group ? Layer.group(w, h, data.name) : new Layer(w, h, data.name);
       Object.assign(L, {
         visible: data.visible !== false,
         opacity: data.opacity ?? 1,
-        blend: data.blend || 'source-over',
+        blend: data.blend || (group ? 'pass-through' : 'source-over'),
         locked: !!data.locked,
         lockAlpha: !!data.lockAlpha,
-        type: data.type === 'text' ? 'text' : 'raster',
+        collapsed: !!data.collapsed,
+        type: group ? 'group' : data.type === 'text' ? 'text' : 'raster',
         text: data.text || null,
         fx: data.fx || null,
         adjust: data.adjust || null,
         maskEnabled: data.maskEnabled !== false,
       });
-      if (data.pixels) L.ctx.drawImage(await PW.util.loadImage(data.pixels), 0, 0);
+      if (data.pixels && !group) L.ctx.drawImage(await PW.util.loadImage(data.pixels), 0, 0);
       if (data.mask) {
         L.mask = createCanvas(w, h);
         L.mask.getContext('2d').drawImage(await PW.util.loadImage(data.mask), 0, 0);

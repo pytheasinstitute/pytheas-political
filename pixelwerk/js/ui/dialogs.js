@@ -809,6 +809,7 @@
   async function layerStyle() {
     const a = app(), L = a.doc && a.doc.active;
     if (!L) return;
+    if (L.isGroup) return a.toast('Ebenenstile wirken auf einzelne Ebenen. Wähle eine Ebene in der Gruppe.');
     a.finishToolWork();
     const orig = L.fx ? JSON.parse(JSON.stringify(L.fx)) : null;
     const fx = JSON.parse(JSON.stringify({ ...PW.FX_DEFAULTS, ...(L.fx || {}) }));

@@ -105,7 +105,7 @@
       height: doc.height,
       activeIndex: doc.activeIndex,
       thumb: await thumbnail(doc),
-      layers: await Promise.all(doc.layers.map(layerData)),
+      layers: await Promise.all(doc.layers.map(async L => ({ ...(await layerData(L)), parent: doc.parentIndex(L) }))),
     };
   }
 

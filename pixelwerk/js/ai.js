@@ -93,7 +93,7 @@ self.postMessage({ id: 0, ok: true });
     workerReady = new Promise((resolve, reject) => {
       const url = URL.createObjectURL(new Blob([WORKER(ortUrl())], { type: 'text/javascript' }));
       worker = new Worker(url, { type: 'module' });
-      const timer = setTimeout(() => reject(new Error('Die KI-Laufzeit hat nicht geantwortet.')), 60000);
+      const timer = setTimeout(() => reject(new Error('Die KI-Laufzeit hat nicht geantwortet.')), 30000);
       worker.onmessage = e => {
         const { id, ok, out, error } = e.data;
         if (id === 0) {

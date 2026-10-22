@@ -80,7 +80,7 @@
       return null;
     }
     a.finishToolWork();
-    const ok = L => L && !L.isText && L.visible && !L.locked;
+    const ok = L => L && !L.isText && !L.isGroup && !L.adjust && L.visible && !L.locked;
     let L = doc.active;
     if (!ok(L)) {
       const i = doc.activeIndex;

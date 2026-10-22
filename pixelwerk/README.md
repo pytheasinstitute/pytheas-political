@@ -71,6 +71,7 @@ Ohne Photoshop-Kenntnisse:
 - Sperren und transparente Pixel fixieren
 - Ebenenmasken: einblenden, ausblenden, aus Auswahl, deaktivieren, anwenden
 - Ebenenstile: Schlagschatten, Schein nach außen, Kontur
+- Ebenengruppen: Strg+G gruppiert die gewählte Ebene oder alle mit Umschalt/Strg-Klick markierten, Strg+Umschalt+G hebt die Gruppierung auf, Strg+E fügt eine Gruppe zu einer Ebene zusammen. Gruppen lassen sich auf- und zuklappen, verschachteln und haben Deckkraft, Füllmethode („Hindurchwirken“ wie in Photoshop oder eine eigene, dann wirken Einstellungsebenen nur innerhalb der Gruppe), Sichtbarkeit und Maske. Ebenen per Ziehen in eine Gruppe (auf die Mitte der Gruppenzeile) oder heraus. Verschieben und Frei transformieren wirken auf den ganzen Inhalt; Projekte und „Meine Bilder“ behalten die Gruppen.
 - Auf eine Ebene reduzieren, sichtbare reduzieren, auf Hintergrundebene reduzieren
 
 **Werkzeuge** (mit Photoshop-Kürzeln, Umschalt + Taste wechselt innerhalb der Gruppe)

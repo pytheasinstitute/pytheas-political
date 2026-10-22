@@ -215,33 +215,40 @@
       const a = app(), doc = a.doc, L = doc && doc.active;
       if (!L) return false;
       if (L.locked) { a.toast('Die Ebene ist gesperrt.'); return false; }
-      if (L.isText && !L.targetIsMask) {
-        L.rasterize();
+      // A group transforms everything in it together, around their common bounds.
+      const layers = L.isGroup && !L.targetIsMask ? doc.pixelLayersOf(L).filter(x => !x.locked) : [L];
+      if (!layers.length) { a.toast('In der Gruppe ist nichts zum Transformieren.'); return false; }
+      if (layers.some(x => x.isText && !x.targetIsMask)) {
+        layers.forEach(x => x.isText && !x.targetIsMask && x.rasterize());
         a.toast('Textebene wurde für die Transformation gerastert.');
       }
-      const target = L.target, W = target.width, H = target.height, sel = doc.selection;
-      const src = createCanvas(W, H), sg = src.getContext('2d');
-      sg.drawImage(target, 0, 0);
-      const base = cloneCanvas(target), bg = base.getContext('2d');
-      if (!sel.empty) {
-        sg.globalCompositeOperation = 'destination-in';
-        sg.drawImage(sel.mask, 0, 0);
-        bg.globalCompositeOperation = 'destination-out';
-        bg.drawImage(sel.mask, 0, 0);
-      } else {
-        bg.clearRect(0, 0, W, H);
-      }
-      if (L.targetIsMask) {
-        bg.globalCompositeOperation = 'destination-over';
-        bg.fillStyle = sel.empty ? '#fff' : '#000';
-        bg.fillRect(0, 0, W, H);
-      }
-      const b = alphaBounds(src);
-      if (!b) { a.toast('Es sind keine Pixel zum Transformieren vorhanden.'); return false; }
+      const sel = doc.selection;
+      const parts = layers.map(X => {
+        const target = X.target, W = target.width, H = target.height;
+        const src = createCanvas(W, H), sg = src.getContext('2d');
+        sg.drawImage(target, 0, 0);
+        const base = cloneCanvas(target), bg = base.getContext('2d');
+        if (!sel.empty) {
+          sg.globalCompositeOperation = 'destination-in';
+          sg.drawImage(sel.mask, 0, 0);
+          bg.globalCompositeOperation = 'destination-out';
+          bg.drawImage(sel.mask, 0, 0);
+        } else {
+          bg.clearRect(0, 0, W, H);
+        }
+        if (X.targetIsMask) {
+          bg.globalCompositeOperation = 'destination-over';
+          bg.fillStyle = sel.empty ? '#fff' : '#000';
+          bg.fillRect(0, 0, W, H);
+        }
+        return { L: X, src, base, orig: cloneCanvas(target), b: alphaBounds(src) };
+      });
+      const bs = parts.map(q => q.b).filter(Boolean);
+      if (!bs.length) { a.toast('Es sind keine Pixel zum Transformieren vorhanden.'); return false; }
+      const x0 = Math.min(...bs.map(r => r.x)), y0 = Math.min(...bs.map(r => r.y));
+      const b = { x: x0, y: y0, w: Math.max(...bs.map(r => r.x + r.w)) - x0, h: Math.max(...bs.map(r => r.y + r.h)) - y0 };
       this.L = L;
-      this.src = src;
-      this.base = base;
-      this.orig = cloneCanvas(target);
+      this.parts = parts;
       this.selMask = sel.empty ? null : cloneCanvas(sel.mask);
       this.b = b;
       this.t = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 };
@@ -257,18 +264,21 @@
     },
 
     render() {
-      const L = this.L, g = L.target.getContext('2d'), b = this.b;
-      g.save();
-      g.setTransform(1, 0, 0, 1, 0, 0);
-      g.globalCompositeOperation = 'copy';
-      g.drawImage(this.base, 0, 0);
-      g.globalCompositeOperation = 'source-over';
-      g.imageSmoothingEnabled = this.options.smooth;
-      g.imageSmoothingQuality = 'high';
-      this.matrix(g);
-      g.drawImage(this.src, b.x, b.y, b.w, b.h, -b.w / 2, -b.h / 2, b.w, b.h);
-      g.restore();
-      L.markTarget();
+      const b = this.b;
+      for (const q of this.parts) {
+        const g = q.L.target.getContext('2d');
+        g.save();
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.globalCompositeOperation = 'copy';
+        g.drawImage(q.base, 0, 0);
+        g.globalCompositeOperation = 'source-over';
+        g.imageSmoothingEnabled = this.options.smooth;
+        g.imageSmoothingQuality = 'high';
+        this.matrix(g);
+        g.drawImage(q.src, b.x, b.y, b.w, b.h, -b.w / 2, -b.h / 2, b.w, b.h);
+        g.restore();
+        q.L.markTarget();
+      }
       PW.bus.emit('options:refresh');
       app().render();
     },
@@ -388,20 +398,20 @@
     },
     cancelTransform() {
       const a = app();
-      if (this.L) {
-        const g = this.L.target.getContext('2d');
+      for (const q of this.parts || []) {
+        const g = q.L.target.getContext('2d');
         g.save();
         g.globalCompositeOperation = 'copy';
-        g.drawImage(this.orig, 0, 0);
+        g.drawImage(q.orig, 0, 0);
         g.restore();
-        this.L.markTarget();
+        q.L.markTarget();
       }
       this.clear();
       a.render();
       a.restoreTool();
     },
     clear() {
-      this.L = this.src = this.base = this.orig = this.selMask = this.t = null;
+      this.L = this.parts = this.selMask = this.t = null;
       this.drag = null;
     },
     deactivate() {

@@ -18,6 +18,12 @@
     return doc.active;
   }
 
+  // The active layer plus those picked in the panel (Strg/Umschalt-Klick), bottom to top.
+  function pickedLayers(doc) {
+    const ids = new Set([doc.activeId, ...(doc.picked || [])]);
+    return doc.layers.filter(l => ids.has(l.id));
+  }
+
   // Applies fn(ctx, srcCanvas, bounds) around the content of the active layer or selection.
   function transformLayer(name, fn) {
     const a = app(), doc = needDoc();
@@ -289,9 +295,57 @@
     async deleteLayer() {
       const a = app(), doc = needDoc(), L = doc && doc.active;
       if (!L) return;
-      if (doc.layers.length === 1) return a.toast('Die letzte Ebene kann nicht gelöscht werden.');
-      doc.removeLayer(L.id);
-      a.commit('Ebene löschen', 'trash');
+      const list = pickedLayers(doc), gone = new Set(list.flatMap(x => doc.blockOf(x)).map(x => x.id));
+      if (gone.size >= doc.layers.length) return a.toast('Die letzte Ebene kann nicht gelöscht werden.');
+      for (const x of list) if (doc.layerById(x.id)) doc.removeLayer(x.id);
+      doc.picked = null;
+      a.commit(list.length > 1 ? 'Ebenen löschen' : L.isGroup ? 'Gruppe löschen' : 'Ebene löschen', 'trash');
+    },
+
+    // ─── Groups ───
+    // Groups the active layer, or all layers picked with Strg/Umschalt-Klick in the panel.
+    groupLayers() {
+      const a = app(), doc = needDoc();
+      if (!doc || !doc.active) return;
+      doc.groupLayers(pickedLayers(doc));
+      doc.picked = null;
+      a.commit('Ebenen gruppieren', 'folder');
+    },
+
+    newGroup() {
+      const a = app(), doc = needDoc();
+      if (!doc) return;
+      const L = doc.active, G = PW.Layer.group(doc.width, doc.height, doc.nextLayerName('Gruppe'));
+      if (L) doc.addLayer(G, doc.layers.indexOf(L) + 1, L.parent);
+      else doc.addLayer(G, doc.layers.length, null);
+      a.commit('Neue Gruppe', 'folder');
+    },
+
+    ungroup() {
+      const a = app(), doc = needDoc(), G = doc && doc.active;
+      if (!G || !G.isGroup) return a.toast('Wähle zuerst eine Gruppe aus.');
+      doc.ungroup(G);
+      a.commit('Gruppierung aufheben', 'folder');
+    },
+
+    mergeGroup() {
+      const a = app(), doc = needDoc(), G = doc && doc.active;
+      if (!G || !G.isGroup) return a.toast('Wähle zuerst eine Gruppe aus.');
+      doc.mergeGroup(G);
+      a.commit('Gruppe zusammenfügen', 'layers');
+    },
+
+    toggleCollapsed(G) {
+      const a = app();
+      if (!G || !G.isGroup) return;
+      G.collapsed = !G.collapsed;
+      // Opening or closing a group is not a change of the picture: no history step.
+      const st = a.doc.history.current;
+      if (st) {
+        const r = st.snap.layers.find(x => x.id === G.id);
+        if (r) r.collapsed = G.collapsed;
+      }
+      PW.bus.emit('layers:changed', a.doc);
     },
 
     async renameLayer(L) {
@@ -307,8 +361,9 @@
     mergeDown() {
       const a = app(), doc = needDoc();
       if (!doc || !doc.active) return;
-      if (!doc.mergeDown(doc.activeId)) return a.toast('Unter dieser Ebene liegt keine Ebene.');
-      a.commit('Auf eine Ebene reduzieren', 'layers');
+      const G = doc.active.isGroup;
+      if (!doc.mergeDown(doc.activeId)) return a.toast('Unter dieser Ebene liegt keine Ebene, mit der sie verbunden werden kann.');
+      a.commit(G ? 'Gruppe zusammenfügen' : 'Auf eine Ebene reduzieren', 'layers');
     },
 
     mergeVisible() {
@@ -325,13 +380,17 @@
       a.commit('Auf Hintergrundebene reduzieren', 'layers');
     },
 
+    // Within its own group, like Photoshop: a group counts as one step.
     arrange(where) {
       const a = app(), doc = needDoc();
       if (!doc || !doc.active) return;
-      const i = doc.activeIndex, n = doc.layers.length;
-      const to = { front: n - 1, forward: Math.min(n - 1, i + 1), backward: Math.max(0, i - 1), back: 0 }[where];
-      if (to === i) return;
-      doc.moveLayer(doc.activeId, to);
+      const L = doc.active, sibs = doc.layers.filter(x => x.parent === L.parent), k = sibs.indexOf(L);
+      const j = { front: sibs.length - 1, forward: Math.min(sibs.length - 1, k + 1), backward: Math.max(0, k - 1), back: 0 }[where];
+      if (j === k) return;
+      const ref = sibs[j], rest = doc.layers.filter(x => !doc.blockOf(L).includes(x));
+      // Above ref: right after its own entry; below ref: right before its whole block.
+      const at = j > k ? rest.indexOf(ref) + 1 : rest.indexOf(doc.blockOf(ref)[0]);
+      doc.moveBlock(L, at, L.parent);
       a.commit('Anordnen', 'layers');
     },
 
@@ -454,7 +513,16 @@
       const a = app(), doc = needDoc();
       L = L || (doc && doc.active);
       if (!L) return;
-      doc.selection.fromCanvasAlpha(L.canvas, mode);
+      let src = L.canvas;
+      if (L.isGroup) {
+        // A group: everything in it, as it shows.
+        src = createCanvas(doc.width, doc.height);
+        const shown = L.visible;
+        L.visible = true;
+        doc.drawLayers(src.getContext('2d'), doc.blockOf(L));
+        L.visible = shown;
+      }
+      doc.selection.fromCanvasAlpha(src, mode);
       a.commit('Auswahl laden', 'selection');
     },
 

@@ -162,6 +162,7 @@
       if (!L) return false;
       if (L.locked) { a.toast('Die Ebene ist gesperrt.'); return false; }
       if (L.adjust) { a.toast('Einstellungsebenen lassen sich nicht verzerren.'); return false; }
+      if (L.isGroup && !L.targetIsMask) { a.toast('Gruppen lassen sich nur frei transformieren (Strg+T). Zum Verzerren wähle eine Ebene in der Gruppe.'); return false; }
       if (L.isText && !L.targetIsMask) {
         L.rasterize();
         a.toast('Textebene wurde für die Transformation gerastert.');

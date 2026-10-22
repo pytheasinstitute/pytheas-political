@@ -74,6 +74,10 @@
   def('layer.duplicate', 'Ebene duplizieren', () => C().duplicateLayer(), { enabled: hasLayer });
   def('layer.delete', 'Ebene löschen', () => C().deleteLayer(), { enabled: hasLayer });
   def('layer.rename', 'Ebeneneigenschaften …', () => C().renameLayer(), { enabled: hasLayer });
+  def('layer.newGroup', 'Neue Gruppe', () => C().newGroup(), { enabled: hasDoc });
+  def('layer.group', 'Ebenen gruppieren', () => C().groupLayers(), { key: 'Mod+G', enabled: hasLayer });
+  def('layer.ungroup', 'Gruppierung aufheben', () => C().ungroup(), { key: 'Mod+Shift+G', enabled: () => !!(app().doc && app().doc.active && app().doc.active.isGroup) });
+  def('layer.mergeGroup', 'Gruppe zusammenfügen', () => C().mergeGroup(), { enabled: () => !!(app().doc && app().doc.active && app().doc.active.isGroup) });
   def('layer.style', 'Ebenenstil …', () => D().layerStyle(), { enabled: hasLayer });
   def('layer.maskReveal', 'Alles einblenden', () => C().addMask('reveal'), { enabled: hasLayer });
   def('layer.maskHide', 'Alles ausblenden', () => C().addMask('hide'), { enabled: hasLayer });
@@ -189,6 +193,7 @@
     { label: 'Ebene', items: [
       'layer.new', 'layer.viaCopy', 'layer.viaCut', 'layer.duplicate', 'layer.delete', '-', 'layer.rename', 'layer.style', '-',
       { label: 'Neue Einstellungsebene', items: adjLayerItems },
+      { label: 'Gruppen', items: ['layer.newGroup', 'layer.group', 'layer.ungroup', '-', 'layer.mergeGroup'] },
       { label: 'Ebenenmaske', items: ['layer.maskReveal', 'layer.maskHide', 'layer.maskRevealSel', 'layer.maskHideSel', '-', 'layer.maskToggle', 'layer.maskApply', 'layer.maskDelete'] },
       { label: 'Anordnen', items: ['layer.front', 'layer.forward', 'layer.backward', 'layer.back'] },
       'layer.lock', 'layer.lockAlpha', 'layer.rasterize', '-', 'layer.removeBg', '-', 'layer.mergeDown', 'layer.mergeVisible', 'layer.flatten',

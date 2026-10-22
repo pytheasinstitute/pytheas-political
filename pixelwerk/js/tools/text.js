@@ -65,7 +65,7 @@
       // Click on an existing text layer edits it.
       for (let i = doc.layers.length - 1; i >= 0; i--) {
         const L = doc.layers[i];
-        if (!L.isText || !L.visible) continue;
+        if (!L.isText || !doc.shown(L)) continue;
         const b = L.textBounds();
         if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
           doc.setActive(L.id);

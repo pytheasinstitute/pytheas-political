@@ -11,7 +11,7 @@
     if (x < 0 || y < 0 || x >= doc.width || y >= doc.height) return null;
     for (let i = doc.layers.length - 1; i >= 0; i--) {
       const L = doc.layers[i];
-      if (!L.visible || L.opacity <= 0) continue;
+      if (L.isGroup || L.adjust || !doc.shown(L) || L.opacity <= 0) continue;
       if (L.ctx.getImageData(x, y, 1, 1).data[3] > 8) return L;
     }
     return null;
@@ -44,6 +44,17 @@
       const doc = app().doc, sel = doc.selection;
       this.L = L;
       this.dx = this.dy = 0;
+      if (L.isGroup && !L.targetIsMask) {
+        // A group moves as a whole: pixels, text and masks of everything in it, and its own mask.
+        this.mode = 'group';
+        this.items = [...doc.descendantsOf(L), L].filter(x => !x.locked).map(x => ({
+          L: x,
+          text: x.isText ? { x: x.text.x, y: x.text.y } : null,
+          base: !x.isGroup && !x.adjust && !x.isText ? cloneCanvas(x.canvas) : null,
+          mask: x.mask ? cloneCanvas(x.mask) : null,
+        }));
+        return;
+      }
       if (L.isText && !L.targetIsMask) {
         this.mode = 'text';
         this.orig = { x: L.text.x, y: L.text.y };
@@ -74,6 +85,30 @@
     },
     apply() {
       const L = this.L;
+      if (this.mode === 'group') {
+        for (const it of this.items) {
+          if (it.text) {
+            it.L.text.x = it.text.x + this.dx;
+            it.L.text.y = it.text.y + this.dy;
+            it.L.renderText();
+          }
+          if (it.base) {
+            const g = it.L.ctx;
+            g.clearRect(0, 0, it.base.width, it.base.height);
+            g.drawImage(it.base, this.dx, this.dy);
+            it.L.touch();
+          }
+          if (it.mask) {
+            const g = it.L.mask.getContext('2d');
+            g.fillStyle = '#fff';
+            g.fillRect(0, 0, it.mask.width, it.mask.height);
+            g.drawImage(it.mask, this.dx, this.dy);
+            it.L.invalidateMask();
+            it.L.touchMask();
+          }
+        }
+        return;
+      }
       if (this.mode === 'text') {
         L.text.x = this.orig.x + this.dx;
         L.text.y = this.orig.y + this.dy;
@@ -121,7 +156,7 @@
       if (moved && this.mode === 'float') app().doc.selection.offset(this.dx, this.dy);
       this.L = null;
       this.start = null;
-      this.base = this.float = null;
+      this.base = this.float = this.items = null;
       if (moved) app().commit('Verschieben', 'move');
     },
     cancel() {

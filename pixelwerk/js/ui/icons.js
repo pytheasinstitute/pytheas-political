@@ -109,6 +109,8 @@
     file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
     image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
     layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',
+    'folder-open': '<path d="M3 18.5V6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h7.8A1.5 1.5 0 0 1 20 8.7V10"/><path d="M3 18.5 5.6 11h16l-2.6 7.6a1.5 1.5 0 0 1-1.4 1H4.4A1.4 1.4 0 0 1 3 18.5z"/>',
+    twisty: '<path d="m9 6 6 6-6 6"/>',
     link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
     magic: '<path d="m15 4-1 2.5L11.5 7.5 14 8.5 15 11l1-2.5L18.5 7.5 16 6.5z" fill="currentColor"/><path d="M5 19 14 10"/><path d="M7 4v3M5.5 5.5h3M19 15v3M17.5 16.5h3"/>',
     rotate: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',

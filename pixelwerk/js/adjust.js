@@ -44,8 +44,7 @@
     L.adjust = { id, params: clone(params || PW.filters.defaults(def)), fg: a.fg, bg: a.bg };
     // A selection becomes the mask, like in Photoshop; without one the mask is made when first painted on.
     if (!doc.selection.empty) L.addMask(doc.selection, true);
-    const at = doc.active ? doc.layers.indexOf(doc.active) + 1 : doc.layers.length;
-    doc.addLayer(L, at);
+    doc.addLayer(L, doc.active ? null : doc.layers.length);
     let ok = !!params || (!def.params && !def.dialog);
     if (!ok) {
       await PW.dialogs.runFilter(def, { session: new AdjustSession(doc, L), initial: L.adjust.params, done: p => { L.adjust.params = clone(p); ok = true; } });
